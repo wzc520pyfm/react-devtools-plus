@@ -1,0 +1,58 @@
+.card {
+  background-color: var(--color-bg-elevated);
+  border-radius: var(--radius-lg);
+  transition: all var(--duration-base) var(--timing-easeInOut);
+}
+
+.card.bordered {
+  border: 1px solid var(--color-border-base);
+}
+
+.card.hoverable {
+  cursor: pointer;
+}
+
+.card.hoverable:hover {
+  border-color: var(--color-border-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.header {
+  padding: var(--spacing-4) var(--spacing-4) var(--spacing-2);
+  border-bottom: 1px solid var(--color-border-base);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.body {
+  color: var(--color-text-secondary);
+}
+
+/* Padding variants */
+.padding-none {
+  padding: 0;
+}
+
+.padding-sm {
+  padding: var(--spacing-2);
+}
+
+.padding-md {
+  padding: var(--spacing-4);
+}
+
+.padding-lg {
+  padding: var(--spacing-6);
+}
+
+/* When there's a header, remove top padding from body */
+.card:has(.header) .body {
+  padding-top: 0;
+}
+

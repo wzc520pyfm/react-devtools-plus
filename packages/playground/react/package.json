@@ -9,6 +9,7 @@
     "preview": "NODE_ENV=test vite preview --mode test"
   },
   "dependencies": {
+    "@react-devtools/ui": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

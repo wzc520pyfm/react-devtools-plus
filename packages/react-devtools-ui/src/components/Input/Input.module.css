@@ -1,0 +1,129 @@
+.wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  background-color: var(--color-bg-base);
+  border: 1px solid var(--color-border-base);
+  border-radius: var(--radius-md);
+  transition: all var(--duration-fast) var(--timing-easeInOut);
+}
+
+.wrapper:hover:not(.disabled) {
+  border-color: var(--color-border-hover);
+}
+
+.wrapper:focus-within:not(.disabled) {
+  border-color: var(--color-border-focus);
+  outline: 2px solid var(--color-primary-200);
+  outline-offset: 0;
+}
+
+/* Sizes */
+.size-sm {
+  height: 28px;
+  padding: 0 var(--spacing-2);
+  font-size: var(--font-size-xs);
+}
+
+.size-md {
+  height: 36px;
+  padding: 0 var(--spacing-3);
+  font-size: var(--font-size-sm);
+}
+
+.size-lg {
+  height: 44px;
+  padding: 0 var(--spacing-4);
+  font-size: var(--font-size-base);
+}
+
+/* Status */
+.status-error {
+  border-color: var(--color-error-500);
+}
+
+.status-error:focus-within {
+  outline-color: var(--color-error-200);
+}
+
+.status-warning {
+  border-color: var(--color-warning-500);
+}
+
+.status-warning:focus-within {
+  outline-color: var(--color-warning-200);
+}
+
+.status-success {
+  border-color: var(--color-success-500);
+}
+
+.status-success:focus-within {
+  outline-color: var(--color-success-200);
+}
+
+/* States */
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: var(--color-bg-hover);
+}
+
+.block {
+  display: flex;
+  width: 100%;
+}
+
+/* Input */
+.input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-text-primary);
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.input:disabled {
+  cursor: not-allowed;
+}
+
+/* Prefix & Suffix */
+.prefix,
+.suffix {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+/* Clear button */
+.clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  background: var(--color-text-tertiary);
+  border: none;
+  border-radius: 50%;
+  color: var(--color-bg-base);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--timing-easeInOut);
+  flex-shrink: 0;
+}
+
+.clear:hover {
+  background: var(--color-text-secondary);
+}
+
