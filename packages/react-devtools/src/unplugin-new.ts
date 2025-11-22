@@ -14,12 +14,12 @@ import path from 'node:path'
 import { bold, cyan, green } from 'kolorist'
 import { createUnplugin } from 'unplugin'
 import { normalizePath } from 'vite'
-import type { ReactDevToolsPluginOptions, ResolvedPluginConfig } from './config/types.js'
+import type { ReactDevToolsPluginOptions, ResolvedPluginConfig } from './config/types'
 import {
   normalizeBasePath,
   resolvePluginConfig,
   validatePluginOptions,
-} from './config/normalize.js'
+} from './config'
 import {
   createOutputConfig,
   createRollupInput,
@@ -28,13 +28,13 @@ import {
   setupDevServerMiddlewares,
   setupPreviewServerMiddlewares,
   updateHtmlWithOverlayPath,
-} from './integrations/vite.js'
+} from './integrations/vite'
 import {
   getWebpackContext,
   getWebpackModeAndCommand,
   setupWebpackDevServerMiddlewares,
-} from './integrations/webpack.js'
-import { shouldProcessFile, transformSourceCode } from './utils/babel-transform.js'
+} from './integrations/webpack'
+import { shouldProcessFile, transformSourceCode } from './utils/babel-transform'
 import {
   DEVTOOLS_OPTIONS_ID,
   getClientPath,
@@ -45,7 +45,7 @@ import {
   resolveOverlayPath,
   RESOLVED_OPTIONS_ID,
   STANDALONE_FLAG,
-} from './utils/paths.js'
+} from './utils/paths'
 import { DIR_OVERLAY } from './dir.js'
 
 /**
@@ -137,8 +137,7 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
     // ============================================================
     vite: {
       apply(config, env) {
-        const mode = env.mode || (config as any).mode || 'development'
-        const command = env.command
+        const { mode, command } = getViteModeAndCommand(config as ResolvedConfig)
         const tempConfig = resolvePluginConfig(options, process.cwd(), mode, command)
         return tempConfig.isEnabled
       },
@@ -168,8 +167,7 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           return {}
         }
 
-        const mode = env.mode || (config as any).mode || 'development'
-        const command = env.command
+        const { mode, command } = getViteModeAndCommand(config as ResolvedConfig)
         const tempConfig = resolvePluginConfig(options, config.root || process.cwd(), mode, command)
 
         if (!tempConfig.isEnabled) {
@@ -349,12 +347,12 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
 
       pluginConfig = resolvePluginConfig(options, projectRoot, mode, command)
 
-      if (!pluginConfig?.isEnabled) {
+      if (!pluginConfig.isEnabled) {
         return
       }
 
       // Setup dev server middlewares
-      if (command === 'serve' && pluginConfig) {
+      if (command === 'serve') {
         setupWebpackDevServerMiddlewares(compiler, pluginConfig)
       }
 
@@ -393,10 +391,6 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
 export const unplugin = createUnplugin(unpluginFactory)
 
 export default unplugin
-
-// Export for named imports
-export const vite = unplugin.vite
-export const webpack = unplugin.webpack
 
 // Export types
 export type { ReactDevToolsPluginOptions }
