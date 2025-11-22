@@ -1,4 +1,4 @@
-import { isBrowser } from '@vue/devtools-shared'
+import { isBrowser } from '@react-devtools/shared'
 import SuperJSON from 'superjson'
 import { MergeableChannelOptions } from '../../types/channel'
 

@@ -50,6 +50,45 @@ function findSourceFiber(fiber: FiberNode | null): FiberNode | null {
   return null
 }
 
+// Parse data-source-path attribute value
+// Format: "path/to/file.tsx:line:column"
+function parseSourcePath(sourcePath: string): { fileName: string, lineNumber: number, columnNumber: number } | null {
+  const lastColon = sourcePath.lastIndexOf(':')
+  if (lastColon === -1)
+    return null
+
+  const secondLastColon = sourcePath.lastIndexOf(':', lastColon - 1)
+  if (secondLastColon === -1)
+    return null
+
+  const fileName = sourcePath.substring(0, secondLastColon)
+  const lineNumber = Number.parseInt(sourcePath.substring(secondLastColon + 1, lastColon), 10)
+  const columnNumber = Number.parseInt(sourcePath.substring(lastColon + 1), 10)
+
+  if (Number.isNaN(lineNumber) || Number.isNaN(columnNumber))
+    return null
+
+  return { fileName, lineNumber, columnNumber }
+}
+
+// Get source location from data-source-path attribute
+function getSourceFromElement(element: Element | null): { fileName: string, lineNumber: number, columnNumber: number } | null {
+  if (!element)
+    return null
+
+  // Try to get data-source-path from the element or its parents
+  let current = element
+  while (current && current !== document.body) {
+    const sourcePath = current.getAttribute('data-source-path')
+    if (sourcePath) {
+      return parseSourcePath(sourcePath)
+    }
+    current = current.parentElement
+  }
+
+  return null
+}
+
 function handleMouseOver(e: MouseEvent) {
   if (!isInspectorEnabled)
     return
@@ -68,33 +107,35 @@ function handleMouseOver(e: MouseEvent) {
     }
   }
   else if (inspectorMode === 'open-in-editor') {
-    // For open-in-editor, we want to highlight the element itself if possible
-    // But our highlightNode only works with fibers.
-    // Let's find the fiber that has source info.
-    const sourceFiber = findSourceFiber(fiber)
-    if (sourceFiber) {
-      const source = sourceFiber._debugSource
-        ? {
-            fileName: sourceFiber._debugSource.fileName,
-            lineNumber: sourceFiber._debugSource.lineNumber,
-            columnNumber: sourceFiber._debugSource.columnNumber,
-          }
-        : undefined
+    // For open-in-editor, prefer data-source-path attribute over _debugSource
+    const source = getSourceFromElement(target)
 
-      // Highlight the nearest fiber associated with the DOM element,
-      // effectively highlighting the DOM element or its closest React wrapper.
-      // If we want precise DOM highlighting, we might need a different highlight mechanism
-      // or rely on the fiber that corresponds to this host component.
-      // HostComponents are fibers too!
-      if (fiber) {
-        highlightNode(fiber, source)
-      }
-      else {
-        highlightNode(sourceFiber, source)
-      }
+    if (source && fiber) {
+      // Highlight the element with source info
+      highlightNode(fiber, source)
     }
     else {
-      hideHighlight()
+      // Fallback to _debugSource if data-source-path is not available
+      const sourceFiber = findSourceFiber(fiber)
+      if (sourceFiber) {
+        const fallbackSource = sourceFiber._debugSource
+          ? {
+              fileName: sourceFiber._debugSource.fileName,
+              lineNumber: sourceFiber._debugSource.lineNumber,
+              columnNumber: sourceFiber._debugSource.columnNumber,
+            }
+          : undefined
+
+        if (fiber) {
+          highlightNode(fiber, fallbackSource)
+        }
+        else {
+          highlightNode(sourceFiber, fallbackSource)
+        }
+      }
+      else {
+        hideHighlight()
+      }
     }
   }
 }
@@ -119,17 +160,29 @@ function handleClick(e: MouseEvent) {
     }
   }
   else if (inspectorMode === 'open-in-editor') {
-    // For open in editor, we look for the nearest debug source
-    const sourceFiber = findSourceFiber(fiber)
-    if (sourceFiber && sourceFiber._debugSource) {
-      const { fileName, lineNumber, columnNumber } = sourceFiber._debugSource
-      // console.log('[React DevTools] Opening in editor:', fileName, lineNumber, columnNumber, 'from fiber:', sourceFiber)
+    // Prefer data-source-path attribute over _debugSource
+    const source = getSourceFromElement(target)
+
+    if (source) {
+      const { fileName, lineNumber, columnNumber } = source
+      // console.log('[React DevTools] Opening in editor:', fileName, lineNumber, columnNumber)
       emitOpenInEditor(fileName, lineNumber, columnNumber)
       toggleInspector(false)
       hideHighlight()
     }
     else {
-      // console.warn('[React DevTools] No source location found for fiber:', fiber)
+      // Fallback to _debugSource if data-source-path is not available
+      const sourceFiber = findSourceFiber(fiber)
+      if (sourceFiber && sourceFiber._debugSource) {
+        const { fileName, lineNumber, columnNumber } = sourceFiber._debugSource
+        // console.log('[React DevTools] Opening in editor (fallback):', fileName, lineNumber, columnNumber, 'from fiber:', sourceFiber)
+        emitOpenInEditor(fileName, lineNumber, columnNumber)
+        toggleInspector(false)
+        hideHighlight()
+      }
+      else {
+        // console.warn('[React DevTools] No source location found for element or fiber')
+      }
     }
   }
 }

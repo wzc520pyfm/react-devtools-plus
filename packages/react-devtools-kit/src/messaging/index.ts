@@ -1,7 +1,7 @@
 import type { BirpcGroup, BirpcOptions, BirpcReturn } from 'birpc'
 import type { Presets } from './presets'
 import type { MergeableChannelOptions } from './types/channel'
-import { target } from '@vue/devtools-shared'
+import { target } from '@react-devtools/shared'
 import { createBirpc, createBirpcGroup } from 'birpc'
 import { getChannel } from './presets'
 

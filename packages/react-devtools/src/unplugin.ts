@@ -1,9 +1,12 @@
+import type { NodePath } from '@babel/core'
+import type { JSXOpeningElement } from '@babel/types'
 import type { UnpluginFactory } from 'unplugin'
 import type { PreviewServer, ResolvedConfig, ViteDevServer } from 'vite'
 import type { Compiler } from 'webpack'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { transformSync, types } from '@babel/core'
 import { bold, cyan, green } from 'kolorist'
 import sirv from 'sirv'
 import { createUnplugin } from 'unplugin'
@@ -271,14 +274,85 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
     })
   }
 
+  // Babel plugin factory for injecting source attributes
+  function createSourceAttributePlugin() {
+    return function sourceAttributePlugin() {
+      return {
+        name: 'source-attribute',
+        visitor: {
+          JSXOpeningElement(path: NodePath<JSXOpeningElement>) {
+            const loc = path.node.loc
+            if (!loc)
+              return
+
+            // Get the filename from the plugin state
+            const filename = (this as any).file?.opts?.filename || ''
+            if (!filename)
+              return
+
+            // Add data-source-path attribute to JSX elements
+            path.node.attributes.push(
+              types.jsxAttribute(
+                types.jsxIdentifier('data-source-path'),
+                types.stringLiteral(`${filename}:${loc.start.line}:${loc.start.column}`),
+              ),
+            )
+          },
+        },
+      }
+    }
+  }
+
+  function transformSourceCode(code: string, id: string) {
+    // Only process JSX/TSX files
+    if (!id.match(/\.[jt]sx$/)) {
+      return null
+    }
+
+    try {
+      const result = transformSync(code, {
+        filename: id,
+        presets: [
+          ['@babel/preset-react', { runtime: 'automatic' }],
+          '@babel/preset-typescript',
+        ],
+        plugins: [
+          createSourceAttributePlugin(),
+        ],
+        ast: true,
+        sourceMaps: true,
+        configFile: false,
+        babelrc: false,
+      })
+
+      if (!result?.code)
+        return null
+
+      return {
+        code: result.code,
+        map: result.map,
+      }
+    }
+    catch (error) {
+      console.error('[React DevTools] Babel transform error:', error)
+      return null
+    }
+  }
+
   return {
     name: 'unplugin-react-devtools',
-    enforce: 'post',
-    // Exclude HTML files (and all files when running under webpack) from the default loader pipeline
+    enforce: 'pre', // Use 'pre' to transform before other plugins
+    // Include JSX/TSX files for source code transformation
     transformInclude(id) {
-      if (isWebpackContext)
+      // Don't process HTML files
+      if (id.endsWith('.html') || id.endsWith('.htm'))
         return false
-      return !id.endsWith('.html') && !id.endsWith('.htm')
+
+      // Process JSX/TSX files for source code location injection
+      if (id.match(/\.[jt]sx$/))
+        return true
+
+      return false
     },
     loadInclude(id) {
       if (isWebpackContext)
@@ -390,17 +464,33 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           return null
 
         const filename = id.split('?', 2)[0]
+
+        // First, try to inject source location information
+        const sourceTransformResult = transformSourceCode(code, filename)
+        let transformedCode = sourceTransformResult?.code || code
+        const transformedMap = sourceTransformResult?.map || null
+
+        // Then, handle overlay injection if needed
         const appendTo = pluginOptions.appendTo
-        if (!appendTo)
-          return null
+        if (appendTo) {
+          const matches = typeof appendTo === 'string'
+            ? filename.endsWith(appendTo)
+            : appendTo instanceof RegExp && appendTo.test(filename)
 
-        const matches = typeof appendTo === 'string'
-          ? filename.endsWith(appendTo)
-          : appendTo instanceof RegExp && appendTo.test(filename)
+          if (matches) {
+            transformedCode = `import '${VIRTUAL_PATH_PREFIX}overlay.ts';\n${transformedCode}`
+          }
+        }
 
-        return matches
-          ? { code: `import '${VIRTUAL_PATH_PREFIX}overlay.ts';\n${code}`, map: null }
-          : null
+        // Return transformed result if any transformation occurred
+        if (sourceTransformResult || appendTo) {
+          return {
+            code: transformedCode,
+            map: transformedMap,
+          }
+        }
+
+        return null
       },
       transformIndexHtml(html, ctx) {
         if (pluginOptions.appendTo)
@@ -647,6 +737,13 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
         })}`
       }
       return null
+    },
+    // Shared transform for both Vite and Webpack
+    transform(code, id) {
+      const filename = id.split('?', 2)[0]
+
+      // Transform JSX/TSX files to inject source location
+      return transformSourceCode(code, filename)
     },
   }
 }
