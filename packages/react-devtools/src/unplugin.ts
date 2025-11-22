@@ -780,52 +780,55 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           console.log('[React DevTools] Setting up devServer middleware at:', devtoolsPath, 'serving from:', servePath)
 
           // Add open-in-editor middleware
-          // Use dynamic import to avoid bundling issues
-          import('launch-editor').then((module: any) => {
-            const launchEditor = module.default || module
+          // Note: We don't import launch-editor here to avoid triggering editor detection on startup
+          server.app?.use('/__open-in-editor', async (req: any, res: any) => {
+            const file = req.query.file as string
+            if (!file) {
+              res.status(400).send('Missing file parameter')
+              return
+            }
 
-            // Create simple middleware
-            server.app?.use('/__open-in-editor', (req: any, res: any) => {
-              const file = req.query.file as string
-              if (!file) {
-                res.status(400).send('Missing file parameter')
-                return
-              }
+            let absoluteFile = file
+            const [filePath, ...rest] = file.split(':')
 
-              let absoluteFile = file
-              const [filePath, ...rest] = file.split(':')
+            // Only need to convert if using relative mode and path is not already absolute
+            if (sourcePathMode === 'relative' && filePath && !path.isAbsolute(filePath)) {
+              const projectRoot = compiler.context || process.cwd()
 
-              // Only need to convert if using relative mode and path is not already absolute
-              if (sourcePathMode === 'relative' && filePath && !path.isAbsolute(filePath)) {
-                const projectRoot = compiler.context || process.cwd()
+              // Strip the first path segment (project folder name) if present
+              // Example: react/src/App.tsx -> src/App.tsx
+              const segments = filePath.split('/')
+              const pathFromRoot = segments.length > 1 ? segments.slice(1).join('/') : filePath
 
-                // Strip the first path segment (project folder name) if present
-                // Example: react/src/App.tsx -> src/App.tsx
-                const segments = filePath.split('/')
-                const pathFromRoot = segments.length > 1 ? segments.slice(1).join('/') : filePath
+              const absolutePath = path.resolve(projectRoot, pathFromRoot)
+              absoluteFile = [absolutePath, ...rest].join(':')
+            }
+            // In absolute mode, path is already absolute from injection
 
-                const absolutePath = path.resolve(projectRoot, pathFromRoot)
-                absoluteFile = [absolutePath, ...rest].join(':')
-              }
-              // In absolute mode, path is already absolute from injection
+            // Use simple child_process.exec to avoid launch-editor's auto-detection
+            const { exec } = await import('node:child_process')
+            const editorCmd = process.env.EDITOR || 'cursor'
 
-              // launch-editor expects format: /path/to/file.js:line:column
-              launchEditor(absoluteFile, (fileName: string, errorMsg: string) => {
-                if (errorMsg) {
-                  console.error('[React DevTools] Failed to open editor:', errorMsg)
-                  res.status(500).send(`Failed to open editor: ${errorMsg}`)
+            // Format: cursor -g /path/to/file:line:column
+            const cmd = `${editorCmd} -g "${absoluteFile}"`
+
+            exec(cmd, (error: Error | null) => {
+              if (error) {
+                // Suppress ENOENT errors as they're expected when editor CLI is not in PATH
+                if ((error as any).code === 'ENOENT') {
+                  res.status(404).send('Editor command not found. Please install editor CLI.')
                 }
                 else {
-                  res.status(200).send('OK')
+                  console.error('[React DevTools] Failed to execute editor command:', error.message)
+                  res.status(500).send('Failed to open editor')
                 }
-              })
+                return
+              }
+              res.status(200).send('OK')
             })
-
-            console.log('[React DevTools] Open-in-editor middleware registered at /__open-in-editor')
-          }).catch((err: Error) => {
-            console.warn('[React DevTools] Failed to load launch-editor:', err.message)
-            console.warn('[React DevTools] Open-in-editor feature will not be available')
           })
+
+          console.log('[React DevTools] Open-in-editor middleware registered at /__open-in-editor')
 
           // Add DevTools client serving
           server.app?.use(devtoolsPath, serveClient(servePath))
