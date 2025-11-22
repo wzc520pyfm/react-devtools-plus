@@ -5,12 +5,12 @@ const path = require('node:path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 // Option 1: Direct import (after build)
-// const ReactDevToolsPlugin = require('@vue/devtools-react/webpack')
+// const ReactDevToolsPlugin = require('react-devtools/webpack')
 
 // Option 2: Using dynamic import (for ESM compatibility)
 // Note: Webpack 5 supports async configs
 // module.exports = async () => {
-//   const { webpack: ReactDevToolsPlugin } = await import('@vue/devtools-react/webpack')
+//   const { webpack: ReactDevToolsPlugin } = await import('react-devtools/webpack')
 //   return {
 //     // ... config
 //     plugins: [
@@ -23,7 +23,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 // Option 3: Synchronous require (current implementation)
 let ReactDevToolsPlugin = null
 try {
-  const pluginModule = require('@vue/devtools-react/webpack')
+  const pluginModule = require('react-devtools/webpack')
   ReactDevToolsPlugin = pluginModule.webpack || pluginModule.default || pluginModule
 }
 catch (e) {

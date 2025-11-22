@@ -79,6 +79,7 @@ dist
 
 # IDE
 .idea
+.cursor
 
 .vite-inspect
 auto-imports.d.ts
@@ -108,6 +109,9 @@ clones
 .turbo
 
 .history
+.pnpm-store
 
 # react
 packages/react-devtools/src/overlay/**/*
+packages/react-devtools-client/dist/**/*
+packages/react-devtools-overlay/dist/**/*

@@ -4,7 +4,7 @@ This is a playground for React applications using Webpack with React DevTools su
 
 ## Features
 
-- ✅ React DevTools support via `@vue/devtools-react/webpack`
+- ✅ React DevTools support via `react-devtools/webpack`
 - ✅ Hot Module Replacement (HMR)
 - ✅ Development server with DevTools client
 
@@ -28,7 +28,7 @@ The playground uses the unplugin-based React DevTools plugin, which supports bot
 To configure DevTools, edit `webpack.config.js`:
 
 ```javascript
-const ReactDevToolsPlugin = require('@vue/devtools-react/webpack')
+const ReactDevToolsPlugin = require('react-devtools/webpack')
 
 module.exports = {
   plugins: [

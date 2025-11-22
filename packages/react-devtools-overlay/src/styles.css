@@ -41,7 +41,9 @@
   justify-content: center;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   pointer-events: auto;
-  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+  transition:
+    opacity 0.2s ease-in-out,
+    transform 0.2s ease-in-out;
   user-select: none;
   border: 1px solid rgba(255, 255, 255, 0.1);
   opacity: 0.9;
@@ -153,23 +155,25 @@
   pointer-events: auto;
   transform: translate(-50%, calc(-100% - 20px)); /* Adjusted spacing */
   visibility: inherit;
-  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 /* Bottom position overrides */
-.react-devtools-anchor[data-position="bottom"] .react-devtools-iframe-container {
+.react-devtools-anchor[data-position='bottom'] .react-devtools-iframe-container {
   transform: translate(-50%, calc(-100% - 20px));
 }
 
-.react-devtools-anchor[data-position="top"] .react-devtools-iframe-container {
+.react-devtools-anchor[data-position='top'] .react-devtools-iframe-container {
   transform: translate(-50%, calc(0% + 50px));
 }
 
-.react-devtools-anchor[data-position="left"] .react-devtools-iframe-container {
+.react-devtools-anchor[data-position='left'] .react-devtools-iframe-container {
   transform: translate(calc(0% + 50px), -50%);
 }
 
-.react-devtools-anchor[data-position="right"] .react-devtools-iframe-container {
+.react-devtools-anchor[data-position='right'] .react-devtools-iframe-container {
   transform: translate(calc(-100% - 20px), -50%);
 }
 

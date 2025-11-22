@@ -1,5 +1,5 @@
 import type { Root } from 'react-dom/client'
-import { installReactHook } from '@vue/devtools-react-kit'
+import { installReactHook } from '@react-devtools/kit'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './App'

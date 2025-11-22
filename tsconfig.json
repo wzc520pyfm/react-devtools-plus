@@ -1,12 +1,16 @@
 {
   "compilerOptions": {
     "target": "es2018",
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "lib": ["esnext", "dom"],
     "module": "esnext",
     "moduleResolution": "bundler",
     "paths": {
-      "react-devtools-shared": ["./packages/shared/src/index.ts"],
+      "@react-devtools/shared": ["./packages/shared/src/index.ts"],
+      "@react-devtools/kit": ["./packages/react-devtools-kit/src/index.ts"],
+      "@react-devtools/client": ["./packages/react-devtools-client/src/index.ts"],
+      "@react-devtools/overlay": ["./packages/react-devtools-overlay/src/index.ts"],
+      "react-devtools": ["./packages/react-devtools/src/index.ts"]
     },
     "resolveJsonModule": true,
     "types": [

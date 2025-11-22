@@ -1,0 +1,77 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "@react-devtools/shared#stub": {
+      "cache": false
+    },
+    "@react-devtools/kit#stub": {
+      "cache": false,
+      "dependsOn": [
+        "@react-devtools/shared#stub"
+      ]
+    },
+    "@react-devtools/client#build": {
+      "dependsOn": [
+        "@react-devtools/kit#build",
+        "^build"
+      ],
+      "outputs": [
+        "dist/**"
+      ]
+    },
+    "@react-devtools/client#stub": {
+      "cache": false,
+      "dependsOn": [
+        "@react-devtools/kit#stub"
+      ]
+    },
+    "@react-devtools/overlay#build": {
+      "dependsOn": [
+        "@react-devtools/kit#build",
+        "^build"
+      ],
+      "outputs": [
+        "dist/**"
+      ]
+    },
+    "@react-devtools/overlay#stub": {
+      "cache": false,
+      "dependsOn": [
+        "@react-devtools/kit#stub"
+      ]
+    },
+    "react-devtools#build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**"
+      ]
+    },
+    "build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**/*.?{c|m}js",
+        "dist/**/*.d.ts"
+      ]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "prepare:type": {
+      "dependsOn": [
+        "^prepare:type"
+      ],
+      "outputs": [
+        "dist/**/*.d.ts"
+      ]
+    },
+    "stub": {
+      "cache": false
+    }
+  },
+  "ui": "stream"
+}

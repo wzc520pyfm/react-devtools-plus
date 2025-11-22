@@ -1,5 +1,5 @@
 {
-  "name": "@vue/devtools-playground-react-webpack",
+  "name": "@react-devtools/playground-react-webpack",
   "version": "0.0.0",
   "private": true,
   "scripts": {

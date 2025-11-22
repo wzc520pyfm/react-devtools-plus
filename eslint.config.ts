@@ -1,9 +1,9 @@
 import antfu from '@antfu/eslint-config'
-import devtools from './eslint-plugins'
 
 export default antfu({
-  // force enable vue and typescript rules
-  vue: true,
+  // force enable react and typescript rules
+  react: true,
+  vue: false,
   typescript: true,
   unocss: true,
 
@@ -15,8 +15,6 @@ export default antfu({
 
   // override default rules
   rules: {
-    'vue/no-v-text-v-html-on-component': 'off',
-
     'no-console': 'off',
     'antfu/top-level-function': 'off',
     'unused-imports/no-unused-vars': 'off',
@@ -32,21 +30,17 @@ export default antfu({
     'unicorn/consistent-function-scoping': 'off',
   },
 }, {
-  files: ['packages/devtools-kit/**/*.ts'],
-  plugins: { devtools },
-  rules: {
-    'devtools/no-vue-runtime-import': ['error', { prefer: 'shared/stub-vue' }],
-  },
-}, {
   ignores: [
     'dist',
     'node_modules',
+    '.cursor',
+    '.history',
     'ci.yml',
     'release.yml',
     '**.svg',
-    'packages/chrome-extension/overlay/*',
-    'packages/vite/src/overlay/*',
-    'packages/chrome-extension/client/*',
+    'packages/react-devtools-overlay/dist/*',
+    'packages/react-devtools-client/dist/*',
+    'packages/playground/**/dist/*',
     'eslint.config.js',
   ],
 })

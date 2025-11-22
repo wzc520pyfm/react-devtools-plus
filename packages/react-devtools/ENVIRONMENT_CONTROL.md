@@ -11,9 +11,9 @@ React DevTools 支持根据不同的构建环境来控制是否渲染。默认�
 在 `vite.config.ts` 中配置插件的 `enabledEnvironments` 选项：
 
 ```typescript
-import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import reactDevtools from '@vue/devtools-react'
+import reactDevtools from 'react-devtools'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
@@ -116,13 +116,16 @@ VITE_REACT_DEVTOOLS_ENABLED=false
 ### 构建时控制（插件级别）
 
 1. **插件 `apply` 函数**：根据配置和环境决定插件是否应用
+
    ```typescript
-   apply(config, env) {
-     return shouldEnableDevTools(
-       pluginOptions.enabledEnvironments,
-       env.mode || config.mode || 'development',
-       env.command,
-     )
+   const plugin = {
+     apply(config, env) {
+       return shouldEnableDevTools(
+         pluginOptions.enabledEnvironments,
+         env.mode || config.mode || 'development',
+         env.command,
+       )
+     }
    }
    ```
 
@@ -139,7 +142,7 @@ function shouldRenderDevTools(): boolean {
   if (import.meta.env.VITE_REACT_DEVTOOLS_ENABLED !== undefined) {
     return import.meta.env.VITE_REACT_DEVTOOLS_ENABLED === 'true'
   }
-  
+
   // 检查 mode 和 blocked/allowed 列表
   const mode = import.meta.env.MODE
   // ...
@@ -180,7 +183,7 @@ export default defineConfig({
 # .env.development
 VITE_REACT_DEVTOOLS_ENABLED=true
 
-# .env.test  
+# .env.test
 VITE_REACT_DEVTOOLS_ENABLED=true
 
 # .env.staging
@@ -212,4 +215,3 @@ VITE_REACT_DEVTOOLS_ENABLED=false
 - `NODE_ENV` 由 Vite 自动设置，但可以通过 `--mode` 覆盖
 - 插件的 `apply` 函数在构建时执行，确保不会包含不需要的代码
 - 运行时的 `shouldRenderDevTools` 检查提供了额外的安全保障
-

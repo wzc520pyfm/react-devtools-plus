@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 const initialTodos = [
   { id: 1, title: 'Wire overlay to React root', done: true, assignee: 'Core' },
@@ -116,4 +116,3 @@ export default function App() {
     </div>
   )
 }
-

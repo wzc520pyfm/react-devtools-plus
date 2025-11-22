@@ -1,6 +1,6 @@
 const path = require('node:path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const ReactDevToolsPlugin = require('@vue/devtools-react/webpack').webpack
+const ReactDevToolsPlugin = require('react-devtools/webpack').webpack
 
 module.exports = {
   entry: './src/main.jsx',

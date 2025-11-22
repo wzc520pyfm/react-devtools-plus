@@ -21,7 +21,8 @@ export function usePosition(panelVisible: boolean) {
     windowSizeRef.current = { width: window.innerWidth, height: window.innerHeight }
 
     const handleResize = () => {
-      if (isDragging) return
+      if (isDragging)
+        return
 
       const prevWidth = windowSizeRef.current.width
       const prevHeight = windowSizeRef.current.height
@@ -29,7 +30,8 @@ export function usePosition(panelVisible: boolean) {
       const currHeight = window.innerHeight
 
       // Skip if dimensions haven't effectively changed
-      if (prevWidth === currWidth && prevHeight === currHeight) return
+      if (prevWidth === currWidth && prevHeight === currHeight)
+        return
 
       setPosition((prev) => {
         let newX = prev.x

@@ -1,8 +1,8 @@
 {
-  "name": "@vue/devtools-react-kit",
+  "name": "@react-devtools/kit",
   "type": "module",
   "version": "0.0.1",
-  "author": "webfansplz",
+  "author": "wzc520pyfm",
   "license": "MIT",
   "repository": {
     "directory": "packages/react-devtools-kit",
@@ -27,7 +27,7 @@
     "stub": "tsdown --watch --onSuccess 'tsdown --dts-only'"
   },
   "dependencies": {
-    "@vue/devtools-shared": "workspace:^",
+    "@react-devtools/shared": "workspace:^",
     "birpc": "^2.6.1",
     "hookable": "^5.5.3",
     "mitt": "catalog:",

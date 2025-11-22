@@ -23,7 +23,7 @@ export function FloatingButton({
 }: FloatingButtonProps) {
   return (
     <div
-      className={`react-devtools-button-group ${isHidden ? 'react-devtools-button--hidden' : ''} ${panelVisible ? 'react-devtools-button--active' : ''}`}
+      className={`react-devtools-button-group ${isHidden ? 'react-devtools-button--hidden' : ''}  ${panelVisible ? 'react-devtools-button--active' : ''}`}
       style={{
         cursor: isDragging ? 'grabbing' : 'default',
         transform: isHidden
@@ -56,7 +56,7 @@ export function FloatingButton({
           e.stopPropagation()
           onInspectorClick(e)
         }}
-        onPointerDown={(e) => e.stopPropagation()} // Prevent dragging when clicking this button
+        onPointerDown={e => e.stopPropagation()} // Prevent dragging when clicking this button
       >
         <div className="react-devtools-button-icon" style={{ transform: `rotate(${-rotation}deg)` }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#61dafb' }}>

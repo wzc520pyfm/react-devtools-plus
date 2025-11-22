@@ -1,4 +1,4 @@
-import { toggleInspector } from '@vue/devtools-react-kit'
+import { toggleInspector } from '@react-devtools/kit'
 import { useRef } from 'react'
 import { FloatingButton } from './components/FloatingButton'
 import { IframeContainer } from './components/IframeContainer'
@@ -36,11 +36,14 @@ export function App() {
   }
 
   // Determine orientation for positioning styles
-  const positionAttr =
-    rotation === 0 ? 'bottom' :
-    rotation === 180 ? 'top' :
-    rotation === 90 ? 'left' :
-    'right'
+  const positionAttr
+    = rotation === 0
+      ? 'bottom'
+      : rotation === 180
+        ? 'top'
+        : rotation === 90
+          ? 'left'
+          : 'right'
 
   return (
     <div

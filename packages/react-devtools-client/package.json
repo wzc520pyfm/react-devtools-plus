@@ -1,9 +1,9 @@
 {
-  "name": "@vue/devtools-react-client",
+  "name": "@react-devtools/client",
   "type": "module",
   "version": "0.0.1",
   "private": true,
-  "author": "webfansplz",
+  "author": "wzc520pyfm",
   "license": "MIT",
   "exports": {
     "./*": "./dist/*"
@@ -19,7 +19,7 @@
     "stub": "vite build --watch"
   },
   "dependencies": {
-    "@vue/devtools-react-kit": "workspace:^",
+    "@react-devtools/kit": "workspace:^",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router-dom": "^6.26.0"

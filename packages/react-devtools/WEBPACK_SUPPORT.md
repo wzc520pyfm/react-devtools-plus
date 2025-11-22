@@ -5,7 +5,7 @@
 ## 安装
 
 ```bash
-pnpm add -D @vue/devtools-react
+pnpm add -D react-devtools
 ```
 
 ## 使用方法
@@ -17,7 +17,7 @@ pnpm add -D @vue/devtools-react
 ```javascript
 const path = require('node:path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const ReactDevToolsPlugin = require('@vue/devtools-react/webpack')
+const ReactDevToolsPlugin = require('react-devtools/webpack')
 
 module.exports = {
   // ... 其他配置
@@ -59,11 +59,11 @@ interface ReactDevToolsPluginOptions {
 
 ## 功能特性
 
-✅ **HTML 注入**：自动在 HTML 中注入 DevTools overlay 脚本  
-✅ **开发服务器**：自动配置 `/__react_devtools__/` 端点  
-✅ **环境控制**：支持按环境启用/禁用  
-✅ **代码分割**：overlay 作为独立 chunk 打包  
-✅ **热更新**：支持 HMR  
+✅ **HTML 注入**：自动在 HTML 中注入 DevTools overlay 脚本
+✅ **开发服务器**：自动配置 `/__react_devtools__/` 端点
+✅ **环境控制**：支持按环境启用/禁用
+✅ **代码分割**：overlay 作为独立 chunk 打包
+✅ **热更新**：支持 HMR
 
 ## 工作原理
 
@@ -95,6 +95,7 @@ interface ReactDevToolsPluginOptions {
 ### 插件未加载
 
 确保已构建插件：
+
 ```bash
 cd packages/react-devtools
 pnpm build
@@ -105,9 +106,10 @@ pnpm build
 如果遇到模块导入问题，可以：
 
 1. 使用动态 import（Webpack 5 支持异步配置）：
+
 ```javascript
 module.exports = async () => {
-  const { webpack: ReactDevToolsPlugin } = await import('@vue/devtools-react/webpack')
+  const { webpack: ReactDevToolsPlugin } = await import('react-devtools/webpack')
   return {
     plugins: [
       ReactDevToolsPlugin({ enabledEnvironments: ['development'] }),
@@ -117,11 +119,11 @@ module.exports = async () => {
 ```
 
 2. 或使用同步 require（当前实现）：
+
 ```javascript
-const ReactDevToolsPlugin = require('@vue/devtools-react/webpack').webpack
+const ReactDevToolsPlugin = require('react-devtools/webpack').webpack
 ```
 
 ## 示例
 
 查看 `packages/playground/react-webpack` 获取完整示例。
-

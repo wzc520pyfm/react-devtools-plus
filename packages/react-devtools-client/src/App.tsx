@@ -1,4 +1,4 @@
-import { createRpcClient, openInEditor } from '@vue/devtools-react-kit'
+import { createRpcClient, openInEditor } from '@react-devtools/kit'
 import { useEffect, useState } from 'react'
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import ReactLogo from '~/components/assets/ReactLogo'
@@ -21,11 +21,11 @@ function NavItem({ to, icon: Icon, label }: { to: string, icon: any, label: stri
 
   return (
     <div
-      className={`group relative p-2 rounded-lg cursor-pointer transition-colors ${isActive ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-400'}`}
+      className={`group relative cursor-pointer rounded-lg p-2 transition-colors ${isActive ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-400'}`}
       onClick={() => navigate(to)}
     >
-      <Icon className="w-6 h-6" />
-      <div className="absolute left-14 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 transition-opacity">
+      <Icon className="h-6 w-6" />
+      <div className="pointer-events-none absolute left-14 top-1/2 z-50 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity -translate-y-1/2 group-hover:opacity-100">
         {label}
       </div>
     </div>
@@ -67,15 +67,15 @@ export function App() {
   }, [location.pathname, navigate])
 
   return (
-    <div className="h-screen w-full flex bg-base text-base font-sans overflow-hidden">
+    <div className="h-screen w-full flex overflow-hidden bg-base text-base font-sans">
       {/* Sidebar */}
-      <div className="w-12 border-r border-base flex flex-col items-center py-4 gap-2 bg-base z-50">
+      <div className="z-50 w-12 flex flex-col items-center gap-2 border-r border-base bg-base py-4">
         <NavItem to="/overview" icon={ReactLogo} label="Overview" />
         <NavItem to="/components" icon={ComponentsIcon} label="Components" />
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-gray-50 dark:bg-[#0b0b0b]">
+      <div className="min-w-0 flex flex-1 flex-col overflow-hidden bg-gray-50 dark:bg-[#0b0b0b]">
         <Routes>
           <Route path="/overview" element={<OverviewPage tree={tree} />} />
           <Route

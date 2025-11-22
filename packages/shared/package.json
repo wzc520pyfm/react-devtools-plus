@@ -1,8 +1,8 @@
 {
-  "name": "@vue/devtools-shared",
+  "name": "@react-devtools/shared",
   "type": "module",
-  "version": "8.0.3",
-  "author": "webfansplz",
+  "version": "0.0.1",
+  "author": "wzc520pyfm",
   "license": "MIT",
   "repository": {
     "directory": "packages/shared",

@@ -1,18 +1,18 @@
-# @vue/devtools-react
+# react-devtools
 
 > Experimental in-app component tree inspector for React projects powered by Vite.
 
 ## Installation
 
 ```bash
-pnpm add -D @vue/devtools-react
+pnpm add -D react-devtools
 ```
 
 ## Usage
 
 ```ts
 import react from '@vitejs/plugin-react'
-import ReactDevTools from '@vue/devtools-react'
+import ReactDevTools from 'react-devtools'
 // vite.config.ts
 import { defineConfig } from 'vite'
 

@@ -1,4 +1,4 @@
-import { createRpcServer, getFiberById, getRpcServer, hideHighlight, highlightNode, onInspectorSelect, onOpenInEditor, onTreeUpdated, openInEditor, rebuildTree, setIframeServerContext, toggleInspector } from '@vue/devtools-react-kit'
+import { createRpcServer, getFiberById, getRpcServer, hideHighlight, highlightNode, onInspectorSelect, onOpenInEditor, onTreeUpdated, openInEditor, rebuildTree, setIframeServerContext, toggleInspector } from '@react-devtools/kit'
 import { useEffect, useRef } from 'react'
 
 function getDevToolsClientUrl() {
@@ -131,8 +131,8 @@ export function useIframe(
           }
         },
         toggleInspectorMode(mode: 'select-component' | 'open-in-editor') {
-           toggleInspector(true, { mode })
-           setPanelVisibleRef.current(false)
+          toggleInspector(true, { mode })
+          setPanelVisibleRef.current(false)
         },
         openInEditor(options: { fileName: string, line: number, column: number }) {
           openInEditor(options.fileName, options.line, options.column)

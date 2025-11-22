@@ -1,7 +1,7 @@
 {
   "name": "react-devtools-monorepo",
   "type": "module",
-  "version": "7.3.2",
+  "version": "0.0.1",
   "private": true,
   "packageManager": "pnpm@10.18.3",
   "description": "DevTools for React.js",
@@ -16,41 +16,58 @@
     "url": "https://github.com/vuejs/devtools/issues"
   },
   "keywords": [
-    "vue-devtools",
+    "react-devtools",
     "dx"
   ],
   "engines": {
     "node": ">=18.19.0"
   },
   "scripts": {
+    "stub:shared": "turbo stub --filter=./packages/shared",
+    "stub:kit": "turbo stub --filter=./packages/react-devtools-kit",
+    "stub:overlay": "turbo stub --filter=./packages/react-devtools-overlay",
+    "stub:client": "turbo stub --filter=./packages/react-devtools-client",
+    "build:shared": "turbo build --filter=./packages/shared...",
+    "build:kit": "turbo build --filter=./packages/react-devtools-kit...",
+    "build:overlay": "turbo build --filter=./packages/react-devtools-overlay...",
+    "build:client": "turbo build --filter=./packages/react-devtools-client...",
+    "build:react-devtools": "turbo build --filter=./packages/react-devtools...",
+    "prepare:type": "turbo prepare:type --filter='./packages/*'",
+    "dev": "nr prepare:type && nr build:client && turbo stub --concurrency 20",
+    "build": "turbo build",
     "lint": "NODE_OPTIONS=--import=tsx eslint --config=eslint.config.ts .",
     "lint:fix": "pnpm lint --fix",
     "prepublishOnly": "npm run build",
     "release": "bumpp && nr build && pnpm -r publish --access public",
     "release:beta": "bumpp && nr build && pnpm -r publish --access public --tag beta",
-    "prepare": "simple-git-hooks"
+    "prepare": "simple-git-hooks",
+    "test": "vitest --environment jsdom",
+    "play": "turbo dev --filter=./packages/playground/react"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^5.4.1",
     "@antfu/ni": "^25.0.0",
     "@arethetypeswrong/cli": "^0.18.2",
     "@clack/prompts": "^0.11.0",
+    "@eslint-react/eslint-plugin": "^1.53.1",
     "@types/chrome": "^0.1.24",
     "@types/degit": "^2.8.6",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^24.7.2",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
     "@typescript-eslint/parser": "^8.46.1",
     "@typescript-eslint/utils": "^8.46.1",
     "@unocss/eslint-plugin": "^66.5.4",
-    "@vue/devtools-core": "workspace:^",
-    "@vue/devtools-kit": "workspace:^",
-    "@vue/test-utils": "^2.4.6",
     "archiver": "^7.0.1",
     "bumpp": "^10.3.1",
     "cross-env": "^10.1.0",
     "degit": "^2.8.4",
     "eslint": "^9.37.0",
     "eslint-plugin-format": "^1.0.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.24",
     "eslint-vitest-rule-tester": "^2.2.2",
     "fast-glob": "^3.3.3",
     "fs-extra": "^11.3.2",
@@ -74,8 +91,7 @@
     "unbuild": "3.6.1",
     "unocss": "^66.5.4",
     "vite": "^7.1.10",
-    "vitest": "^3.2.4",
-    "vue": "^3.5.22"
+    "vitest": "^3.2.4"
   },
   "pnpm": {
     "ignoredBuiltDependencies": [
@@ -83,8 +99,7 @@
     ],
     "onlyBuiltDependencies": [
       "electron",
-      "esbuild",
-      "vue-demi"
+      "esbuild"
     ]
   },
   "simple-git-hooks": {
