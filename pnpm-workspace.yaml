@@ -10,6 +10,7 @@ catalog:
   '@types/react-dom': ^18.2.23
   '@unocss/reset': ^66.5.4
   '@vitejs/plugin-react': ^4.3.2
+  birpc: ^0.2.19
   colord: ^2.9.3
   mitt: ^3.0.1
   pathe: ^2.0.3
@@ -20,6 +21,7 @@ catalog:
   serve: ^14.2.5
   shiki: ^3.13.0
   tsdown: ^0.15.7
+  tsup: ^8.5.1
   typescript: ^5.9.3
   unocss: ^66.5.4
   unplugin-auto-import: ^20.2.0

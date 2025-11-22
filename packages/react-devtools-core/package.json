@@ -1,0 +1,60 @@
+{
+  "name": "@react-devtools/core",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Core functionality for React DevTools including RPC, client management, and plugin system",
+  "author": "React DevTools Contributors",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./rpc": {
+      "types": "./dist/rpc.d.ts",
+      "import": "./dist/rpc.js",
+      "require": "./dist/rpc.cjs"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js",
+      "require": "./dist/client.cjs"
+    },
+    "./plugin": {
+      "types": "./dist/plugin.d.ts",
+      "import": "./dist/plugin.js",
+      "require": "./dist/plugin.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts src/rpc/index.ts src/client/index.ts src/plugin/index.ts --dts --format esm,cjs --out-dir dist --shims",
+    "dev": "tsup src/index.ts src/rpc/index.ts src/client/index.ts src/plugin/index.ts --dts --format esm,cjs --out-dir dist --shims --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "vite": ">=5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@react-devtools/shared": "workspace:*",
+    "birpc": "^0.2.19"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
+  }
+}
+
