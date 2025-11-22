@@ -20,7 +20,7 @@
     "dx"
   ],
   "engines": {
-    "node": ">=18.19.0"
+    "node": ">=20.12.0"
   },
   "scripts": {
     "stub:shared": "turbo stub --filter=./packages/shared",
@@ -42,7 +42,8 @@
     "release:beta": "bumpp && nr build && pnpm -r publish --access public --tag beta",
     "prepare": "simple-git-hooks",
     "test": "vitest --environment jsdom",
-    "play": "turbo dev --filter=./packages/playground/react"
+    "play": "turbo dev --filter=./packages/playground/react",
+    "play:webpack": "turbo dev --filter=./packages/playground/react-webpack"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^5.4.1",

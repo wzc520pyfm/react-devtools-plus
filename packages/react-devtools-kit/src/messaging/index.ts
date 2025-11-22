@@ -28,15 +28,15 @@ export function setRpcServerToGlobal<R, L>(rpc: BirpcGroup<R, L>) {
   target.__REACT_DEVTOOLS_KIT_RPC_SERVER__ = rpc
 }
 
-export function getRpcClient<RemoteFunctions = Record<string, never>, LocalFunctions extends object = Record<string, never>>(): BirpcReturn<RemoteFunctions, LocalFunctions> | null {
+export function getRpcClient<RemoteFunctions = Record<string, never>, LocalFunctions extends object = Record<string, (arg: any) => void>>(): BirpcReturn<RemoteFunctions, LocalFunctions> | null {
   return target.__REACT_DEVTOOLS_KIT_RPC_CLIENT__ ?? null
 }
 
-export function getRpcServer<RemoteFunctions = Record<string, never>, LocalFunctions extends object = Record<string, never>>(): BirpcGroup<RemoteFunctions, LocalFunctions> | null {
+export function getRpcServer<RemoteFunctions = Record<string, never>, LocalFunctions extends object = Record<string, (arg: any) => void>>(): BirpcGroup<RemoteFunctions, LocalFunctions> | null {
   return target.__REACT_DEVTOOLS_KIT_RPC_SERVER__ ?? null
 }
 
-export function createRpcClient<RemoteFunctions = Record<string, never>, LocalFunctions extends object = Record<string, never>>(
+export function createRpcClient<RemoteFunctions = Record<string, never>, LocalFunctions extends object = Record<string, (arg: any) => void>>(
   functions: LocalFunctions,
   options: CreateRpcClientOptions<RemoteFunctions> = {},
 ): BirpcReturn<RemoteFunctions, LocalFunctions> {
@@ -53,7 +53,7 @@ export function createRpcClient<RemoteFunctions = Record<string, never>, LocalFu
   return rpc
 }
 
-export function createRpcServer<RemoteFunctions = Record<string, never>, LocalFunctions extends object = Record<string, never>>(
+export function createRpcServer<RemoteFunctions = Record<string, never>, LocalFunctions extends object = Record<string, (arg: any) => void>>(
   functions: LocalFunctions,
   options: CreateRpcServerOptions<RemoteFunctions> = {},
 ): void {

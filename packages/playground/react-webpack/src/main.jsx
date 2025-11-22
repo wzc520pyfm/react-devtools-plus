@@ -1,4 +1,5 @@
 import ReactDOM from 'react-dom/client'
+import App from './App'
 import './style.css'
 
 // Note: React DevTools currently only has full support via Vite plugin
