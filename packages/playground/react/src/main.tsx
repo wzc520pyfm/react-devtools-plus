@@ -1,19 +1,17 @@
 import { ThemeProvider } from '@react-devtools/ui'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
 import App from './App'
-import { ThemeDemo } from './ThemeDemo'
 import '@react-devtools/ui/style.css'
 import './style.css'
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <ThemeProvider config={{ primaryColor: 'react', mode: 'auto' }}>
-      <ThemeDemo />
-      <div style={{ marginTop: '48px', borderTop: '2px solid var(--color-border-base)', paddingTop: '48px' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '24px' }}>原 App 组件</h2>
+      <BrowserRouter>
         <App />
-      </div>
+      </BrowserRouter>
     </ThemeProvider>
   </React.StrictMode>,
 )
