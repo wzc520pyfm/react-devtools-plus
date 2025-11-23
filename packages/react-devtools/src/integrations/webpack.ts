@@ -4,8 +4,9 @@
  */
 
 import type { Compiler } from 'webpack'
-import type { ResolvedPluginConfig } from '../config/types'
+import type { ResolvedPluginConfig, SourcePathMode } from '../config/types'
 import { createOpenInEditorMiddleware, serveClient } from '../middleware'
+import { createSourceAttributePlugin } from '../utils/babel-transform'
 
 /**
  * Setup Webpack dev server middlewares
@@ -29,13 +30,22 @@ export function setupWebpackDevServerMiddlewares(
     }
 
     // Add open-in-editor middleware
-    devServer.app?.use('/__open-in-editor', createOpenInEditorMiddleware(
-      config.projectRoot,
-      config.sourcePathMode,
-    ))
+    // Note: We don't specify 'path' here because createOpenInEditorMiddleware handles path checking internally.
+    // If we specify 'path', Express/Connect might strip the prefix from req.url, causing the internal check to fail.
+    middlewares.unshift({
+      name: 'react-devtools-open-in-editor',
+      middleware: createOpenInEditorMiddleware(
+        config.projectRoot,
+        config.sourcePathMode,
+      ),
+    })
 
     // Add client serving middleware
-    devServer.app?.use('/__react_devtools__', serveClient(clientPath))
+    middlewares.unshift({
+      name: 'react-devtools-client',
+      path: '/__react_devtools__',
+      middleware: serveClient(clientPath),
+    })
 
     return middlewares
   }
@@ -126,6 +136,55 @@ export function injectOverlayToEntry(
 
     return entries
   }
+}
+
+/**
+ * Inject Babel plugin to Webpack config
+ * 注入 Babel 插件到 Webpack 配置
+ */
+export function injectBabelPlugin(
+  compiler: Compiler,
+  projectRoot: string,
+  sourcePathMode: SourcePathMode,
+) {
+  const rules = compiler.options.module.rules as any[]
+
+  const visitRule = (rule: any) => {
+    if (rule.oneOf) {
+      rule.oneOf.forEach(visitRule)
+      return
+    }
+
+    // Handle rule.use (array or object)
+    if (rule.use) {
+      const uses = Array.isArray(rule.use) ? rule.use : [rule.use]
+      uses.forEach((use: any) => {
+        // Check if loader is babel-loader
+        const loaderName = typeof use === 'string' ? use : use.loader
+        if (loaderName && loaderName.includes('babel-loader')) {
+          if (typeof use !== 'string') {
+            if (!use.options)
+              use.options = {}
+            if (!use.options.plugins)
+              use.options.plugins = []
+
+            use.options.plugins.push(createSourceAttributePlugin(projectRoot, sourcePathMode))
+          }
+        }
+      })
+    }
+
+    // Handle rule.loader (shortcut)
+    if (rule.loader && rule.loader.includes('babel-loader')) {
+      if (!rule.options)
+        rule.options = {}
+      if (!rule.options.plugins)
+        rule.options.plugins = []
+      rule.options.plugins.push(createSourceAttributePlugin(projectRoot, sourcePathMode))
+    }
+  }
+
+  rules.forEach(visitRule)
 }
 
 /**

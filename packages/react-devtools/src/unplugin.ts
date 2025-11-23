@@ -32,6 +32,7 @@ import {
 import {
   getWebpackContext,
   getWebpackModeAndCommand,
+  injectBabelPlugin,
   injectOverlayToEntry,
   setupWebpackDevServerMiddlewares,
 } from './integrations/webpack.js'
@@ -253,7 +254,13 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
       },
 
       transform(code, id, transformOptions) {
-        if (transformOptions?.ssr || !viteConfig || !pluginConfig)
+        if (transformOptions?.ssr)
+          return null
+
+        if (!isWebpackContext && !viteConfig)
+          return null
+
+        if (!pluginConfig)
           return null
 
         const filename = id.split('?', 2)[0]
@@ -360,36 +367,16 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
         // Inject overlay
         const overlayPath = path.join(DIR_OVERLAY, 'main.tsx')
         injectOverlayToEntry(compiler, overlayPath)
-      }
 
-      // Transform loader
-      compiler.hooks.compilation.tap('unplugin-react-devtools', (compilation) => {
-        compilation.hooks.buildModule.tap('unplugin-react-devtools', (module: any) => {
-          if (!module.resource || !shouldProcessFile(module.resource))
-            return
-
-          const originalSource = module.originalSource?.()
-          if (!originalSource)
-            return
-
-          const code = originalSource.source?.toString() || ''
-          const result = transformSourceCode(
-            code,
-            module.resource,
-            pluginConfig!.injectSource,
-            pluginConfig!.projectRoot,
-            pluginConfig!.sourcePathMode,
+        // Inject Babel plugin (for data-source-path)
+        if (pluginConfig.injectSource) {
+          injectBabelPlugin(
+            compiler,
+            pluginConfig.projectRoot,
+            pluginConfig.sourcePathMode,
           )
-
-          if (result) {
-            module._source = {
-              source: () => result.code,
-              size: () => result.code.length,
-              map: () => result.map,
-            }
-          }
-        })
-      })
+        }
+      }
     },
   }
 }

@@ -110,6 +110,7 @@ clones
 
 .history
 .pnpm-store
+storybook-static
 
 # react
 packages/react-devtools/src/overlay/**/*

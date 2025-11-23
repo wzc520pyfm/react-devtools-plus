@@ -92,6 +92,9 @@ export function transformSourceCode(
  * 检查文件是否应该被处理
  */
 export function shouldProcessFile(id: string): boolean {
+  if (id.includes('node_modules'))
+    return false
+
   // Exclude HTML files
   if (id.endsWith('.html') || id.endsWith('.htm')) {
     return false

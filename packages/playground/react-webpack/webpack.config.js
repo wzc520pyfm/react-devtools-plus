@@ -21,7 +21,11 @@ module.exports = {
               loader: 'babel-loader',
               options: {
                 presets: [
-                  ['@babel/preset-react', { runtime: 'automatic' }],
+                  ['@babel/preset-react', {
+                    runtime: 'automatic',
+                    // development 开启时，React Fiber 下存在_debugSource，可用于定位源码位置
+                    development: true,
+                  }],
                   ['@babel/preset-typescript', { isTSX: true, allExtensions: true }],
                 ],
               },
