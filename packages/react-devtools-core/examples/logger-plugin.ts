@@ -1,7 +1,7 @@
 /**
  * Example: Component Logger Plugin
  * 示例：组件日志插件
- * 
+ *
  * This plugin logs all component lifecycle events
  * 此插件记录所有组件生命周期事件
  */
@@ -102,4 +102,3 @@ export const loggerPlugin: DevToolsPlugin = {
     this.filters.clear()
   },
 }
-

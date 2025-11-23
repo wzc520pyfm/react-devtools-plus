@@ -4,11 +4,11 @@ import { useState } from 'react'
 export function ThemeDemo() {
   const { theme, toggleMode, setPrimaryColor } = useTheme()
   const [inputValue, setInputValue] = useState('')
-  
+
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
       <h1 style={{ marginBottom: '24px' }}>React DevTools UI - 主题系统测试</h1>
-      
+
       {/* Theme Controls */}
       <Card title="🎨 主题控制" style={{ marginBottom: '24px' }}>
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
@@ -19,7 +19,7 @@ export function ThemeDemo() {
             <Button>当前模式</Button>
           </Badge>
         </div>
-        
+
         <h4 style={{ marginBottom: '12px', marginTop: '24px' }}>选择主题色:</h4>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {Object.entries(PRESET_COLORS).map(([name, color]) => (
@@ -38,7 +38,7 @@ export function ThemeDemo() {
           ))}
         </div>
       </Card>
-      
+
       {/* Button Variants */}
       <Card title="🔘 Button 组件" style={{ marginBottom: '24px' }}>
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
@@ -50,14 +50,14 @@ export function ThemeDemo() {
           <Button variant="ghost">Ghost</Button>
           <Button variant="text">Text</Button>
         </div>
-        
+
         <h4 style={{ marginBottom: '12px', marginTop: '16px' }}>尺寸:</h4>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <Button size="sm" variant="primary">Small</Button>
           <Button size="md" variant="primary">Medium</Button>
           <Button size="lg" variant="primary">Large</Button>
         </div>
-        
+
         <h4 style={{ marginBottom: '12px', marginTop: '16px' }}>状态:</h4>
         <div style={{ display: 'flex', gap: '12px' }}>
           <Button variant="primary" loading>Loading</Button>
@@ -65,14 +65,14 @@ export function ThemeDemo() {
           <Button variant="primary" block>Block Button</Button>
         </div>
       </Card>
-      
+
       {/* Input Component */}
       <Card title="📝 Input 组件" style={{ marginBottom: '24px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <Input 
+          <Input
             placeholder="默认输入框"
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={e => setInputValue(e.target.value)}
             allowClear
             onClear={() => setInputValue('')}
           />
@@ -81,7 +81,7 @@ export function ThemeDemo() {
           <Input placeholder="错误状态" status="error" />
           <Input placeholder="禁用状态" disabled />
         </div>
-        
+
         <h4 style={{ marginBottom: '12px', marginTop: '16px' }}>尺寸:</h4>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <Input size="sm" placeholder="Small" />
@@ -89,7 +89,7 @@ export function ThemeDemo() {
           <Input size="lg" placeholder="Large" />
         </div>
       </Card>
-      
+
       {/* Badge Component */}
       <Card title="🏷️ Badge 组件" style={{ marginBottom: '24px' }}>
         <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
@@ -106,7 +106,7 @@ export function ThemeDemo() {
             <Button>新功能</Button>
           </Badge>
         </div>
-        
+
         <h4 style={{ marginBottom: '12px', marginTop: '16px' }}>独立徽章:</h4>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <Badge count={5} color="primary" />
@@ -116,7 +116,7 @@ export function ThemeDemo() {
           <Badge count={25} color="info" />
         </div>
       </Card>
-      
+
       {/* Card Variants */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
         <Card title="普通卡片" bordered>
@@ -129,11 +129,11 @@ export function ThemeDemo() {
           无边框卡片
         </Card>
       </div>
-      
+
       {/* Color Palette Display */}
       <Card title="🎨 当前主题色板" style={{ marginTop: '24px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(60px, 1fr))', gap: '8px' }}>
-          {['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'].map((shade) => (
+          {['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'].map(shade => (
             <div key={shade} style={{ textAlign: 'center' }}>
               <div
                 style={{
@@ -155,4 +155,3 @@ export function ThemeDemo() {
     </div>
   )
 }
-

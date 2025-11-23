@@ -6,53 +6,53 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
    * Button content
    */
   children?: ReactNode
-  
+
   /**
    * Button type
    * @default 'button'
    */
   htmlType?: 'button' | 'submit' | 'reset'
-  
+
   /**
    * Button variant
    * @default 'default'
    */
   variant?: 'default' | 'primary' | 'success' | 'warning' | 'error' | 'ghost' | 'text'
-  
+
   /**
    * Button size
    * @default 'md'
    */
   size?: 'sm' | 'md' | 'lg'
-  
+
   /**
    * Disabled state
    * @default false
    */
   disabled?: boolean
-  
+
   /**
    * Loading state
    * @default false
    */
   loading?: boolean
-  
+
   /**
    * Block level button
    * @default false
    */
   block?: boolean
-  
+
   /**
    * Icon before content
    */
   icon?: ReactNode
-  
+
   /**
    * Additional CSS class
    */
   className?: string
-  
+
   /**
    * Custom styles
    */
@@ -82,7 +82,7 @@ export const Button: FC<ButtonProps> = ({
     loading && styles.loading,
     className,
   ].filter(Boolean).join(' ')
-  
+
   return (
     <button
       type={htmlType}
@@ -104,4 +104,3 @@ export const Button: FC<ButtonProps> = ({
     </button>
   )
 }
-

@@ -86,4 +86,3 @@ export interface ServerRPC extends ServerFunctions {
   $state: RPCConnectionInfo
   $close: () => void
 }
-

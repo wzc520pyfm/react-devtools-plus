@@ -202,7 +202,7 @@ export class PluginManager {
    */
   async cleanup(): Promise<void> {
     const pluginIds = Array.from(this.plugins.keys())
-    
+
     for (const pluginId of pluginIds) {
       await this.unregister(pluginId)
     }
@@ -259,4 +259,3 @@ export class PluginManager {
  * 全局插件管理器实例
  */
 export const globalPluginManager = new PluginManager()
-

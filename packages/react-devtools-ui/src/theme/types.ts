@@ -29,13 +29,13 @@ export interface ThemeConfig {
    * @default 'auto'
    */
   mode?: ThemeMode
-  
+
   /**
    * Primary color (preset name or hex color)
    * @default 'react' (#61dafb)
    */
   primaryColor?: string
-  
+
   /**
    * Custom color palettes
    */
@@ -77,4 +77,3 @@ export interface Theme {
   zIndex: Record<string, number>
   cssVars: Record<string, string>
 }
-

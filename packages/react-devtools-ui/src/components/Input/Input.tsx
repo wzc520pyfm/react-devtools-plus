@@ -8,33 +8,33 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
    * @default 'md'
    */
   size?: 'sm' | 'md' | 'lg'
-  
+
   /**
    * Input status
    */
   status?: 'error' | 'warning' | 'success'
-  
+
   /**
    * Prefix icon or text
    */
   prefix?: ReactNode
-  
+
   /**
    * Suffix icon or text
    */
   suffix?: ReactNode
-  
+
   /**
    * Allow clear
    * @default false
    */
   allowClear?: boolean
-  
+
   /**
    * Clear callback
    */
   onClear?: () => void
-  
+
   /**
    * Full width
    * @default false
@@ -63,9 +63,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
     block && styles.block,
     className,
   ].filter(Boolean).join(' ')
-  
+
   const showClear = allowClear && value && !disabled
-  
+
   return (
     <div className={wrapperClassNames}>
       {prefix && (
@@ -96,4 +96,3 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
 })
 
 Input.displayName = 'Input'
-

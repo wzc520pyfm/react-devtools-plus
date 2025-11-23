@@ -66,13 +66,13 @@ export interface DevToolsState {
  * Event types
  * 事件类型
  */
-export type DevToolsEvent =
-  | { type: 'component-selected', componentId: string }
-  | { type: 'component-updated', componentId: string }
-  | { type: 'component-mounted', componentId: string }
-  | { type: 'component-unmounted', componentId: string }
-  | { type: 'connection-changed', connected: boolean }
-  | { type: 'highlight-changed', componentId?: string }
+export type DevToolsEvent
+  = | { type: 'component-selected', componentId: string }
+    | { type: 'component-updated', componentId: string }
+    | { type: 'component-mounted', componentId: string }
+    | { type: 'component-unmounted', componentId: string }
+    | { type: 'connection-changed', connected: boolean }
+    | { type: 'highlight-changed', componentId?: string }
 
 /**
  * RPC function definitions
@@ -84,14 +84,14 @@ export interface ClientFunctions {
   getComponentDetails: (componentId: string) => Promise<ComponentNode | null>
   updateComponentProps: (componentId: string, props: Record<string, any>) => Promise<void>
   updateComponentState: (componentId: string, state: Record<string, any>) => Promise<void>
-  
+
   // Source code operations
   openInEditor: (source: SourceLocation) => Promise<void>
-  
+
   // Performance operations
   startProfiling: () => Promise<void>
   stopProfiling: () => Promise<PerformanceMetrics[]>
-  
+
   // DevTools state
   selectComponent: (componentId: string) => Promise<void>
   highlightComponent: (componentId?: string) => Promise<void>
@@ -114,37 +114,37 @@ export interface DevToolsPlugin {
    * 插件唯一标识符
    */
   id: string
-  
+
   /**
    * Plugin name
    * 插件名称
    */
   name: string
-  
+
   /**
    * Plugin description
    * 插件描述
    */
   description?: string
-  
+
   /**
    * Plugin initialization
    * 插件初始化
    */
   setup?: (context: PluginContext) => void | Promise<void>
-  
+
   /**
    * Plugin cleanup
    * 插件清理
    */
   teardown?: () => void | Promise<void>
-  
+
   /**
    * Custom RPC functions
    * 自定义 RPC 函数
    */
   rpc?: Record<string, (...args: any[]) => any>
-  
+
   /**
    * Event handlers
    * 事件处理器
@@ -162,38 +162,37 @@ export interface PluginContext {
    * 获取组件树
    */
   getComponentTree: () => Promise<ComponentNode[]>
-  
+
   /**
    * Get component details
    * 获取组件详情
    */
   getComponentDetails: (componentId: string) => Promise<ComponentNode | null>
-  
+
   /**
    * Emit event
    * 发送事件
    */
   emit: (event: DevToolsEvent) => void
-  
+
   /**
    * Subscribe to events
    * 订阅事件
    */
   on: <T extends DevToolsEvent['type']>(
     type: T,
-    handler: (event: Extract<DevToolsEvent, { type: T }>) => void
+    handler: (event: Extract<DevToolsEvent, { type: T }>) => void,
   ) => () => void
-  
+
   /**
    * Register custom RPC function
    * 注册自定义 RPC 函数
    */
   registerRPC: <T extends (...args: any[]) => any>(name: string, fn: T) => void
-  
+
   /**
    * Call RPC function
    * 调用 RPC 函数
    */
   callRPC: <T = any>(name: string, ...args: any[]) => Promise<T>
 }
-

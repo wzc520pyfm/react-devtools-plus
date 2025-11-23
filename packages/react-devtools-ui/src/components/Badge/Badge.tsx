@@ -6,47 +6,47 @@ export interface BadgeProps {
    * Badge content
    */
   children?: ReactNode
-  
+
   /**
    * Badge count or text
    */
   count?: number | string
-  
+
   /**
    * Show dot instead of count
    * @default false
    */
   dot?: boolean
-  
+
   /**
    * Max count to display
    * @default 99
    */
   max?: number
-  
+
   /**
    * Badge color
    * @default 'primary'
    */
   color?: 'primary' | 'success' | 'warning' | 'error' | 'info' | 'neutral'
-  
+
   /**
    * Badge size
    * @default 'md'
    */
   size?: 'sm' | 'md' | 'lg'
-  
+
   /**
    * Show zero count
    * @default false
    */
   showZero?: boolean
-  
+
   /**
    * Additional CSS class
    */
   className?: string
-  
+
   /**
    * Custom styles
    */
@@ -67,7 +67,7 @@ export const Badge: FC<BadgeProps> = ({
   const numericCount = typeof count === 'number' ? count : 0
   const displayCount = numericCount > max ? `${max}+` : count
   const showBadge = dot || showZero || (numericCount > 0) || (typeof count === 'string' && count)
-  
+
   if (!children) {
     // Standalone badge
     return (
@@ -85,7 +85,7 @@ export const Badge: FC<BadgeProps> = ({
       </span>
     )
   }
-  
+
   return (
     <span className={[styles.wrapper, className].filter(Boolean).join(' ')} style={style}>
       {children}
@@ -104,4 +104,3 @@ export const Badge: FC<BadgeProps> = ({
     </span>
   )
 }
-

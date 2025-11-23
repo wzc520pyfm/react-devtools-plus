@@ -60,4 +60,3 @@ export function getWebpackModeAndCommand(compiler: Compiler): {
 export function getWebpackContext(compiler: Compiler): string {
   return compiler.context || process.cwd()
 }
-

@@ -105,7 +105,7 @@ export function parseEditorPath(editorPath: string): {
   const filePath = parts[0]
   const line = parts[1] ? Number.parseInt(parts[1], 10) : undefined
   const column = parts[2] ? Number.parseInt(parts[2], 10) : undefined
-  
+
   return { filePath, line, column }
 }
 
@@ -127,4 +127,3 @@ export function resolveRelativeToAbsolute(
   const pathFromRoot = segments.length > 1 ? segments.slice(1).join('/') : relativePath
   return path.resolve(projectRoot, pathFromRoot)
 }
-

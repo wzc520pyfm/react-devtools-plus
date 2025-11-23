@@ -1,7 +1,7 @@
 /**
  * Example: Performance Monitoring Plugin
  * 示例：性能监控插件
- * 
+ *
  * This plugin monitors component render performance and provides analytics
  * 此插件监控组件渲染性能并提供分析
  */
@@ -55,7 +55,7 @@ export const performancePlugin: DevToolsPlugin = {
       // Track slow components
       if (metric.renderTime > this.threshold) {
         this.slowComponents.add(event.componentId)
-        
+
         // Emit custom event for slow renders
         context.emit({
           type: 'component-updated',
@@ -78,4 +78,3 @@ export const performancePlugin: DevToolsPlugin = {
     this.slowComponents.clear()
   },
 }
-

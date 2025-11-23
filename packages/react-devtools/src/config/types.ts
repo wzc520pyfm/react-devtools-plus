@@ -25,7 +25,7 @@ export interface ReactDevToolsPluginOptions {
    * When not provided, the script will be injected into index.html automatically.
    */
   appendTo?: string | RegExp
-  
+
   /**
    * Enable DevTools in specific environments.
    * - When not provided (default), DevTools will be enabled in dev mode (`vite dev`) and disabled in build mode (`vite build`).
@@ -46,7 +46,7 @@ export interface ReactDevToolsPluginOptions {
    * ReactDevTools({ enabledEnvironments: false })
    */
   enabledEnvironments?: EnabledEnvironments
-  
+
   /**
    * Enable source code location injection into HTML attributes.
    * - When `true` (default in development), injects `data-source-path` attributes into JSX elements
@@ -63,7 +63,7 @@ export interface ReactDevToolsPluginOptions {
    * ReactDevTools({ injectSource: true })
    */
   injectSource?: boolean
-  
+
   /**
    * Configure the path format for source code location injection.
    * - 'absolute': Use absolute file paths (e.g., /Users/.../project/src/App.tsx)
@@ -112,4 +112,3 @@ export interface PluginContext {
   config: ResolvedPluginConfig
   reactDevtoolsPath: string
 }
-

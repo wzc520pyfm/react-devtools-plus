@@ -22,7 +22,7 @@ import {
 export function detectSystemDarkMode(): boolean {
   if (typeof window === 'undefined')
     return false
-  
+
   return window.matchMedia('(prefers-color-scheme: dark)').matches
 }
 
@@ -47,16 +47,16 @@ export function createTheme(config: ThemeConfig = {}): Theme {
     primaryColor = 'react',
     colors: customColors = {},
   } = config
-  
+
   // Resolve mode
   const resolvedMode = resolveThemeMode(mode)
-  
+
   // Resolve primary color
   const resolvedPrimaryColor = resolveThemeColor(primaryColor)
-  
+
   // Generate semantic colors from primary color
   const semanticColors = generateSemanticColors(resolvedPrimaryColor)
-  
+
   // Merge with custom colors
   const colors = {
     primary: { ...semanticColors.primary, ...customColors.primary },
@@ -66,10 +66,10 @@ export function createTheme(config: ThemeConfig = {}): Theme {
     info: { ...semanticColors.info, ...customColors.info },
     neutral: generateNeutralColors(resolvedMode === 'dark'),
   }
-  
+
   // Generate CSS variables
   const cssVars = generateCSSVariables(colors, colors.neutral, resolvedMode)
-  
+
   return {
     mode: resolvedMode,
     colors,
@@ -90,14 +90,14 @@ export function createTheme(config: ThemeConfig = {}): Theme {
 export function applyTheme(theme: Theme) {
   if (typeof document === 'undefined')
     return
-  
+
   const root = document.documentElement
-  
+
   // Apply CSS variables
   Object.entries(theme.cssVars).forEach(([key, value]) => {
     root.style.setProperty(key, value)
   })
-  
+
   // Set data-theme attribute for CSS selectors
   root.setAttribute('data-theme', theme.mode)
 }
@@ -109,19 +109,19 @@ export function applyTheme(theme: Theme) {
 export function watchSystemDarkMode(callback: (isDark: boolean) => void): () => void {
   if (typeof window === 'undefined')
     return () => {}
-  
+
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-  
+
   const handler = (e: MediaQueryListEvent | MediaQueryList) => {
     callback(e.matches)
   }
-  
+
   // Modern browsers
   if (mediaQuery.addEventListener) {
     mediaQuery.addEventListener('change', handler)
     return () => mediaQuery.removeEventListener('change', handler)
   }
-  
+
   // Legacy browsers
   mediaQuery.addListener(handler as any)
   return () => mediaQuery.removeListener(handler as any)
@@ -134,4 +134,3 @@ export * from './types'
 
 // Export preset colors for easy access
 export { PRESET_COLORS }
-

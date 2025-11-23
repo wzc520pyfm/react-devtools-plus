@@ -6,40 +6,40 @@ export interface CardProps {
    * Card title
    */
   title?: string
-  
+
   /**
    * Card content
    */
   children?: ReactNode
-  
+
   /**
    * Additional CSS class
    */
   className?: string
-  
+
   /**
    * Show border
    * @default true
    */
   bordered?: boolean
-  
+
   /**
    * Hoverable effect
    * @default false
    */
   hoverable?: boolean
-  
+
   /**
    * Card padding size
    * @default 'md'
    */
   padding?: 'none' | 'sm' | 'md' | 'lg'
-  
+
   /**
    * Custom styles
    */
   style?: CSSProperties
-  
+
   /**
    * Click handler
    */
@@ -63,7 +63,7 @@ export const Card: FC<CardProps> = ({
     styles[`padding-${padding}`],
     className,
   ].filter(Boolean).join(' ')
-  
+
   return (
     <div
       className={classNames}
@@ -81,4 +81,3 @@ export const Card: FC<CardProps> = ({
     </div>
   )
 }
-
