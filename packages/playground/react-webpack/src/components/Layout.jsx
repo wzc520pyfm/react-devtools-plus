@@ -28,7 +28,7 @@ export default function Layout() {
             textDecoration: 'none',
             color: location.pathname === '/' ? 'var(--color-primary-500, #3b82f6)' : 'inherit',
             fontWeight: location.pathname === '/' ? 600 : 400,
-            transition: 'color 0.2s',
+            transition: '0.2s ease',
           }}
         >
           Home
@@ -39,7 +39,7 @@ export default function Layout() {
             textDecoration: 'none',
             color: location.pathname === '/theme' ? 'var(--color-primary-500, #3b82f6)' : 'inherit',
             fontWeight: location.pathname === '/theme' ? 600 : 400,
-            transition: 'color 0.2s',
+            transition: 'all 0.2s ease',
           }}
         >
           Theme
