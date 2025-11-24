@@ -42,11 +42,8 @@ export function initScan(options: ReactDevtoolsScanOptions = {}): ScanInstance {
   }
 
   if (typeof window !== 'undefined') {
-    console.log(`[React Scan Integration] initScan called via ${window.parent !== window ? 'Iframe' : 'Host'}`)
-
     // Check if already initialized (Singleton pattern)
     if ((window as any).__REACT_SCAN_INTERNALS__) {
-      console.log('[React Scan Integration] Found existing React Scan instance. Reusing it.')
       // Ensure runInAllEnvironments is true on existing instance
       const existingInternals = (window as any).__REACT_SCAN_INTERNALS__
       if (existingInternals) {
@@ -63,8 +60,6 @@ export function initScan(options: ReactDevtoolsScanOptions = {}): ScanInstance {
       return getScanInstance(defaultOptions)
     }
 
-    console.log('[React Scan Integration] No existing instance. Initializing new one.')
-    console.log('[React Scan Integration] Exposing internals to window')
     // Manually expose internals to window for DevTools integration
     ;(window as any).__REACT_SCAN_INTERNALS__ = ReactScanInternals
     ;(window as any).__REACT_SCAN_SET_OPTIONS__ = setOptions
@@ -90,7 +85,8 @@ export function initScan(options: ReactDevtoolsScanOptions = {}): ScanInstance {
  *
  * const scanInstance = getScan();
  * if (scanInstance) {
- *   console.log('Scan is active:', scanInstance.isActive());
+ *   // Check if scan is active
+ *   scanInstance.isActive();
  * }
  * ```
  */

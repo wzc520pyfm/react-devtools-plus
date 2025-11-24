@@ -10,21 +10,18 @@ let root: Root | null = null
 async function init() {
   // Prevent duplicate initialization
   if (document.getElementById('react-devtools-overlay')) {
-    console.warn('[React DevTools] Overlay already exists, skipping initialization')
     return
   }
 
-  // installReactHook(getShowHostComponents)
-
   // Register React Scan plugin
+  // Note: We don't call installReactHook here to avoid interfering with React Scan's hook
   try {
     await globalPluginManager.register(createScanPlugin({
-      autoStart: true, // Auto-start to show flash effects by default
+      autoStart: true,
     }))
-    console.log('[React DevTools] Scan plugin registered')
   }
   catch (error) {
-    console.warn('[React DevTools] Failed to register Scan plugin:', error)
+    console.error('[React DevTools] Failed to register Scan plugin:', error)
   }
 
   const container = document.createElement('div')

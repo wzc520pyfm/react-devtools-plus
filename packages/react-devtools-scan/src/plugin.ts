@@ -96,7 +96,6 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
      */
     async setup(ctx: any) {
       context = ctx
-      console.log('[React Scan Plugin] Setting up...')
 
       // Always initialize the scan instance, and start by default
       const initOptions = {
@@ -110,16 +109,8 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
 
       // Always call scan() to start scanning by default (unless autoStart explicitly false)
       if (autoStart !== false) {
-        console.log('[React Scan Plugin] Auto-starting scan with options:', initOptions)
         // Use adapter's start which handles globals correctly
         scanInstance.start()
-      }
-
-      if (autoStart) {
-        console.log('[React Scan Plugin] Scan instance initialized and started')
-      }
-      else {
-        console.log('[React Scan Plugin] Scan instance initialized (not started)')
       }
 
       // Set up inspect state change listener
@@ -151,9 +142,10 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
       }
 
       // Listen for component tree changes if context supports it
+      // Listen to component tree changes if supported
       if (ctx.on) {
-        ctx.on('component-tree-changed', (event: any) => {
-          console.log('[React Scan Plugin] Component tree changed:', event)
+        ctx.on('component-tree-changed', (_event: any) => {
+          // Component tree changed, could update UI here
         })
       }
 
@@ -221,16 +213,12 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
           }
         })
       }
-
-      console.log('[React Scan Plugin] Setup complete')
     },
 
     /**
      * Plugin teardown
      */
     async teardown() {
-      console.log('[React Scan Plugin] Tearing down...')
-
       if (scanInstance) {
         scanInstance.stop()
         scanInstance = null
@@ -238,7 +226,6 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
 
       resetScanInstance()
       context = null
-      console.log('[React Scan Plugin] Teardown complete')
     },
 
     /**
@@ -529,20 +516,12 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
      * Event handlers
      */
     on: {
-      'component-mounted': (event: any) => {
-        // React Scan will automatically track component mounts
-        // This is just for additional logging if needed
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[React Scan Plugin] Component mounted:', event.componentId)
-        }
+      'component-mounted': (_event: any) => {
+        // React Scan automatically tracks component mounts
       },
 
-      'component-updated': (event: any) => {
-        // React Scan will automatically track component updates
-        // This is just for additional logging if needed
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[React Scan Plugin] Component updated:', event.componentId)
-        }
+      'component-updated': (_event: any) => {
+        // React Scan automatically tracks component updates
       },
     },
   }

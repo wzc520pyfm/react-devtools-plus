@@ -274,22 +274,17 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           return `
             import { initScan, ReactScanInternals, setOptions, getOptions, scan } from 'react-devtools/scan';
 
-            console.log('[React Scan Integration] Host script running...');
-
             if (typeof window !== 'undefined') {
               window.__REACT_SCAN_INTERNALS__ = ReactScanInternals;
               window.__REACT_SCAN_SET_OPTIONS__ = setOptions;
               window.__REACT_SCAN_GET_OPTIONS__ = getOptions;
               window.__REACT_SCAN_SCAN__ = scan;
-              console.log('[React Scan Integration] Host Globals exposed');
             }
 
-            // Ensure we run in all environments
             if (ReactScanInternals) {
               ReactScanInternals.runInAllEnvironments = true;
             }
 
-            // Call scan() directly to ensure it starts
             scan(${JSON.stringify(scanOptions)});
           `
         }
@@ -371,9 +366,6 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
                   inject: function(renderer) {
                     var id = Math.random().toString(36).slice(2);
                     renderers.set(id, renderer);
-                    if (typeof console !== 'undefined') {
-                      console.log('[Mock Hook] inject called via closure', id);
-                    }
                     return id;
                   }
                 };
@@ -390,8 +382,6 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
             showToolbar: pluginConfig.scan.showToolbar ?? false,
             ...pluginConfig.scan,
           }
-
-          console.log('[React DevTools] Injecting React Scan with options:', scanOptions)
 
           tags.push({
             tag: 'script',
