@@ -157,12 +157,28 @@ export function ComponentsPage({ tree, selectedNodeId, onSelectNode }: Component
   const [showHostComponents, setShowHostComponents] = useState(false)
   const [search, setSearch] = useState('')
   const [inspectorMode, setInspectorMode] = useState<'select-component' | 'open-in-editor' | null>(null)
+  const [hookInstallAttempted, setHookInstallAttempted] = useState(false)
 
   const filteredTree = useMemo(() => {
     if (!tree)
       return null
     return filterTree(tree, search)
   }, [tree, search])
+
+  // Install component tree hook when user first visits this page
+  useEffect(() => {
+    if (!hookInstallAttempted && !tree) {
+      setHookInstallAttempted(true)
+
+      // Request the overlay (parent window) to install the component tree hook
+      // Since we're in an iframe, we need to send message to parent
+      window.parent.postMessage({
+        type: '__REACT_DEVTOOLS_INSTALL_COMPONENT_TREE_HOOK__',
+      }, '*')
+
+      console.log('[Components Page] Requested component tree hook installation')
+    }
+  }, [hookInstallAttempted, tree])
 
   useEffect(() => {
     if (!tree)

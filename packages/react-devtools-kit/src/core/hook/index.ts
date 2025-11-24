@@ -121,15 +121,61 @@ function createHook(showHostComponents: () => boolean): ReactDevToolsHook {
 }
 
 function patchHook(existingHook: ReactDevToolsHook, showHostComponents: () => boolean): ReactDevToolsHook {
-  const originalCommit = existingHook.onCommitFiberRoot?.bind(existingHook)
-  existingHook.onCommitFiberRoot = (rendererID: number, root: FiberRoot) => {
-    originalCommit?.(rendererID, root)
-    getRoots(rendererID).add(root)
-    handleTreeUpdate(root, showHostComponents)
+  // Check if already patched by us
+  if ((existingHook as any).__REACT_DEVTOOLS_PATCHED__) {
+    console.log('[React DevTools Hook] Already patched, skipping')
+    return existingHook
   }
+
+  // Store the original callback - preserve exact reference
+  const originalCommit = existingHook.onCommitFiberRoot
+
+  // Only patch if there's an existing callback to preserve
+  if (originalCommit) {
+    // Create new callback that chains our logic after the original
+    const patchedCallback = function (this: any, rendererID: number, root: FiberRoot) {
+      // Call original first with exact same context
+      let originalResult
+      try {
+        originalResult = originalCommit.call(this, rendererID, root)
+      }
+      catch (error) {
+        console.error('[React DevTools Hook] Error in original onCommitFiberRoot:', error)
+        throw error // Re-throw to maintain error behavior
+      }
+
+      // Then add our component tree tracking
+      try {
+        getRoots(rendererID).add(root)
+        handleTreeUpdate(root, showHostComponents)
+      }
+      catch (error) {
+        console.error('[React DevTools Hook] Error in handleTreeUpdate:', error)
+      }
+
+      return originalResult // Preserve return value
+    }
+
+    // Preserve any properties on the original function
+    Object.setPrototypeOf(patchedCallback, Object.getPrototypeOf(originalCommit))
+
+    existingHook.onCommitFiberRoot = patchedCallback
+  }
+  else {
+    // No existing callback, create our own
+    existingHook.onCommitFiberRoot = (rendererID: number, root: FiberRoot) => {
+      getRoots(rendererID).add(root)
+      handleTreeUpdate(root, showHostComponents)
+    }
+  }
+
   if (!existingHook.getFiberRoots) {
     existingHook.getFiberRoots = (rendererID: number) => new Set(getRoots(rendererID))
   }
+
+  // Mark as patched
+  ;(existingHook as any).__REACT_DEVTOOLS_PATCHED__ = true
+
   return existingHook
 }
 
