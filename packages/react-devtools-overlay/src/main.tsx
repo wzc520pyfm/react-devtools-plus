@@ -16,14 +16,11 @@ function getShowHostComponents() {
 
 function installComponentTreeHook() {
   if (componentTreeHookInstalled) {
-    console.log('[React DevTools] Component tree hook already installed, skipping')
     return
   }
 
-  console.log('[React DevTools] Installing component tree hook...')
   installReactHook(getShowHostComponents)
   componentTreeHookInstalled = true
-  console.log('[React DevTools] Component tree hook installed')
 }
 
 async function init() {
@@ -44,10 +41,9 @@ async function init() {
     console.error('[React DevTools] Failed to register Scan plugin:', error)
   }
 
-  // Listen for component tree hook installation requests from client
+  // Listen for component tree hook installation requests from client iframe
   window.addEventListener('message', (event) => {
     if (event.data?.type === '__REACT_DEVTOOLS_INSTALL_COMPONENT_TREE_HOOK__') {
-      console.log('[React DevTools] Received request to install component tree hook')
       installComponentTreeHook()
     }
   })

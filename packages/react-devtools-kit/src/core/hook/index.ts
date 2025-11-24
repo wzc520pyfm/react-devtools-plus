@@ -123,7 +123,6 @@ function createHook(showHostComponents: () => boolean): ReactDevToolsHook {
 function patchHook(existingHook: ReactDevToolsHook, showHostComponents: () => boolean): ReactDevToolsHook {
   // Check if already patched by us
   if ((existingHook as any).__REACT_DEVTOOLS_PATCHED__) {
-    console.log('[React DevTools Hook] Already patched, skipping')
     return existingHook
   }
 
@@ -135,14 +134,7 @@ function patchHook(existingHook: ReactDevToolsHook, showHostComponents: () => bo
     // Create new callback that chains our logic after the original
     const patchedCallback = function (this: any, rendererID: number, root: FiberRoot) {
       // Call original first with exact same context
-      let originalResult
-      try {
-        originalResult = originalCommit.call(this, rendererID, root)
-      }
-      catch (error) {
-        console.error('[React DevTools Hook] Error in original onCommitFiberRoot:', error)
-        throw error // Re-throw to maintain error behavior
-      }
+      const originalResult = originalCommit.call(this, rendererID, root)
 
       // Then add our component tree tracking
       try {
@@ -150,7 +142,7 @@ function patchHook(existingHook: ReactDevToolsHook, showHostComponents: () => bo
         handleTreeUpdate(root, showHostComponents)
       }
       catch (error) {
-        console.error('[React DevTools Hook] Error in handleTreeUpdate:', error)
+        // Silently handle errors in tree update
       }
 
       return originalResult // Preserve return value

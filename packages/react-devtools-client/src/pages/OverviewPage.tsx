@@ -1,7 +1,8 @@
 import type { ComponentTreeNode } from '@react-devtools/kit'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import ReactLogo from '~/components/assets/ReactLogo'
+import { useComponentTreeHook } from '~/composables/useComponentTreeHook'
 import pkg from '../../package.json'
 
 interface OverviewPageProps {
@@ -37,22 +38,9 @@ function Card({ children, className = '', to }: { children: React.ReactNode, cla
 export function OverviewPage({ tree }: OverviewPageProps) {
   const componentCount = tree ? countComponents(tree) : 0
   const reactVersion = '18.3.1' // Mock version for now
-  const [hookInstallAttempted, setHookInstallAttempted] = useState(false)
 
-  // Install component tree hook when user first visits this page
-  useEffect(() => {
-    if (!hookInstallAttempted && !tree) {
-      setHookInstallAttempted(true)
-
-      // Request the overlay (parent window) to install the component tree hook
-      // Since we're in an iframe, we need to send message to parent
-      window.parent.postMessage({
-        type: '__REACT_DEVTOOLS_INSTALL_COMPONENT_TREE_HOOK__',
-      }, '*')
-
-      console.log('[Overview Page] Requested component tree hook installation')
-    }
-  }, [hookInstallAttempted, tree])
+  // Ensure component tree hook is installed
+  useComponentTreeHook(tree)
 
   return (
     <div className="h-full w-full overflow-auto p-8 panel-grids">
