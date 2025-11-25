@@ -1,0 +1,232 @@
+// SCSS Variables for demonstration
+$primary-color: #61dafb;
+$secondary-color: #282c34;
+$webpack-color: #8dd6f9;
+$border-radius: 8px;
+$spacing-unit: 1rem;
+
+// SCSS Mixins for demonstration
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin card-style {
+  background-color: white;
+  border-radius: $border-radius;
+  padding: $spacing-unit * 1.5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+}
+
+// Global Styles
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f5f5;
+  color: $secondary-color;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+// Layout Styles
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  &__header {
+    background: linear-gradient(135deg, $webpack-color 0%, #1c78c0 100%);
+    color: white;
+    padding: $spacing-unit * 2;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+    h1 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      &::before {
+        content: '⚙️';
+      }
+    }
+
+    p {
+      margin: $spacing-unit 0 0 0;
+      opacity: 0.9;
+      font-size: 1rem;
+    }
+  }
+
+  &__nav {
+    background-color: white;
+    padding: $spacing-unit;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    display: flex;
+    gap: $spacing-unit;
+
+    a {
+      padding: $spacing-unit / 2 $spacing-unit;
+      border-radius: $border-radius / 2;
+      text-decoration: none;
+      color: $secondary-color;
+      transition: all 0.2s ease;
+      font-weight: 500;
+
+      &:hover {
+        background-color: rgba($webpack-color, 0.1);
+        color: darken($webpack-color, 10%);
+      }
+
+      &.active {
+        background-color: $webpack-color;
+        color: white;
+      }
+    }
+  }
+
+  &__content {
+    flex: 1;
+    padding: $spacing-unit * 2;
+  }
+}
+
+// Card Component with SCSS
+.card {
+  @include card-style;
+  margin-bottom: $spacing-unit;
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: $spacing-unit / 2;
+    color: $secondary-color;
+  }
+
+  &__content {
+    color: lighten($secondary-color, 20%);
+    line-height: 1.6;
+  }
+}
+
+// Button with SCSS
+.button {
+  padding: $spacing-unit / 1.5 $spacing-unit * 1.5;
+  border: none;
+  border-radius: $border-radius / 2;
+  background-color: $webpack-color;
+  color: white;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: darken($webpack-color, 10%);
+    transform: scale(1.02);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &--secondary {
+    background-color: lighten($secondary-color, 40%);
+    color: $secondary-color;
+
+    &:hover {
+      background-color: lighten($secondary-color, 30%);
+    }
+  }
+}
+
+// Grid Layout with SCSS
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: $spacing-unit * 1.5;
+  margin-top: $spacing-unit;
+}
+
+// Demo Section
+.demo-section {
+  @include card-style;
+  margin-bottom: $spacing-unit * 2;
+
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: $spacing-unit;
+    color: $secondary-color;
+  }
+
+  p {
+    line-height: 1.6;
+    color: lighten($secondary-color, 20%);
+  }
+}
+
+// Badge for Webpack 4
+.webpack-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, $webpack-color 0%, #1c78c0 100%);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: $border-radius / 2;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+// Code block styling
+code {
+  background-color: lighten($secondary-color, 70%);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+pre {
+  background-color: $secondary-color;
+  color: #abb2bf;
+  padding: $spacing-unit;
+  border-radius: $border-radius;
+  overflow-x: auto;
+  margin: $spacing-unit 0;
+
+  code {
+    background-color: transparent;
+    padding: 0;
+    color: inherit;
+  }
+}
+
+// Webpack logo colors
+.webpack-feature {
+  border-left: 3px solid $webpack-color;
+  padding-left: 1rem;
+  margin: 1rem 0;
+}
