@@ -107,7 +107,7 @@ export function OverviewPage({ tree }: OverviewPageProps) {
             <span>+</span>
             <kbd className="border border-gray-200 rounded bg-gray-50 px-1.5 py-0.5 font-sans dark:border-gray-700 dark:bg-gray-800">⌥ Option</kbd>
             <span>+</span>
-            <kbd className="border border-gray-200 rounded bg-gray-50 px-1.5 py-0.5 font-sans dark:border-gray-700 dark:bg-gray-800">D</kbd>
+            <kbd className="border border-gray-200 rounded bg-gray-50 px-1.5 py-0.5 font-sans dark:border-gray-700 dark:bg-gray-800">R</kbd>
             <span>to toggle DevTools</span>
           </div>
         </div>

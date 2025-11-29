@@ -84,6 +84,60 @@ function createOverlayContainer(): HTMLElement {
 }
 
 /**
+ * Initialize initial theme styles from window config
+ */
+function initThemeStyles() {
+  try {
+    // Use type assertion for window to access config
+    const config = (window as any).__REACT_DEVTOOLS_CONFIG__
+    const theme = config?.theme
+
+    if (theme) {
+      // We can't easily update the React component state from here since it's not rendered yet or we don't have access.
+      // But we can inject global styles or set CSS variables on the document/body/overlay.
+      // Since the overlay container is created in createOverlayContainer, we should apply styles there.
+      // Or even better, create the global style tag that useIframe.ts also manages.
+
+      let styleTag = document.getElementById('react-devtools-global-styles') as HTMLStyleElement
+      if (!styleTag) {
+        styleTag = document.createElement('style')
+        styleTag.id = 'react-devtools-global-styles'
+        document.head.appendChild(styleTag)
+      }
+
+      // Set primary color if provided
+      if (theme.primaryColor) {
+        const primaryColor = theme.primaryColor === 'react' ? '#61dafb' : theme.primaryColor // Handle 'react' preset if needed, though client usually resolves it
+        // Actually, we should probably let the client resolve presets, but for simple cases:
+        // If it's a named color not hex, it might not work directly in CSS var without resolution.
+        // But 'yellow', 'red' work. 'react' is not a CSS color.
+
+        // NOTE: The client side resolves 'react' to #00D8FF. We should duplicate that logic or just handle 'react' here.
+        // Let's handle 'react' simple case.
+        const resolvedColor = primaryColor === 'react' ? '#00D8FF' : primaryColor
+
+        styleTag.textContent = `
+          #react-devtools-overlay .react-devtools-anchor {
+             --color-primary-500: ${resolvedColor};
+          }
+          #__react-devtools-component-inspector__ {
+            --color-primary-500: ${resolvedColor};
+          }
+        `
+      }
+
+      // We also need to apply the dark mode class to the overlay anchor if configured.
+      // But the anchor doesn't exist yet. We'll do it after rendering or via a mutation observer?
+      // Or we can just rely on the initial render of App to check window config.
+      // Let's update App.tsx to check window config for initial state.
+    }
+  }
+  catch (e) {
+    // Ignore
+  }
+}
+
+/**
  * Initialize the DevTools overlay
  */
 async function init() {
@@ -92,6 +146,9 @@ async function init() {
     if (document.getElementById('react-devtools-overlay')) {
       return
     }
+
+    // Initialize theme styles before mounting
+    initThemeStyles()
 
     // Register React Scan plugin (for purple flashing box)
     // Component tree hook is installed on-demand when user visits Components page
@@ -110,6 +167,27 @@ async function init() {
     if (!rootRef) {
       console.warn('[React DevTools] Failed to mount overlay')
     }
+
+    // Post-mount theme application (specifically for dark mode class)
+    // This is a bit hacky, ideally App.tsx handles this.
+    setTimeout(() => {
+      const config = (window as any).__REACT_DEVTOOLS_CONFIG__
+      const theme = config?.theme
+      if (theme?.mode === 'dark' || (theme?.mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        const anchor = container.querySelector('.react-devtools-anchor')
+        if (anchor) {
+          anchor.classList.add('dark')
+        }
+      }
+      // Re-apply color to anchor specifically if needed
+      if (theme?.primaryColor) {
+        const anchor = container.querySelector('.react-devtools-anchor') as HTMLElement
+        if (anchor) {
+          const resolvedColor = theme.primaryColor === 'react' ? '#00D8FF' : theme.primaryColor
+          anchor.style.setProperty('--color-primary-500', resolvedColor)
+        }
+      }
+    }, 0)
   }
   catch (e) {
     console.warn('[React DevTools] Overlay init error:', e)

@@ -15,10 +15,27 @@ function init() {
   if (!container)
     return
 
+  let config = (window as any).__REACT_DEVTOOLS_CONFIG__
+
+  // If not found in current window (e.g. iframe), try parent window
+  if (!config && window.parent && window.parent !== window) {
+    try {
+      config = (window.parent as any).__REACT_DEVTOOLS_CONFIG__
+    }
+    catch (e) {
+      // Ignore cross-origin errors
+    }
+  }
+
+  const themeConfig = {
+    mode: config?.theme?.mode || 'auto',
+    primaryColor: config?.theme?.primaryColor || 'react',
+  }
+
   root = createRoot(container)
   root.render(
     <StrictMode>
-      <ThemeProvider>
+      <ThemeProvider config={themeConfig} storageKey="react-devtools-panel-theme">
         <HashRouter>
           <App />
         </HashRouter>

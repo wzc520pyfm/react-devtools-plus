@@ -349,6 +349,7 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
         const configTag = generateConfigScriptTag({
           clientUrl: pluginConfig.clientUrl,
           rootSelector: pluginConfig.rootSelector,
+          theme: pluginConfig.theme,
         })
         if (configTag) {
           tags.push(configTag)
@@ -451,7 +452,16 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
 
         // Inject all DevTools entries
         const overlayPath = path.join(DIR_OVERLAY, 'react-devtools-overlay.mjs')
-        injectDevToolsEntries(compiler, overlayPath, projectRoot, DIR_OVERLAY, scanInitCode, pluginConfig.clientUrl, pluginConfig.rootSelector)
+        injectDevToolsEntries(
+          compiler,
+          overlayPath,
+          projectRoot,
+          DIR_OVERLAY,
+          scanInitCode,
+          pluginConfig.clientUrl,
+          pluginConfig.rootSelector,
+          pluginConfig.theme,
+        )
 
         // Inject Babel plugin (for data-source-path)
         if (pluginConfig.injectSource) {

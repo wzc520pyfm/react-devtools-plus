@@ -11,13 +11,18 @@ export interface DevToolsRuntimeConfig {
   clientUrl?: string
   /** CSS selector for the root container of the React app to inspect */
   rootSelector?: string
+  /** Theme configuration */
+  theme?: {
+    mode?: 'auto' | 'light' | 'dark'
+    primaryColor?: string
+  }
 }
 
 /**
  * Generate code to inject DevTools runtime configuration
  */
 export function generateConfigInjectionCode(config: DevToolsRuntimeConfig): string {
-  if (!config.clientUrl && !config.rootSelector) {
+  if (!config.clientUrl && !config.rootSelector && !config.theme) {
     return ''
   }
 
@@ -27,6 +32,9 @@ export function generateConfigInjectionCode(config: DevToolsRuntimeConfig): stri
   }
   if (config.rootSelector) {
     configParts.push(`window.__REACT_DEVTOOLS_CONFIG__.rootSelector = ${JSON.stringify(config.rootSelector)};`)
+  }
+  if (config.theme) {
+    configParts.push(`window.__REACT_DEVTOOLS_CONFIG__.theme = ${JSON.stringify(config.theme)};`)
   }
 
   return `

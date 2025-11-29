@@ -12,6 +12,10 @@ export default defineConfig({
         showToolbar: false,
         animationSpeed: 'fast',
       },
+      // theme: {
+      //   mode: 'light', // auto or light or dark
+      //   primaryColor: 'yellow', // Custom primary color
+      // },
     }),
     react(),
   ],

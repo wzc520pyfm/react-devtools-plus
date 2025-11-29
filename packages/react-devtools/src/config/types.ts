@@ -155,6 +155,23 @@ export interface ReactDevToolsPluginOptions {
    * ReactDevTools({ rootSelector: '.my-app-container' })
    */
   rootSelector?: string
+
+  /**
+   * Theme configuration
+   * 主题配置
+   */
+  theme?: {
+    /**
+     * Theme mode
+     * @default 'auto'
+     */
+    mode?: 'auto' | 'light' | 'dark'
+    /**
+     * Primary color
+     * @default 'react'
+     */
+    primaryColor?: string
+  }
 }
 
 /**
@@ -173,6 +190,10 @@ export interface ResolvedPluginConfig {
   scan?: ScanConfig
   clientUrl?: string
   rootSelector?: string
+  theme?: {
+    mode?: 'auto' | 'light' | 'dark'
+    primaryColor?: string
+  }
 }
 
 /**

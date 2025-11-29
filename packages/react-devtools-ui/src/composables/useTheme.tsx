@@ -1,6 +1,6 @@
 import type { FC, ReactNode } from 'react'
 import type { Theme, ThemeConfig, ThemeMode } from '../theme/types'
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { applyTheme, createTheme, resolveThemeMode, watchSystemDarkMode } from '../theme'
 
 /**
@@ -46,8 +46,24 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({
 
     try {
       const stored = localStorage.getItem(storageKey)
+      const storedInitial = localStorage.getItem(`${storageKey}-initial`)
+
       if (stored) {
-        return { ...initialConfig, ...JSON.parse(stored) }
+        const parsedStored = JSON.parse(stored)
+
+        // Check if initial config changed since last time (e.g. developer updated vite.config.ts)
+        // If it changed, the new initial config should take precedence over stored user preference
+        // for the keys that are defined in initialConfig.
+        const initialConfigChanged = storedInitial
+          ? JSON.stringify(JSON.parse(storedInitial)) !== JSON.stringify(initialConfig)
+          : JSON.stringify(initialConfig) !== '{}' // Treat first time non-empty config as change
+
+        if (initialConfigChanged) {
+          return { ...parsedStored, ...initialConfig }
+        }
+
+        // Otherwise, user preference (stored) takes precedence
+        return { ...initialConfig, ...parsedStored }
       }
     }
     catch (err) {
@@ -56,6 +72,15 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({
 
     return initialConfig
   })
+
+  // Sync initialConfig changes during runtime (e.g. HMR)
+  const initialConfigRef = useRef(initialConfig)
+  useEffect(() => {
+    if (JSON.stringify(initialConfig) !== JSON.stringify(initialConfigRef.current)) {
+      initialConfigRef.current = initialConfig
+      setConfig(prev => ({ ...prev, ...initialConfig }))
+    }
+  }, [initialConfig])
 
   // Create theme from config
   const theme = useMemo(() => createTheme(config), [config])
@@ -67,11 +92,13 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({
 
     try {
       localStorage.setItem(storageKey, JSON.stringify(config))
+      // Also persist the initialConfig we started with, so we can detect changes next time
+      localStorage.setItem(`${storageKey}-initial`, JSON.stringify(initialConfig))
     }
     catch (err) {
       console.warn('[Theme] Failed to persist config:', err)
     }
-  }, [config, storageKey])
+  }, [config, storageKey, initialConfig])
 
   // Apply theme to DOM
   useEffect(() => {

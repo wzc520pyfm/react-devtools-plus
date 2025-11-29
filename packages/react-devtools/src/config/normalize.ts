@@ -137,6 +137,7 @@ export function resolvePluginConfig(
     scan,
     clientUrl: options.clientUrl,
     rootSelector: options.rootSelector,
+    theme: options.theme,
   }
 }
 

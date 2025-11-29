@@ -65,6 +65,18 @@ export function SettingsPage() {
                     title={name}
                   />
                 ))}
+                <div className="relative flex items-center justify-center overflow-hidden rounded-full from-red-500 via-green-500 to-blue-500 bg-gradient-to-br p-[2px]">
+                  <div className="relative h-7 w-7 flex items-center justify-center rounded-full bg-white dark:bg-gray-900">
+                    <input
+                      type="color"
+                      className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                      value={theme.colors.primary[500]}
+                      onChange={e => setPrimaryColor(e.target.value)}
+                      title="Custom Color"
+                    />
+                    <span className="i-carbon-color-palette text-lg text-gray-500 dark:text-gray-400" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
