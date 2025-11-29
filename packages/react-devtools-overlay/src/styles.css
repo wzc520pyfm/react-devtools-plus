@@ -1,11 +1,13 @@
-/* Highlight box - must be below devtools panel (z-index: 2147483645) */
+/* z-index: 3147483644 is higher than react-scan (z-index: 2xxxxxxxxxx) */
+
+/* Highlight box - must be below devtools panel (z-index: 3147483645) */
 #react-devtools-highlight {
   position: fixed;
   border: 2px solid rgba(108, 248, 169, 0.9);
   background: rgba(108, 248, 169, 0.12);
   border-radius: 8px;
   pointer-events: none;
-  z-index: 2147483644;
+  z-index: 3147483644;
   transition:
     left 0.12s ease,
     top 0.12s ease,
@@ -22,7 +24,7 @@
 /* Anchor container */
 .react-devtools-anchor {
   position: fixed;
-  z-index: 2147483645;
+  z-index: 3147483645;
   transform-origin: center center;
   /* transform is handled by React inline styles */
   pointer-events: none;
