@@ -27,7 +27,7 @@ export function FloatingButton({
       style={{
         cursor: isDragging ? 'grabbing' : 'default',
         transform: isHidden
-          ? `translate(-50%, -50%) rotate(${rotation}deg) translateY(24px)`
+          ? `translate(-50%, -50%) rotate(${rotation}deg) translateY(24px) scale(0.9)` // Sinks further down and shrinks slightly
           : `translate(-50%, -50%) rotate(${rotation}deg)`,
       }}
       onPointerDown={onPointerDown} // Dragging handler on the container
@@ -44,25 +44,28 @@ export function FloatingButton({
           )}
         </div>
       </div>
-      <div className="react-devtools-divider" />
-      <div
-        className="react-devtools-button react-devtools-inspector-button"
-        title="Inspector (Select DOM element)"
-        onClick={(e) => {
-          e.stopPropagation()
-          onInspectorClick(e)
-        }}
-        onPointerDown={e => e.stopPropagation()} // Prevent dragging when clicking this button
-      >
-        <div className="react-devtools-button-icon" style={{ transform: `rotate(${-rotation}deg)` }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-primary-500)' }}>
-            <circle cx="12" cy="12" r="7" />
-            <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
-            <path d="M12 2v3" />
-            <path d="M12 19v3" />
-            <path d="M2 12h3" />
-            <path d="M19 12h3" />
-          </svg>
+
+      <div className={`react-devtools-expandable ${isHidden ? 'react-devtools-expandable--hidden' : ''}`}>
+        <div className="react-devtools-divider" />
+        <div
+          className="react-devtools-button react-devtools-inspector-button"
+          title="Inspector (Select DOM element)"
+          onClick={(e) => {
+            e.stopPropagation()
+            onInspectorClick(e)
+          }}
+          onPointerDown={e => e.stopPropagation()} // Prevent dragging when clicking this button
+        >
+          <div className="react-devtools-button-icon" style={{ transform: `rotate(${-rotation}deg)` }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-primary-500)' }}>
+              <circle cx="12" cy="12" r="7" />
+              <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
+              <path d="M12 2v3" />
+              <path d="M12 19v3" />
+              <path d="M2 12h3" />
+              <path d="M19 12h3" />
+            </svg>
+          </div>
         </div>
       </div>
     </div>
