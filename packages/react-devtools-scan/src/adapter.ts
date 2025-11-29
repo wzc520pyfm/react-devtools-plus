@@ -171,11 +171,22 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
       const isInstrumented = internals?.instrumentation && !internals.instrumentation.isPaused.value
 
       // Only reinitialize if not already instrumented
-      if (scanFn && !isInstrumented) {
+      if (scanFn) {
+        // Always call scanFn to ensure options are applied and it's active
+        // Even if instrumented, we need to ensure it's using our options
         scanFn(options)
       }
       else {
-        getSetOptions()(options)
+        // Fallback to setOptions if scanFn not available
+        const current = getGetOptions()()?.value || {}
+        const hasChanges = Object.keys(options).some((key) => {
+          return options[key as keyof ReactDevtoolsScanOptions] !== current[key as keyof typeof current]
+        })
+
+        if (hasChanges || !isInstrumented) {
+          // console.log('[React DevTools Scan] Updating options:', options, 'Current:', current)
+          getSetOptions()(options)
+        }
       }
 
       currentOptions = options

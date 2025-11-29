@@ -100,7 +100,6 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
       // Always initialize the scan instance, and start by default
       const initOptions = {
         enabled: autoStart !== false,
-        showToolbar: false,
         ...scanOptions,
       }
 

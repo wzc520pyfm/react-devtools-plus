@@ -35,7 +35,6 @@ export function initScan(options: ReactDevtoolsScanOptions = {}): ScanInstance {
   // Set default options
   const defaultOptions: ReactDevtoolsScanOptions = {
     enabled: process.env.NODE_ENV === 'development',
-    showToolbar: false,
     integrationMode: 'overlay',
     syncWithDevtools: true,
     ...options,

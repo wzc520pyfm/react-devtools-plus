@@ -166,6 +166,59 @@ function patchHook(existingHook: ReactDevToolsHook, showHostComponents: () => bo
     return existingHook
   }
 
+  // Check for bippy/react-scan to avoid breaking their instrumentation
+  // bippy checks strict equality of onCommitFiberRoot, so we can't wrap it
+  const source = (existingHook as any)._instrumentationSource || ''
+  if (source.includes('bippy') || (window as any).__REACT_SCAN_INTERNALS__) {
+    // console.log('[React DevTools] Bippy/React Scan detected, skipping hook patch to preserve integrity')
+
+    // Still try to detect existing roots for initial tree
+    if (existingHook.renderers) {
+      for (const rendererID of existingHook.renderers.keys()) {
+        detectExistingRoots(rendererID)
+      }
+    }
+
+    // Attempt to piggyback on React Scan's commit hook if available
+    try {
+      const scanInternals = (window as any).__REACT_SCAN_INTERNALS__
+      if (scanInternals && scanInternals.options) {
+        // Helper to trigger our update
+        const triggerUpdate = () => {
+          // We don't have the root here easily, but we can trigger a rebuild on the known roots
+          if (existingHook.renderers) {
+            for (const rendererID of existingHook.renderers.keys()) {
+              const roots = getRoots(rendererID)
+              roots.forEach(root => handleTreeUpdate(root, showHostComponents))
+            }
+          }
+        }
+
+        // This is a hacky way to hook into scan's lifecycle
+        // We watch for onCommitFinish or similar
+        // Note: This depends on react-scan running its options callbacks
+        // We can't easily wrap the existing callback without potentially causing loops or issues
+        // so we might just rely on a polling fallback or the initial detection for now.
+
+        // Better: set up a polling interval to check for root updates if we can't hook in
+        // This ensures the tree eventually updates even if we miss the event
+        setInterval(() => {
+          if (existingHook.renderers) {
+            for (const rendererID of existingHook.renderers.keys()) {
+              const roots = getRoots(rendererID)
+              roots.forEach(root => handleTreeUpdate(root, showHostComponents))
+            }
+          }
+        }, 1000)
+      }
+    }
+    catch (e) {
+      console.warn('[React DevTools] Failed to attach to React Scan', e)
+    }
+
+    return existingHook
+  }
+
   // Store the original callback - preserve exact reference
   const originalCommit = existingHook.onCommitFiberRoot
 
@@ -174,7 +227,14 @@ function patchHook(existingHook: ReactDevToolsHook, showHostComponents: () => bo
     // Create new callback that chains our logic after the original
     const patchedCallback = function (this: any, rendererID: number, root: FiberRoot) {
       // Call original first with exact same context
-      const originalResult = originalCommit.call(this, rendererID, root)
+      // We capture the result but don't return it immediately to ensure our logic runs
+      let originalResult
+      try {
+        originalResult = originalCommit.call(this, rendererID, root)
+      }
+      catch (e) {
+        console.error('[React DevTools] Error in other devtools hook:', e)
+      }
 
       // Then add our component tree tracking
       try {
