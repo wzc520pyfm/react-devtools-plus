@@ -381,7 +381,7 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           attrs: {
             type: 'module',
           },
-          children: generateOverlayLoaderCode(base),
+          children: generateOverlayLoaderCode(scriptSrc),
           injectTo: 'body',
         })
 
