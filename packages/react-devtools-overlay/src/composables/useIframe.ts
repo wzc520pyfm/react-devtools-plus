@@ -145,6 +145,22 @@ export function useIframe(
               }
             }
           }
+
+          // Also update the highlight box if it exists (it's a child of body)
+          const highlightBox = document.getElementById('__react-devtools-component-inspector__')
+          if (highlightBox) {
+            if (data.primaryColor) {
+              highlightBox.style.setProperty('--color-primary-500', data.primaryColor)
+            }
+          }
+          // We also need to set it on document.body or a root if the highlight box is created later
+          // But highlight box reads from its own style.
+          // To be safe, let's set it on document.documentElement so any future highlight box inherits it
+          // IF highlight box creation logic doesn't isolate it.
+          // The highlight box is appended to document.body.
+          if (data.primaryColor) {
+            document.documentElement.style.setProperty('--color-primary-500', data.primaryColor)
+          }
         },
         togglePanel(visible?: boolean) {
           setPanelVisibleRef.current(visible ?? !panelVisibleRef.current)

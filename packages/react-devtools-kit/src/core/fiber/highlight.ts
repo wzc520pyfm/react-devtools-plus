@@ -15,8 +15,8 @@ const containerStyles: Partial<CSSStyleDeclaration> = {
   display: 'block',
   zIndex: '2147483640',
   position: 'fixed',
-  backgroundColor: '#61dafb25', // React Blue with opacity
-  border: '1px solid #61dafb50',
+  backgroundColor: 'color-mix(in srgb, var(--color-primary-500, #61dafb), transparent 85%)',
+  border: '1px solid color-mix(in srgb, var(--color-primary-500, #61dafb), transparent 50%)',
   borderRadius: '5px',
   transition: 'all 0.1s ease-in',
   pointerEvents: 'none',
@@ -30,11 +30,11 @@ const baseCardStyles: Partial<CSSStyleDeclaration> = {
   textAlign: 'left',
   position: 'absolute',
   left: '0',
-  color: '#333',
+  color: '#fff',
   fontSize: '14px',
   fontWeight: '600',
   lineHeight: '24px',
-  backgroundColor: '#61dafb', // React Blue
+  backgroundColor: 'var(--color-primary-500, #61dafb)',
   boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
   whiteSpace: 'nowrap',
 }
@@ -157,8 +157,8 @@ function updateHighlightElement(rect: DOMRect, name: string, source?: SourceInfo
     height: `${Math.round(rect.height * 100) / 100}px`,
     display: 'block',
     opacity: '1',
-    backgroundColor: '#61dafb25',
-    border: '1px solid #61dafb50',
+    backgroundColor: 'color-mix(in srgb, var(--color-primary-500, #61dafb), transparent 85%)',
+    border: '1px solid color-mix(in srgb, var(--color-primary-500, #61dafb), transparent 50%)',
   })
 
   // Update Card Position (above or below)

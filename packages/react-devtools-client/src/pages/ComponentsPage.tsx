@@ -93,7 +93,7 @@ function TreeNode({ node, showHostComponents, selectedNodeId, onSelectNode, forc
     <li>
       <div
         ref={elementRef}
-        className={`flex cursor-pointer select-none items-center py-1 pr-2 transition-colors ${isSelected ? 'bg-primary-500 text-white' : 'hover:bg-primary-50 dark:hover:bg-primary-900/20 text-gray-700 dark:text-gray-300'}`}
+        className={`flex cursor-pointer select-none items-center py-1 pr-2 transition-colors ${isSelected ? 'bg-primary-500 text-white' : 'hover:bg-[color-mix(in_srgb,var(--color-primary-500),transparent_90%)] text-gray-700 dark:text-gray-300'}`}
         style={{ paddingLeft: `${depth * 16 + 4}px` }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
