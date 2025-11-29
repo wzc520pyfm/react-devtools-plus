@@ -40,6 +40,16 @@ interface ServerRpcFunctions {
   togglePanel: (visible: boolean) => void
 }
 
+function Toggle({ checked, onChange, label }: { checked: boolean, onChange: (checked: boolean) => void, label?: string }) {
+  return (
+    <label className="relative inline-flex cursor-pointer items-center">
+      <input type="checkbox" className="peer sr-only" checked={checked} onChange={e => onChange(e.target.checked)} />
+      <div className="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:border after:border-gray-300 dark:border-gray-600 after:rounded-full after:bg-white dark:bg-gray-700 peer-checked:bg-primary-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white dark:peer-focus:ring-primary-800"></div>
+      {label && <span className="ml-3 text-sm text-gray-900 font-medium dark:text-gray-300">{label}</span>}
+    </label>
+  )
+}
+
 export function ScanPage() {
   const [isRunning, setIsRunning] = useState(false)
   const [config, setConfig] = useState<ScanConfig>({
@@ -274,126 +284,64 @@ export function ScanPage() {
   return (
     <div className="h-full flex flex-col bg-base">
       {/* Header */}
-      <div className="border-b border-base bg-base px-4 py-3">
-        <h1 className="text-xl text-gray-900 font-semibold dark:text-gray-100">
-          React Scan
-        </h1>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Performance analysis and render visualization
-        </p>
+      <div className="flex items-center justify-between border-b border-base bg-base px-4 py-3">
+        <div>
+          <h1 className="text-xl text-gray-900 font-semibold dark:text-gray-100">
+            React Scan
+          </h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Performance analysis and render visualization
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600 font-medium dark:text-gray-400">Scan</span>
+            <Toggle
+              checked={isRunning}
+              onChange={(checked) => {
+                if (checked)
+                  handleStartScan()
+                else
+                  handleStopScan()
+              }}
+            />
+          </div>
+          <div className="h-6 w-px bg-gray-200 dark:bg-gray-700"></div>
+          <button
+            type="button"
+            onClick={handleToggleInspect}
+            title={isInspecting ? 'Click to cancel inspection' : 'Select component in the page'}
+            className={`rounded p-2 transition-colors ${isInspecting ? 'bg-primary-500 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6" />
+              <path d="m12 12 4 10 1.7-4.3L22 16Z" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-auto p-4">
         <div className="mx-auto max-w-2xl space-y-6">
-          {/* Status Card */}
-          <div className="border border-gray-200 rounded-lg bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg text-gray-900 font-medium dark:text-gray-100">
-                  Scan Status
-                </h2>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  {isRunning ? 'Currently monitoring React renders' : 'Scan is not running'}
-                </p>
-              </div>
-              <div className={`h-3 w-3 flex items-center justify-center rounded-full ${isRunning ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`}>
-                {isRunning && (
-                  <div className="h-3 w-3 animate-ping rounded-full bg-green-400 opacity-75"></div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={handleStartScan}
-                disabled={isRunning}
-                className="rounded-lg bg-primary-500 px-4 py-2 text-sm text-white font-medium transition-colors disabled:cursor-not-allowed hover:bg-primary-600 disabled:opacity-50"
-              >
-                Start Scan
-              </button>
-              <button
-                type="button"
-                onClick={handleStopScan}
-                disabled={!isRunning}
-                className="border border-gray-300 rounded-lg bg-white px-4 py-2 text-sm text-gray-700 font-medium transition-colors disabled:cursor-not-allowed dark:border-gray-600 dark:bg-gray-700 hover:bg-gray-50 dark:text-gray-300 disabled:opacity-50 dark:hover:bg-gray-600"
-              >
-                Stop Scan
-              </button>
-              <button
-                type="button"
-                onClick={handleToggleScan}
-                className="border border-gray-300 rounded-lg bg-white px-4 py-2 text-sm text-gray-700 font-medium transition-colors dark:border-gray-600 dark:bg-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-600"
-              >
-                Toggle
-              </button>
-              <button
-                type="button"
-                onClick={handleReset}
-                className="border border-gray-300 rounded-lg bg-white px-4 py-2 text-sm text-gray-700 font-medium transition-colors dark:border-gray-600 dark:bg-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-600"
-              >
-                Reset
-              </button>
-            </div>
-          </div>
-
-          {/* Component Inspector Card */}
-          <div className="border border-gray-200 rounded-lg bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <div className="mb-4">
-              <h2 className="text-lg text-gray-900 font-medium dark:text-gray-100">
-                Component Inspector
-              </h2>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Click elements in the host application to inspect them
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <button
-                type="button"
-                onClick={handleToggleInspect}
-                className={`w-full rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
-                  isInspecting
-                    ? 'bg-orange-500 text-white hover:bg-orange-600'
-                    : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                }`}
-              >
-                {isInspecting
-                  ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <svg className="h-5 w-5 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
-                          <path
-                            fillRule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        Inspecting... (Click element in app)
-                      </span>
-                    )
-                  : 'Start Inspecting'}
-              </button>
-
-              {focusedComponent && (
-                <div className="border-t border-gray-200 pt-4 dark:border-gray-700">
-                  <h3 className="mb-2 text-sm text-gray-700 font-medium dark:text-gray-300">
-                    Focused Component
-                  </h3>
-                  <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
-                    <div className="text-sm">
-                      <div className="text-gray-600 font-mono dark:text-gray-400">
-                        {focusedComponent.componentName}
-                      </div>
-                      <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                        Click to inspect this component in the host app
-                      </div>
-                    </div>
+          {/* Focused Component Card */}
+          {focusedComponent && (
+            <div className="border border-gray-200 rounded-lg bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+              <h3 className="mb-2 text-sm text-gray-700 font-medium dark:text-gray-300">
+                Focused Component
+              </h3>
+              <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
+                <div className="text-sm">
+                  <div className="text-gray-600 font-mono dark:text-gray-400">
+                    {focusedComponent.componentName}
+                  </div>
+                  <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    Click to inspect this component in the host app
                   </div>
                 </div>
-              )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Configuration Card */}
           <div className="border border-gray-200 rounded-lg bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
@@ -491,6 +439,13 @@ export function ScanPage() {
                     />
                     Auto Refresh
                   </label>
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700"
+                  >
+                    Reset
+                  </button>
                   <button
                     type="button"
                     onClick={handleClearPerformanceData}
