@@ -334,85 +334,6 @@ export function ScanPage() {
             </div>
           )}
 
-          {/* Configuration Card */}
-          <div className="border border-gray-200 rounded-lg bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <h2 className="mb-4 text-lg text-gray-900 font-medium dark:text-gray-100">
-              Configuration
-            </h2>
-
-            <div className="space-y-4">
-              {/* Show Outlines */}
-              <label className="flex cursor-pointer items-center justify-between">
-                <div>
-                  <div className="text-sm text-gray-900 font-medium dark:text-gray-100">
-                    Show Outlines
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    Display visual outlines on component updates
-                  </div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={true} // Always true for now
-                  readOnly
-                  className="h-4 w-4 cursor-not-allowed border-gray-300 rounded text-primary-600 opacity-50 focus:ring-primary-500"
-                />
-              </label>
-
-              {/* Show Toolbar */}
-              <label className="flex cursor-pointer items-center justify-between">
-                <div>
-                  <div className="text-sm text-gray-900 font-medium dark:text-gray-100">
-                    Show Toolbar
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    Display the React Scan toolbar on the page
-                  </div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={config.showToolbar ?? true}
-                  onChange={e => handleConfigChange('showToolbar', e.target.checked)}
-                  className="h-4 w-4 border-gray-300 rounded text-primary-600 focus:ring-primary-500"
-                />
-              </label>
-
-              {/* Animation Speed */}
-              <div>
-                <label className="mb-2 block text-sm text-gray-900 font-medium dark:text-gray-100">
-                  Animation Speed
-                </label>
-                <select
-                  value={config.animationSpeed || 'fast'}
-                  onChange={e => handleConfigChange('animationSpeed', e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg bg-gray-50 px-3 py-2 text-sm dark:border-gray-600 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                >
-                  <option value="slow">Slow</option>
-                  <option value="fast">Fast</option>
-                  <option value="off">Off</option>
-                </select>
-              </div>
-
-              {/* Log */}
-              <label className="flex cursor-pointer items-center justify-between">
-                <div>
-                  <div className="text-sm text-gray-900 font-medium dark:text-gray-100">
-                    Console Logging
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    Log render information to the console
-                  </div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={config.log ?? false}
-                  onChange={e => handleConfigChange('log', e.target.checked)}
-                  className="h-4 w-4 border-gray-300 rounded text-primary-600 focus:ring-primary-500"
-                />
-              </label>
-            </div>
-          </div>
-
           {/* Performance Summary Card */}
           {isRunning && performanceSummary && (
             <div className="border border-gray-200 rounded-lg bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
@@ -542,6 +463,85 @@ export function ScanPage() {
               )}
             </div>
           )}
+
+          {/* Configuration Card */}
+          <div className="border border-gray-200 rounded-lg bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <h2 className="mb-4 text-lg text-gray-900 font-medium dark:text-gray-100">
+              Configuration
+            </h2>
+
+            <div className="space-y-4">
+              {/* Show Outlines */}
+              <label className="flex cursor-pointer items-center justify-between">
+                <div>
+                  <div className="text-sm text-gray-900 font-medium dark:text-gray-100">
+                    Show Outlines
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Display visual outlines on component updates
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={true} // Always true for now
+                  readOnly
+                  className="h-4 w-4 cursor-not-allowed border-gray-300 rounded text-primary-600 opacity-50 focus:ring-primary-500"
+                />
+              </label>
+
+              {/* Show Toolbar */}
+              <label className="flex cursor-pointer items-center justify-between">
+                <div>
+                  <div className="text-sm text-gray-900 font-medium dark:text-gray-100">
+                    Show Toolbar
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Display the React Scan toolbar on the page
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={config.showToolbar ?? true}
+                  onChange={e => handleConfigChange('showToolbar', e.target.checked)}
+                  className="h-4 w-4 border-gray-300 rounded text-primary-600 focus:ring-primary-500"
+                />
+              </label>
+
+              {/* Animation Speed */}
+              <div>
+                <label className="mb-2 block text-sm text-gray-900 font-medium dark:text-gray-100">
+                  Animation Speed
+                </label>
+                <select
+                  value={config.animationSpeed || 'fast'}
+                  onChange={e => handleConfigChange('animationSpeed', e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg bg-gray-50 px-3 py-2 text-sm dark:border-gray-600 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                >
+                  <option value="slow">Slow</option>
+                  <option value="fast">Fast</option>
+                  <option value="off">Off</option>
+                </select>
+              </div>
+
+              {/* Log */}
+              <label className="flex cursor-pointer items-center justify-between">
+                <div>
+                  <div className="text-sm text-gray-900 font-medium dark:text-gray-100">
+                    Console Logging
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Log render information to the console
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={config.log ?? false}
+                  onChange={e => handleConfigChange('log', e.target.checked)}
+                  className="h-4 w-4 border-gray-300 rounded text-primary-600 focus:ring-primary-500"
+                />
+              </label>
+            </div>
+          </div>
 
           {/* Info Card */}
           <div className="border border-blue-200 rounded-lg bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
