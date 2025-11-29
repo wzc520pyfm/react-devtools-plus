@@ -100,6 +100,14 @@ export function applyTheme(theme: Theme) {
 
   // Set data-theme attribute for CSS selectors
   root.setAttribute('data-theme', theme.mode)
+
+  // Toggle 'dark' class for Tailwind/UnoCSS
+  if (theme.mode === 'dark') {
+    root.classList.add('dark')
+  }
+  else {
+    root.classList.remove('dark')
+  }
 }
 
 /**

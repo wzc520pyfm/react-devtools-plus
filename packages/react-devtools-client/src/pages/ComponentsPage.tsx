@@ -93,7 +93,7 @@ function TreeNode({ node, showHostComponents, selectedNodeId, onSelectNode, forc
     <li>
       <div
         ref={elementRef}
-        className={`flex cursor-pointer select-none items-center py-1 pr-2 transition-colors ${isSelected ? 'bg-primary-500 text-white' : 'hover:bg-primary-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'}`}
+        className={`flex cursor-pointer select-none items-center py-1 pr-2 transition-colors ${isSelected ? 'bg-primary-500 text-white' : 'hover:bg-primary-50 dark:hover:bg-primary-900/20 text-gray-700 dark:text-gray-300'}`}
         style={{ paddingLeft: `${depth * 16 + 4}px` }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -110,9 +110,9 @@ function TreeNode({ node, showHostComponents, selectedNodeId, onSelectNode, forc
             : null}
         </span>
         <span className="truncate text-sm font-mono">
-          <span className={isSelected ? 'text-white' : 'text-purple-700 dark:text-purple-400'}>{'<'}</span>
+          <span className={isSelected ? 'text-white' : 'text-primary-600 dark:text-primary-400'}>{'<'}</span>
           {node.name}
-          <span className={isSelected ? 'text-white' : 'text-purple-700 dark:text-purple-400'}>{'>'}</span>
+          <span className={isSelected ? 'text-white' : 'text-primary-600 dark:text-primary-400'}>{'>'}</span>
         </span>
         {getBadge(node)}
       </div>
@@ -220,7 +220,7 @@ export function ComponentsPage({ tree, selectedNodeId, onSelectNode }: Component
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-base">
       {/* Toolbar */}
       <div className="flex items-center gap-2 border-b border-base bg-base p-2">
         <div className="relative flex-1">
@@ -234,7 +234,7 @@ export function ComponentsPage({ tree, selectedNodeId, onSelectNode }: Component
             placeholder="Find components..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full border border-gray-200 rounded bg-gray-50 py-1.5 pl-8 pr-3 text-sm transition-colors dark:border-gray-700 focus:border-primary-500 dark:bg-gray-900 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            className="w-full border border-gray-200 rounded bg-gray-50 py-1.5 pl-8 pr-3 text-sm text-gray-900 transition-colors dark:border-gray-700 focus:border-primary-500 dark:bg-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-primary-500"
           />
         </div>
         <button

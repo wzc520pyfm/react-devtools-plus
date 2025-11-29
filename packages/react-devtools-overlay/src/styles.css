@@ -35,7 +35,7 @@
   top: 0;
   height: 36px;
   border-radius: 18px; /* Pill shape */
-  background-color: #1a1a1a;
+  background-color: #ffffff; /* Default Light */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -45,9 +45,15 @@
     opacity 0.2s ease-in-out,
     transform 0.2s ease-in-out;
   user-select: none;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   opacity: 0.9;
   padding: 0 4px;
+}
+
+/* Dark mode class added by syncTheme */
+.dark .react-devtools-button-group {
+  background-color: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Individual button */
@@ -63,28 +69,29 @@
 }
 
 .react-devtools-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dark .react-devtools-button:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
 .react-devtools-divider {
   width: 1px;
   height: 16px;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.1);
   margin: 0 4px;
 }
 
-/* Light mode support if needed later, for now stick to dark theme to match code */
-@media (prefers-color-scheme: light) {
-  .react-devtools-button-group {
-    background-color: #ffffff;
-    border-color: rgba(0, 0, 0, 0.1);
-  }
-  .react-devtools-button:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-  }
-  .react-devtools-divider {
-    background-color: rgba(0, 0, 0, 0.1);
-  }
+.dark .react-devtools-divider {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Light mode support (OS preference fallback if needed, but we use class now) */
+@media (prefers-color-scheme: dark) {
+  /* Default to dark if no class present, or just rely on class?
+     Better to rely on class for consistency with internal switch.
+     But for initial load before sync, maybe useful. */
 }
 
 .react-devtools-button-icon {

@@ -127,6 +127,25 @@ export function useIframe(
       await waitForClientInjection(iframe)
 
       createRpcServer({
+        syncTheme(data: { mode: 'light' | 'dark', primaryColor: string }) {
+          const overlayContainer = document.getElementById('react-devtools-overlay')
+          if (overlayContainer) {
+            const anchor = overlayContainer.querySelector('.react-devtools-anchor') as HTMLElement
+            if (anchor) {
+              // Toggle dark mode class
+              if (data.mode === 'dark') {
+                anchor.classList.add('dark')
+              }
+              else {
+                anchor.classList.remove('dark')
+              }
+              // Update primary color variable
+              if (data.primaryColor) {
+                anchor.style.setProperty('--color-primary-500', data.primaryColor)
+              }
+            }
+          }
+        },
         togglePanel(visible?: boolean) {
           setPanelVisibleRef.current(visible ?? !panelVisibleRef.current)
         },

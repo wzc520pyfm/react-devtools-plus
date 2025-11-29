@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@react-devtools/kit": "workspace:^",
+    "@react-devtools/ui": "workspace:^",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router-dom": "^6.26.0"

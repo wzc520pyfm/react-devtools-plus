@@ -36,14 +36,10 @@ export function FloatingButton({
         <div className="react-devtools-button-icon" style={{ transform: `rotate(${-rotation}deg)` }}>
           {children || (
             <svg viewBox="0 0 128 128" width="24" height="24">
-              <path
-                fill="#61dafb"
-                d="M64 0C28.7 0 0 28.7 0 64s28.7 64 64 64 64-28.7 64-64S99.3 0 64 0zm0 116c-28.7 0-52-23.3-52-52S35.3 12 64 12s52 23.3 52 52-23.3 52-52 52z"
-              />
-              <circle fill="#61dafb" cx="64" cy="64" r="14" />
-              <ellipse fill="none" stroke="#61dafb" strokeWidth="4" cx="64" cy="64" rx="22" ry="54" transform="rotate(30 64 64)" />
-              <ellipse fill="none" stroke="#61dafb" strokeWidth="4" cx="64" cy="64" rx="22" ry="54" transform="rotate(-30 64 64)" />
-              <ellipse fill="none" stroke="#61dafb" strokeWidth="4" cx="64" cy="64" rx="22" ry="54" transform="rotate(90 64 64)" />
+              <circle fill="var(--color-primary-500)" cx="64" cy="64" r="14" />
+              <ellipse fill="none" stroke="var(--color-primary-500)" strokeWidth="4" cx="64" cy="64" rx="22" ry="54" transform="rotate(30 64 64)" />
+              <ellipse fill="none" stroke="var(--color-primary-500)" strokeWidth="4" cx="64" cy="64" rx="22" ry="54" transform="rotate(-30 64 64)" />
+              <ellipse fill="none" stroke="var(--color-primary-500)" strokeWidth="4" cx="64" cy="64" rx="22" ry="54" transform="rotate(90 64 64)" />
             </svg>
           )}
         </div>
@@ -59,7 +55,7 @@ export function FloatingButton({
         onPointerDown={e => e.stopPropagation()} // Prevent dragging when clicking this button
       >
         <div className="react-devtools-button-icon" style={{ transform: `rotate(${-rotation}deg)` }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#61dafb' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-primary-500)' }}>
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="16" />
             <line x1="8" y1="12" x2="16" y2="12" />

@@ -47,8 +47,8 @@ export function OverviewPage({ tree }: OverviewPageProps) {
       <div className="min-h-full flex flex-col items-center justify-center">
         <div className="mb-8 flex flex-col items-center gap-2">
           <div className="flex items-center gap-2">
-            <ReactLogo className="h-16 w-16 text-[#61DAFB]" />
-            <h1 className="m-0 from-[#61DAFB] to-[#00b7ff] bg-gradient-to-r bg-clip-text text-5xl text-transparent font-bold">
+            <ReactLogo className="h-16 w-16 text-primary-500" />
+            <h1 className="m-0 from-primary-500 to-primary-400 bg-gradient-to-r bg-clip-text text-5xl text-transparent font-bold">
               DevTools
             </h1>
           </div>
@@ -62,8 +62,8 @@ export function OverviewPage({ tree }: OverviewPageProps) {
 
         <div className="grid grid-cols-1 mb-8 max-w-4xl w-full gap-4 md:grid-cols-3 sm:grid-cols-2">
           <Card className="theme-card-primary">
-            <ReactLogo className="mb-1 h-8 w-8 text-#00b7ff" />
-            <span className="text-xl text-#00b7ff font-bold">
+            <ReactLogo className="mb-1 h-8 w-8 text-primary-500" />
+            <span className="text-xl text-primary-500 font-bold">
               v
               {reactVersion}
             </span>
@@ -101,7 +101,7 @@ export function OverviewPage({ tree }: OverviewPageProps) {
             </a>
           </div>
 
-          <div className="mt-4 flex items-center gap-2 border border-base rounded bg-white px-4 py-2 text-xs shadow-sm dark:bg-[#1a1a1a]">
+          <div className="mt-4 flex items-center gap-2 border border-base rounded bg-base px-4 py-2 text-xs shadow-sm dark:bg-[#1a1a1a]">
             <span>Press</span>
             <kbd className="border border-gray-200 rounded bg-gray-50 px-1.5 py-0.5 font-sans dark:border-gray-700 dark:bg-gray-800">⇧ Shift</kbd>
             <span>+</span>

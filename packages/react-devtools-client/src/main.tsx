@@ -1,10 +1,12 @@
 import type { Root } from 'react-dom/client'
+import { ThemeProvider } from '@react-devtools/ui'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'
 import { App } from './App'
 import '@unocss/reset/tailwind.css'
 import 'virtual:uno.css'
+import '@react-devtools/ui/style.css'
 
 let root: Root | null = null
 
@@ -16,9 +18,11 @@ function init() {
   root = createRoot(container)
   root.render(
     <StrictMode>
-      <HashRouter>
-        <App />
-      </HashRouter>
+      <ThemeProvider>
+        <HashRouter>
+          <App />
+        </HashRouter>
+      </ThemeProvider>
     </StrictMode>,
   )
 }

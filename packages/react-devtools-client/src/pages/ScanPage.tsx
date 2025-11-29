@@ -360,11 +360,11 @@ export function ScanPage() {
         <div className="mx-auto max-w-2xl space-y-6">
           {/* Focused Component Card */}
           {focusedComponent && (
-            <div className="border border-gray-200 rounded-lg bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <div className="border border-base rounded-lg bg-white p-4 shadow-sm dark:bg-neutral-900">
               <h3 className="mb-2 text-sm text-gray-700 font-medium dark:text-gray-300">
                 Focused Component
               </h3>
-              <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
+              <div className="rounded-lg bg-gray-50 p-3 dark:bg-neutral-800">
                 <div className="text-sm">
                   <div className="text-gray-600 font-mono dark:text-gray-400">
                     {focusedComponent.componentName}
@@ -379,13 +379,13 @@ export function ScanPage() {
 
           {/* Performance Summary Card */}
           {isRunning && performanceSummary && (
-            <div className="border border-gray-200 rounded-lg bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <div className="border border-base rounded-lg bg-white p-6 shadow-sm dark:bg-neutral-900">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg text-gray-900 font-medium dark:text-gray-100">
                   Performance Summary
                 </h2>
                 <div className="flex gap-2">
-                  <label className="flex items-center text-sm">
+                  <label className="flex items-center text-sm dark:text-gray-300">
                     <input
                       type="checkbox"
                       checked={autoRefresh}
@@ -446,7 +446,7 @@ export function ScanPage() {
 
           {/* Component Performance Details */}
           {isRunning && performanceData.length > 0 && (
-            <div className="border border-gray-200 rounded-lg bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <div className="border border-base rounded-lg bg-white p-6 shadow-sm dark:bg-neutral-900">
               <h2 className="mb-4 text-lg text-gray-900 font-medium dark:text-gray-100">
                 Component Performance
               </h2>
@@ -465,17 +465,17 @@ export function ScanPage() {
                     {performanceData.slice(0, 20).map((item, index) => (
                       <tr
                         key={index}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                        className="hover:bg-gray-50 dark:hover:bg-neutral-800/50"
                       >
-                        <td className="py-3 text-xs font-mono">
+                        <td className="py-3 text-xs font-mono dark:text-gray-300">
                           {item.componentName}
                         </td>
-                        <td className="py-3 text-right">{item.renderCount}</td>
-                        <td className="py-3 text-right">
+                        <td className="py-3 text-right dark:text-gray-300">{item.renderCount}</td>
+                        <td className="py-3 text-right dark:text-gray-300">
                           {item.totalTime.toFixed(2)}
                           ms
                         </td>
-                        <td className="py-3 text-right">
+                        <td className="py-3 text-right dark:text-gray-300">
                           {item.averageTime.toFixed(2)}
                           ms
                         </td>
@@ -508,7 +508,7 @@ export function ScanPage() {
           )}
 
           {/* Configuration Card */}
-          <div className="border border-gray-200 rounded-lg bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div className="border border-base rounded-lg bg-white p-6 shadow-sm dark:bg-neutral-900">
             <h2 className="mb-4 text-lg text-gray-900 font-medium dark:text-gray-100">
               Configuration
             </h2>
@@ -558,7 +558,7 @@ export function ScanPage() {
                 <select
                   value={config.animationSpeed || 'fast'}
                   onChange={e => handleConfigChange('animationSpeed', e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg bg-gray-50 px-3 py-2 text-sm dark:border-gray-600 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  className="w-full border border-gray-300 rounded-lg bg-gray-50 px-3 py-2 text-sm dark:border-gray-600 focus:border-primary-500 dark:bg-neutral-800 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 >
                   <option value="slow">Slow</option>
                   <option value="fast">Fast</option>
@@ -587,12 +587,12 @@ export function ScanPage() {
           </div>
 
           {/* Info Card */}
-          <div className="border border-blue-200 rounded-lg bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+          <div className="border border-primary-200 rounded-lg bg-primary-50 p-4 dark:border-primary-800 dark:bg-primary-900/20">
             <div className="flex">
-              <svg className="mr-3 h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="mr-3 h-5 w-5 flex-shrink-0 text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
-              <div className="text-sm text-blue-700 dark:text-blue-300">
+              <div className="text-sm text-primary-700 dark:text-primary-300">
                 <p className="font-medium">
                   About React Scan
                 </p>
@@ -605,7 +605,7 @@ export function ScanPage() {
                     href="https://react-scan.million.dev"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-medium underline hover:text-blue-800 dark:hover:text-blue-200"
+                    className="font-medium underline hover:text-primary-800 dark:hover:text-primary-200"
                   >
                     Learn more about React Scan →
                   </a>

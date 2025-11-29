@@ -463,6 +463,9 @@ importers:
       '@react-devtools/kit':
         specifier: workspace:^
         version: link:../react-devtools-kit
+      '@react-devtools/ui':
+        specifier: workspace:^
+        version: link:../react-devtools-ui
       react:
         specifier: 'catalog:'
         version: 18.3.1

@@ -17,17 +17,17 @@ export default defineConfig({
   theme: {
     colors: {
       primary: {
-        50: '#f0f9ff',
-        100: '#e0f2fe',
-        200: '#bae6fd',
-        300: '#7dd3fc',
-        400: '#38bdf8',
-        500: '#61dafb', // React Blue-ish
-        600: '#0284c7',
-        700: '#0369a1',
-        800: '#075985',
-        900: '#0c4a6e',
-        DEFAULT: '#61dafb',
+        50: 'var(--color-primary-50)',
+        100: 'var(--color-primary-100)',
+        200: 'var(--color-primary-200)',
+        300: 'var(--color-primary-300)',
+        400: 'var(--color-primary-400)',
+        500: 'var(--color-primary-500)',
+        600: 'var(--color-primary-600)',
+        700: 'var(--color-primary-700)',
+        800: 'var(--color-primary-800)',
+        900: 'var(--color-primary-900)',
+        DEFAULT: 'var(--color-primary-500)',
       },
     },
   },
@@ -40,9 +40,9 @@ export default defineConfig({
     },
     // Dynamic card shortcut to match Vue DevTools style
     // Usage: theme-card-primary
-    [/^theme-card-(\w+)$/, $ => `p2 flex gap2 border border-base bg-base items-center rounded min-w-40 min-h-25 justify-center transition-all saturate-0 op70 shadow hover:(op100 bg-${$[1]}-500/10 text-${$[1]}-600 saturate-100) dark:hover:(bg-${$[1]}-500/20 text-${$[1]}-400)`],
-    ['theme-card-green', 'p2 flex gap2 border border-base bg-base items-center rounded min-w-40 min-h-25 justify-center transition-all saturate-0 op50 shadow hover:(op100 bg-green-500/10 text-green-600 saturate-100) dark:hover:(bg-green-500/20 text-green-400)'],
-    ['theme-card-orange', 'p2 flex gap2 border border-base bg-base items-center rounded min-w-40 min-h-25 justify-center transition-all saturate-0 op50 shadow hover:(op100 bg-orange-500/10 text-orange-600 saturate-100) dark:hover:(bg-orange-500/20 text-orange-400)'],
+    [/^theme-card-(\w+)$/, $ => `p2 flex gap2 border border-base bg-base items-center rounded min-w-40 min-h-25 justify-center transition-all saturate-0 op70 shadow hover:(op100 bg-[color-mix(in_srgb,var(--color-${$[1]}-500),transparent_90%)] text-${$[1]}-600 saturate-100) dark:hover:(bg-[color-mix(in_srgb,var(--color-${$[1]}-500),transparent_90%)] text-${$[1]}-300)`],
+    ['theme-card-green', 'p2 flex gap2 border border-base bg-base items-center rounded min-w-40 min-h-25 justify-center transition-all saturate-0 op50 shadow hover:(op100 bg-[color-mix(in_srgb,var(--color-green-500),transparent_90%)] text-green-600 saturate-100) dark:hover:(bg-[color-mix(in_srgb,var(--color-green-500),transparent_90%)] text-green-300)'],
+    ['theme-card-orange', 'p2 flex gap2 border border-base bg-base items-center rounded min-w-40 min-h-25 justify-center transition-all saturate-0 op50 shadow hover:(op100 bg-[color-mix(in_srgb,var(--color-orange-500),transparent_90%)] text-orange-600 saturate-100) dark:hover:(bg-[color-mix(in_srgb,var(--color-orange-500),transparent_90%)] text-orange-300)'],
   ],
   rules: [
     ['panel-grids-light', {
