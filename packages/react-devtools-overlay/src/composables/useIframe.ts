@@ -22,8 +22,8 @@ function getDevToolsClientUrl() {
 
   // Default: use current origin
   const origin = window.location.origin
-  const base = window.location.pathname.split('/__react_devtools__')[0] || ''
-  const path = `${base}/__react_devtools__/`.replace(/\/+/g, '/')
+  // Always resolve to absolute root path, ignoring current path subdirectories
+  const path = '/__react_devtools__/'
   // Add timestamp to bust cache in development
   const timestamp = Date.now()
   return `${origin}${path}?t=${timestamp}`
