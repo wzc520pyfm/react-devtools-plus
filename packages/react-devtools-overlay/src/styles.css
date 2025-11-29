@@ -198,7 +198,7 @@
   height: 100%;
   border: 1px solid rgba(125, 125, 125, 0.2);
   border-radius: 12px;
-  background: #1e1e1e; /* Dark mode bg */
+  background: transparent; /* Transparent bg to let iframe content show */
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
   overflow: hidden;
 }
