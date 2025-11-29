@@ -37,6 +37,7 @@ interface ComponentInfo {
 interface ServerRpcFunctions {
   callPluginRPC: (pluginId: string, rpcName: string, ...args: any[]) => Promise<any>
   subscribeToPluginEvent: (pluginId: string, eventName: string) => () => void
+  togglePanel: (visible: boolean) => void
 }
 
 export function ScanPage() {
@@ -100,7 +101,15 @@ export function ScanPage() {
       }
 
       const handleInspectChange = (state: any) => {
-        setIsInspecting(state.kind === 'inspecting')
+        const isInspectingNow = state.kind === 'inspecting'
+        setIsInspecting(isInspectingNow)
+
+        if (isInspectingNow) {
+          rpc.togglePanel(false)
+        }
+        else if (state.kind === 'focused' || state.kind === 'inspect-off') {
+          rpc.togglePanel(true)
+        }
       }
 
       const handleFocusChange = (component: ComponentInfo) => {
