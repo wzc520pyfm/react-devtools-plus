@@ -184,7 +184,6 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
         })
 
         if (hasChanges || !isInstrumented) {
-          // console.log('[React DevTools Scan] Updating options:', options, 'Current:', current)
           getSetOptions()(options)
         }
       }

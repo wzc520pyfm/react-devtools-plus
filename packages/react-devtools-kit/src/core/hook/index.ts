@@ -170,8 +170,6 @@ function patchHook(existingHook: ReactDevToolsHook, showHostComponents: () => bo
   // bippy checks strict equality of onCommitFiberRoot, so we can't wrap it
   const source = (existingHook as any)._instrumentationSource || ''
   if (source.includes('bippy') || (window as any).__REACT_SCAN_INTERNALS__) {
-    // console.log('[React DevTools] Bippy/React Scan detected, skipping hook patch to preserve integrity')
-
     // Still try to detect existing roots for initial tree
     if (existingHook.renderers) {
       for (const rendererID of existingHook.renderers.keys()) {
