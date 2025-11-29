@@ -49,7 +49,7 @@ export function App() {
   return (
     <div
       ref={anchorRef}
-      className="react-devtools-anchor"
+      className={`react-devtools-anchor ${panelVisible ? 'react-devtools-anchor--active' : ''}`}
       data-position={positionAttr}
       style={{
         left: `${position.x}px`,

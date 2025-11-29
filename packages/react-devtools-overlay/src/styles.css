@@ -134,22 +134,25 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);
-  width: 160px;
-  height: 160px;
+  transform: translate(-50%, -50%) scale(0.5);
+  width: 300px;
+  height: 300px;
   opacity: 0;
-  transition: opacity 0.5s ease;
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: none;
   z-index: -1;
   border-radius: 9999px;
-  background-image: linear-gradient(45deg, #61dafb, #282c34, #61dafb);
-  filter: blur(60px);
+  background: radial-gradient(circle, var(--color-primary-500), transparent 70%);
+  filter: blur(40px);
 }
 
 /* Show glow on hover/active */
 .react-devtools-anchor:hover::before,
-.react-devtools-button--active + .react-devtools-anchor::before {
+.react-devtools-anchor--active::before {
   opacity: 0.4;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 /* Iframe container */
