@@ -153,13 +153,22 @@ export function useIframe(
               highlightBox.style.setProperty('--color-primary-500', data.primaryColor)
             }
           }
-          // We also need to set it on document.body or a root if the highlight box is created later
-          // But highlight box reads from its own style.
-          // To be safe, let's set it on document.documentElement so any future highlight box inherits it
-          // IF highlight box creation logic doesn't isolate it.
-          // The highlight box is appended to document.body.
+
+          // Inject a style tag to define the variable for future highlight boxes
+          // This isolates the variable from document.documentElement
+          let themeStyle = document.getElementById('react-devtools-global-styles')
+          if (!themeStyle) {
+            themeStyle = document.createElement('style')
+            themeStyle.id = 'react-devtools-global-styles'
+            document.head.appendChild(themeStyle)
+          }
+
           if (data.primaryColor) {
-            document.documentElement.style.setProperty('--color-primary-500', data.primaryColor)
+            themeStyle.textContent = `
+              #__react-devtools-component-inspector__ {
+                --color-primary-500: ${data.primaryColor};
+              }
+            `
           }
         },
         togglePanel(visible?: boolean) {

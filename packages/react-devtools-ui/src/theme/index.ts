@@ -93,10 +93,20 @@ export function applyTheme(theme: Theme) {
 
   const root = document.documentElement
 
-  // Apply CSS variables
-  Object.entries(theme.cssVars).forEach(([key, value]) => {
-    root.style.setProperty(key, value)
-  })
+  // Use a style tag instead of inline styles to avoid clutter
+  let styleTag = document.getElementById('react-devtools-theme-styles')
+  if (!styleTag) {
+    styleTag = document.createElement('style')
+    styleTag.id = 'react-devtools-theme-styles'
+    document.head.appendChild(styleTag)
+  }
+
+  // Build CSS string
+  const cssRules = Object.entries(theme.cssVars)
+    .map(([key, value]) => `${key}: ${value};`)
+    .join('\n')
+
+  styleTag.textContent = `:root {\n${cssRules}\n}`
 
   // Set data-theme attribute for CSS selectors
   root.setAttribute('data-theme', theme.mode)
