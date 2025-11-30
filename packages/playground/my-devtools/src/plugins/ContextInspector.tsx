@@ -1,4 +1,5 @@
 import React from 'react'
+
 // We need to import the types from the client package or define them locally if not exported
 // For now, we'll define a compatible interface
 interface DevToolsPluginContext {
@@ -62,6 +63,14 @@ export default function ContextInspector(props: DevToolsPluginContext) {
                   <p className="text-gray-400 italic">Waiting for tree data...</p>
                 )}
           </div>
+        </div>
+
+        {/* Raw Context JSON */}
+        <div className="rounded bg-white p-4 shadow dark:bg-gray-800">
+          <h2 className="mb-2 font-semibold">Raw Context Data</h2>
+          <pre className="mt-2 overflow-auto rounded bg-gray-100 p-2 text-xs dark:bg-gray-900" style={{ maxHeight: '350px' }}>
+            {JSON.stringify(props, null, 2)}
+          </pre>
         </div>
       </div>
     </div>
