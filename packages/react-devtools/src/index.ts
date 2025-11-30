@@ -42,3 +42,8 @@ export type {
 
 export { default, vite, webpack } from './unplugin.js'
 export type { ReactDevToolsPluginOptions } from './unplugin.js'
+
+// Export middleware for manual integration (e.g. Next.js API Routes)
+export { createPluginsMiddleware, createPluginFileMiddleware, serveClient, createOpenInEditorMiddleware } from './middleware/index.js'
+export { resolvePluginConfig } from './config/normalize.js'
+export { getClientPath } from './utils/paths.js'

@@ -1,11 +1,22 @@
 import { useEffect, useRef, useState } from 'react'
 
+// Safe window access for SSR
+const getWindowDimensions = () => {
+  if (typeof window === 'undefined') {
+    return { width: 800, height: 600 } // Default for SSR
+  }
+  return { width: window.innerWidth, height: window.innerHeight }
+}
+
 export function usePosition(panelVisible: boolean) {
   const [isDragging, setIsDragging] = useState(false)
   const [isHovering, setIsHovering] = useState(true)
-  const [position, setPosition] = useState({ x: window.innerWidth / 2, y: window.innerHeight - 25 })
+  const [position, setPosition] = useState(() => {
+    const dims = getWindowDimensions()
+    return { x: dims.width / 2, y: dims.height - 25 }
+  })
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const windowSizeRef = useRef({ width: window.innerWidth, height: window.innerHeight })
+  const windowSizeRef = useRef(getWindowDimensions())
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -151,13 +162,14 @@ export function usePosition(panelVisible: boolean) {
     window.addEventListener('pointerup', handlePointerUp)
   }
 
+  const dims = getWindowDimensions()
   const isHidden = !panelVisible && !isHovering && !isDragging
-  const isAtBottom = position.y > window.innerHeight - 100
+  const isAtBottom = position.y > dims.height - 100
 
   // Calculate rotation based on position relative to edges
-  const isVertical = position.x < 50 || position.x > window.innerWidth - 50
-  const isRight = position.x > window.innerWidth - 50
-  const isBottom = position.y > window.innerHeight - 50
+  const isVertical = position.x < 50 || position.x > dims.width - 50
+  const isRight = position.x > dims.width - 50
+  const isBottom = position.y > dims.height - 50
 
   let rotation = 0
   if (isVertical) {

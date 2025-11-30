@@ -6,6 +6,7 @@
   "author": "wzc520pyfm",
   "license": "MIT",
   "exports": {
+    ".": "./src/index.ts",
     "./*": "./dist/*"
   },
   "files": [

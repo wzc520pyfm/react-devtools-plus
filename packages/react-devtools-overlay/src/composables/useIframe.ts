@@ -9,14 +9,18 @@ import { useEffect, useRef } from 'react'
  * via the plugin options. This allows the DevTools panel to load from
  * a different server (e.g., the child app's webpack-dev-server).
  */
-function getDevToolsClientUrl() {
+function getDevToolsClientUrl(overrideUrl?: string) {
   // Check for custom clientUrl from plugin configuration
-  const config = (window as any).__REACT_DEVTOOLS_CONFIG__
-  if (config?.clientUrl) {
+  const config = (typeof window !== 'undefined' && (window as any).__REACT_DEVTOOLS_CONFIG__) || {}
+  const clientUrl = overrideUrl || config.clientUrl
+
+  if (clientUrl) {
     const timestamp = Date.now()
-    const url = config.clientUrl.endsWith('/')
-      ? config.clientUrl
-      : `${config.clientUrl}/`
+    // Don't add trailing slash - let the server handle it
+    // Some frameworks (like Next.js) redirect trailing slashes
+    const url = clientUrl.endsWith('/')
+      ? clientUrl.slice(0, -1)
+      : clientUrl
     return `${url}?t=${timestamp}`
   }
 
@@ -51,6 +55,7 @@ function waitForClientInjection(iframe: HTMLIFrameElement, timeout = 10000): Pro
 export function useIframe(
   panelVisible: boolean,
   setPanelVisible: (visible: boolean) => void,
+  clientUrl?: string,
 ) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
   const rpcServerReadyRef = useRef(false)
@@ -115,10 +120,10 @@ export function useIframe(
     if (iframeRef.current)
       return
 
-    const clientUrl = getDevToolsClientUrl()
+    const resolvedClientUrl = getDevToolsClientUrl(clientUrl)
     const iframe = document.createElement('iframe')
     iframe.id = 'react-devtools-client-iframe'
-    iframe.src = clientUrl
+    iframe.src = resolvedClientUrl
     iframe.className = 'react-devtools-iframe'
     iframeRef.current = iframe
 
@@ -269,7 +274,7 @@ export function useIframe(
         iframeRef.current = null
       }
     }
-  }, [])
+  }, [clientUrl])
 
   return { iframeRef }
 }

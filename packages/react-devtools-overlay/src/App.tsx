@@ -14,13 +14,6 @@ import './styles.css'
  */
 const PRESET_COLORS: Record<string, string> = {
   react: '#00D8FF', // Use our brighter cyan for overlay to match styles.css default, or use #61dafb if strictly matching client
-  // user previously used #00D8FF for 'react' case, keeping it or switching?
-  // The client PRESET_COLORS says #61dafb.
-  // But styles.css fallback is #00D8FF.
-  // Let's use the one from PRESET_COLORS to match client, but maybe #00D8FF is better for visibility on white?
-  // Let's stick to the list from colors.ts for consistency across preset names.
-  // EXCEPTION: 'react' in overlay seems to use #00D8FF in styles.css. I'll allow #00D8FF as a special override or just use the standard one.
-  // Let's use the standard ones for the named colors.
   blue: '#3b82f6',
   green: '#10b981',
   purple: '#8b5cf6',
@@ -32,15 +25,29 @@ const PRESET_COLORS: Record<string, string> = {
   indigo: '#6366f1',
 }
 
-function useInitialTheme() {
+export interface AppProps {
+  /**
+   * Theme configuration
+   */
+  theme?: {
+    mode?: 'auto' | 'light' | 'dark'
+    primaryColor?: string
+  }
+  /**
+   * Custom client URL
+   */
+  clientUrl?: string
+}
+
+function useInitialTheme(propsTheme?: AppProps['theme']) {
   const [isDark, setIsDark] = useState(false)
 
   useEffect(() => {
     // Apply theme immediately on mount to avoid flicker
     const applyTheme = () => {
       try {
-        const config = (window as any).__REACT_DEVTOOLS_CONFIG__
-        const theme = config?.theme
+        const config = (typeof window !== 'undefined' && (window as any).__REACT_DEVTOOLS_CONFIG__) || {}
+        const theme = propsTheme || config.theme
 
         if (!theme)
           return
@@ -58,8 +65,6 @@ function useInitialTheme() {
         const normalizedColor = primaryColor.toLowerCase().trim()
         const presetColor = PRESET_COLORS[normalizedColor]
         const resolvedColor = presetColor || (primaryColor === 'react' ? '#00D8FF' : primaryColor)
-
-        // console.log('[React DevTools Overlay] Theme Init:', { rawPrimaryColor, normalizedColor, presetColor, resolvedColor, PRESET_COLORS })
 
         // Set CSS variable on document root to ensure it's available everywhere in overlay
         document.documentElement.style.setProperty('--color-primary-500', resolvedColor)
@@ -79,16 +84,16 @@ function useInitialTheme() {
 
     applyTheme()
     // Optional: Listen for theme changes if config object is mutable or if we want to support HMR updates to config
-  }, [])
+  }, [propsTheme])
 
   return isDark
 }
 
-export function App() {
+export function App(props: AppProps) {
   const anchorRef = useRef<HTMLDivElement | null>(null)
   const { panelVisible, setPanelVisible, togglePanel } = usePanelVisible()
-  const isDark = useInitialTheme()
-  const { iframeRef } = useIframe(panelVisible, setPanelVisible)
+  const isDark = useInitialTheme(props.theme)
+  const { iframeRef } = useIframe(panelVisible, setPanelVisible, props.clientUrl)
 
   const {
     position,
