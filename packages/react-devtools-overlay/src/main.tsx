@@ -167,27 +167,6 @@ async function init() {
     if (!rootRef) {
       console.warn('[React DevTools] Failed to mount overlay')
     }
-
-    // Post-mount theme application (specifically for dark mode class)
-    // This is a bit hacky, ideally App.tsx handles this.
-    setTimeout(() => {
-      const config = (window as any).__REACT_DEVTOOLS_CONFIG__
-      const theme = config?.theme
-      if (theme?.mode === 'dark' || (theme?.mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        const anchor = container.querySelector('.react-devtools-anchor')
-        if (anchor) {
-          anchor.classList.add('dark')
-        }
-      }
-      // Re-apply color to anchor specifically if needed
-      if (theme?.primaryColor) {
-        const anchor = container.querySelector('.react-devtools-anchor') as HTMLElement
-        if (anchor) {
-          const resolvedColor = theme.primaryColor === 'react' ? '#00D8FF' : theme.primaryColor
-          anchor.style.setProperty('--color-primary-500', resolvedColor)
-        }
-      }
-    }, 0)
   }
   catch (e) {
     console.warn('[React DevTools] Overlay init error:', e)

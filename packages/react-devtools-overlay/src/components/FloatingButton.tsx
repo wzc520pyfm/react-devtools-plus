@@ -36,10 +36,10 @@ export function FloatingButton({
         <div className="react-devtools-button-icon" style={{ transform: `rotate(${-rotation}deg)` }}>
           {children || (
             <svg viewBox="0 0 128 128" width="24" height="24">
-              <circle fill="var(--color-primary-500)" cx="64" cy="64" r="14" />
-              <ellipse fill="none" stroke="var(--color-primary-500)" strokeWidth="4" cx="64" cy="64" rx="22" ry="54" transform="rotate(30 64 64)" />
-              <ellipse fill="none" stroke="var(--color-primary-500)" strokeWidth="4" cx="64" cy="64" rx="22" ry="54" transform="rotate(-30 64 64)" />
-              <ellipse fill="none" stroke="var(--color-primary-500)" strokeWidth="4" cx="64" cy="64" rx="22" ry="54" transform="rotate(90 64 64)" />
+              <circle fill="var(--color-primary-500, #00D8FF)" cx="64" cy="64" r="14" />
+              <ellipse fill="none" stroke="var(--color-primary-500, #00D8FF)" strokeWidth="4" cx="64" cy="64" rx="22" ry="54" transform="rotate(30 64 64)" />
+              <ellipse fill="none" stroke="var(--color-primary-500, #00D8FF)" strokeWidth="4" cx="64" cy="64" rx="22" ry="54" transform="rotate(-30 64 64)" />
+              <ellipse fill="none" stroke="var(--color-primary-500, #00D8FF)" strokeWidth="4" cx="64" cy="64" rx="22" ry="54" transform="rotate(90 64 64)" />
             </svg>
           )}
         </div>
@@ -57,7 +57,7 @@ export function FloatingButton({
           onPointerDown={e => e.stopPropagation()} // Prevent dragging when clicking this button
         >
           <div className="react-devtools-button-icon" style={{ transform: `rotate(${-rotation}deg)` }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-primary-500)' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-primary-500, #00D8FF)' }}>
               <circle cx="12" cy="12" r="7" />
               <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
               <path d="M12 2v3" />

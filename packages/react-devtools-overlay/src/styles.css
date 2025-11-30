@@ -161,7 +161,7 @@
 /* Active state */
 .react-devtools-button--active {
   opacity: 1;
-  box-shadow: 0 0 20px rgba(var(--color-primary-500-rgb, 97, 218, 251), 0.4);
+  box-shadow: 0 0 20px rgba(var(--color-primary-500-rgb, 0, 216, 255), 0.4);
 }
 
 /* Hidden state modifiers */
@@ -196,7 +196,7 @@
   pointer-events: none;
   z-index: -1;
   border-radius: 9999px;
-  background: radial-gradient(circle, var(--color-primary-500), transparent 70%);
+  background: radial-gradient(circle, var(--color-primary-500, #00d8ff), transparent 70%);
   filter: blur(40px);
 }
 
