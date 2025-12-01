@@ -55,7 +55,7 @@ module.exports = {
     }),
   ],
   devServer: {
-    contentBase: './public',
+    static: './public',
     port: 3007,
     hot: true,
   },
