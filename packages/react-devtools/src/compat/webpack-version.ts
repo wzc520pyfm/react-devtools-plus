@@ -26,8 +26,8 @@ export interface WebpackVersionInfo {
  *
  * Detection strategy (ordered by reliability):
  * 1. compiler.webpack.version (Webpack 5+)
- * 2. Presence of compiler.webpack property (Webpack 5 indicator)
- * 3. require('webpack').version
+ * 2. Check for Webpack 4-specific APIs that don't exist in Webpack 5
+ * 3. Presence of compiler.webpack property (Webpack 5 indicator)
  * 4. Default to Webpack 4 for safety
  */
 export function detectWebpackVersion(compiler: Compiler): WebpackVersionInfo {
@@ -40,26 +40,23 @@ export function detectWebpackVersion(compiler: Compiler): WebpackVersionInfo {
     version = webpackVersion
     major = Number.parseInt(version.split('.')[0], 10) || 4
   }
-  // Method 2: Check if compiler has webpack property (Webpack 5 indicator)
+  // Method 2: Check for Webpack 4-specific behavior
+  // In Webpack 4, compiler.webpack doesn't exist
+  // In Webpack 5, compiler.webpack is the webpack namespace object
+  else if (compiler.webpack === undefined) {
+    // No compiler.webpack means Webpack 4
+    major = 4
+    version = '4.x (detected by missing compiler.webpack)'
+  }
+  // Method 3: Check if compiler has webpack property (Webpack 5 indicator)
   else if (compiler.webpack) {
     major = 5
     version = '5.x'
   }
-  // Method 3: Try to get version from webpack module
+  // Method 4: Default to Webpack 4 for safety (more compatible)
   else {
-    try {
-      // eslint-disable-next-line ts/no-require-imports
-      const webpack = require('webpack')
-      if (webpack.version) {
-        version = webpack.version
-        major = Number.parseInt(version.split('.')[0], 10) || 4
-      }
-    }
-    catch {
-      // Default to Webpack 4 for safety (more compatible)
-      major = 4
-      version = '4.x (assumed)'
-    }
+    major = 4
+    version = '4.x (assumed)'
   }
 
   return {

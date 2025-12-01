@@ -165,12 +165,46 @@ export function injectDevToolsEntries(
   const originalEntry = compiler.options.entry
   const useWebpack4Format = isWebpack4(compiler)
 
-  compiler.options.entry = async () => {
-    const entries = typeof originalEntry === 'function'
-      ? await originalEntry()
-      : originalEntry
+  console.log('[React DevTools] Original entry:', JSON.stringify(originalEntry))
+  console.log('[React DevTools] Original entry type:', typeof originalEntry)
+  console.log('[React DevTools] Is Webpack 4:', useWebpack4Format)
+  console.log('[React DevTools] Files to inject:', filesToInject)
 
-    return transformEntries(entries, filesToInject, useWebpack4Format)
+  if (useWebpack4Format) {
+    // Webpack 4: Don't use async function, resolve entry synchronously or use callback
+    if (typeof originalEntry === 'function') {
+      // If original entry is a function, wrap it
+      compiler.options.entry = () => {
+        const result = originalEntry()
+        // Handle both sync and Promise results
+        if (result && typeof result.then === 'function') {
+          return result.then((entries: any) => {
+            const transformed = transformEntries(entries, filesToInject, true)
+            console.log('[React DevTools] Transformed entry (from promise):', JSON.stringify(transformed))
+            return transformed
+          })
+        }
+        const transformed = transformEntries(result, filesToInject, true)
+        console.log('[React DevTools] Transformed entry (sync):', JSON.stringify(transformed))
+        return transformed
+      }
+    }
+    else {
+      // If original entry is not a function, transform it directly
+      const transformed = transformEntries(originalEntry, filesToInject, true)
+      console.log('[React DevTools] Transformed entry (direct):', JSON.stringify(transformed))
+      compiler.options.entry = transformed
+    }
+  }
+  else {
+    // Webpack 5: Can use async function
+    compiler.options.entry = async () => {
+      const entries = typeof originalEntry === 'function'
+        ? await originalEntry()
+        : originalEntry
+
+      return transformEntries(entries, filesToInject, false)
+    }
   }
 }
 
@@ -184,19 +218,29 @@ function transformEntries(
 ): any {
   // Handle string entry
   if (typeof entries === 'string') {
-    return {
-      main: useWebpack4Format
-        ? [...filesToInject, entries]
-        : { import: [...filesToInject, entries] },
+    if (useWebpack4Format) {
+      // Webpack 4: Return array directly (not wrapped in object)
+      return [...filesToInject, entries]
+    }
+    else {
+      // Webpack 5: Return object with import array
+      return {
+        main: { import: [...filesToInject, entries] },
+      }
     }
   }
 
   // Handle array entry
   if (Array.isArray(entries)) {
-    return {
-      main: useWebpack4Format
-        ? [...filesToInject, ...entries]
-        : { import: [...filesToInject, ...entries] },
+    if (useWebpack4Format) {
+      // Webpack 4: Return array directly
+      return [...filesToInject, ...entries]
+    }
+    else {
+      // Webpack 5: Return object with import array
+      return {
+        main: { import: [...filesToInject, ...entries] },
+      }
     }
   }
 
