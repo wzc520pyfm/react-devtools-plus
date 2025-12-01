@@ -376,12 +376,6 @@ importers:
 
   packages/playground/react17-webpack4:
     dependencies:
-      '@react-devtools/scan':
-        specifier: workspace:*
-        version: link:../../react-devtools-scan
-      '@react-devtools/ui':
-        specifier: workspace:*
-        version: link:../../react-devtools-ui
       react:
         specifier: ^17.0.2
         version: 17.0.2
@@ -416,9 +410,6 @@ importers:
       babel-loader:
         specifier: ^8.2.5
         version: 8.4.1(@babel/core@7.28.5)(webpack@4.47.0(webpack-cli@3.3.12))
-      copy-anything:
-        specifier: ^4.0.5
-        version: 4.0.5
       css-loader:
         specifier: ^5.2.7
         version: 5.2.7(webpack@4.47.0(webpack-cli@3.3.12))
