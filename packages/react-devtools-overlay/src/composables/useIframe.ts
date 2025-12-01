@@ -51,6 +51,7 @@ function waitForClientInjection(iframe: HTMLIFrameElement, timeout = 10000): Pro
 export function useIframe(
   panelVisible: boolean,
   setPanelVisible: (visible: boolean) => void,
+  setDragResizeEnabled?: (enabled: boolean) => void,
 ) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
   const rpcServerReadyRef = useRef(false)
@@ -170,6 +171,9 @@ export function useIframe(
               }
             `
           }
+        },
+        toggleDragResize(enabled: boolean) {
+          setDragResizeEnabled?.(enabled)
         },
         togglePanel(visible?: boolean) {
           setPanelVisibleRef.current(visible ?? !panelVisibleRef.current)

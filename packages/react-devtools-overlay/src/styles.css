@@ -227,8 +227,8 @@
   position: absolute;
   left: 0;
   top: 0;
-  width: min(80vw, 1000px);
-  height: min(60vh, 800px);
+  /* width: min(80vw, 1000px); Overridden by inline style */
+  /* height: min(60vh, 800px); Overridden by inline style */
   pointer-events: auto;
   /* Default transform (bottom) */
   transform: translate(-50%, calc(-100% - 24px)) scale(1);
@@ -294,7 +294,7 @@
 
 @media (min-width: 1400px) {
   .react-devtools-iframe-container {
-    width: min(80vw, 1200px);
+    /* width: min(80vw, 1200px); Overridden */
   }
 }
 
@@ -306,4 +306,39 @@
   background: transparent;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   overflow: hidden;
+}
+
+/* Resize Handles */
+.resize-handle {
+  position: absolute;
+  z-index: 100;
+  touch-action: none;
+}
+
+.resize-handle:hover {
+  background-color: rgba(108, 248, 169, 0.3);
+}
+
+.resize-handle-top {
+  top: -5px;
+  left: 0;
+  width: 100%;
+  height: 10px;
+  cursor: ns-resize;
+}
+
+.resize-handle-left {
+  top: 0;
+  left: -5px;
+  height: 100%;
+  width: 10px;
+  cursor: ew-resize;
+}
+
+.resize-handle-right {
+  top: 0;
+  right: -5px;
+  height: 100%;
+  width: 10px;
+  cursor: ew-resize;
 }

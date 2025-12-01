@@ -88,7 +88,8 @@ export function App() {
   const anchorRef = useRef<HTMLDivElement | null>(null)
   const { panelVisible, setPanelVisible, togglePanel } = usePanelVisible()
   const isDark = useInitialTheme()
-  const { iframeRef } = useIframe(panelVisible, setPanelVisible)
+  const [isDragResizeEnabled, setIsDragResizeEnabled] = useState(false)
+  const { iframeRef } = useIframe(panelVisible, setPanelVisible, setIsDragResizeEnabled)
 
   const {
     position,
@@ -99,6 +100,11 @@ export function App() {
     bringUp,
     handleButtonPointerDown,
   } = usePosition(panelVisible)
+
+  const [size, setSize] = useState({
+    width: Math.min(window.innerWidth * 0.8, 1000),
+    height: Math.min(window.innerHeight * 0.6, 800),
+  })
 
   const handleToggle = () => {
     const newVisible = !panelVisible
@@ -145,7 +151,14 @@ export function App() {
         onPointerDown={e => handleButtonPointerDown(e, handleToggle)}
         onInspectorClick={handleInspectorClick}
       />
-      <IframeContainer iframeRef={iframeRef} visible={panelVisible} />
+      <IframeContainer
+        iframeRef={iframeRef}
+        visible={panelVisible}
+        width={size.width}
+        height={size.height}
+        onResize={setSize}
+        enableDragResize={isDragResizeEnabled}
+      />
     </div>
   )
 }

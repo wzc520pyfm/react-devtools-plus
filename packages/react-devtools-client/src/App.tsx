@@ -20,6 +20,7 @@ interface ServerRpcFunctions {
   callPluginRPC: (pluginId: string, rpcName: string, ...args: any[]) => Promise<any>
   subscribeToPluginEvent: (pluginId: string, eventName: string) => () => void
   syncTheme: (data: { mode: 'light' | 'dark', primaryColor: string }) => void
+  toggleDragResize: (enabled: boolean) => void
 }
 
 export function App() {
@@ -81,6 +82,17 @@ export function App() {
       })
     }
   }, [theme.mode, theme.colors.primary])
+
+  // Sync drag resize setting on mount
+  useEffect(() => {
+    const stored = localStorage.getItem('react-devtools-drag-resize')
+    if (stored === 'true') {
+      const rpc = getRpcClient<ServerRpcFunctions>()
+      if (rpc?.toggleDragResize) {
+        rpc.toggleDragResize(true)
+      }
+    }
+  }, [])
 
   // Use refs to store the latest setter functions to avoid stale closures
   const setTreeRef = useRef(setTree)

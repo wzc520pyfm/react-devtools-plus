@@ -1,7 +1,35 @@
+import { getRpcClient } from '@react-devtools/kit'
 import { Button, Checkbox, PRESET_COLORS, Select, useTheme } from '@react-devtools/ui'
+import { useEffect, useState } from 'react'
+
+interface ServerRpcFunctions {
+  toggleDragResize: (enabled: boolean) => void
+}
 
 export function SettingsPage() {
   const { theme, toggleMode, setPrimaryColor } = useTheme()
+  const [dragResizeEnabled, setDragResizeEnabled] = useState(false)
+
+  useEffect(() => {
+    const stored = localStorage.getItem('react-devtools-drag-resize')
+    if (stored) {
+      const enabled = stored === 'true'
+      setDragResizeEnabled(enabled)
+      const rpc = getRpcClient<ServerRpcFunctions>()
+      if (rpc?.toggleDragResize) {
+        rpc.toggleDragResize(enabled)
+      }
+    }
+  }, [])
+
+  const handleToggleDragResize = (checked: boolean) => {
+    setDragResizeEnabled(checked)
+    localStorage.setItem('react-devtools-drag-resize', String(checked))
+    const rpc = getRpcClient<ServerRpcFunctions>()
+    if (rpc?.toggleDragResize) {
+      rpc.toggleDragResize(checked)
+    }
+  }
 
   return (
     <div className="h-full w-full overflow-auto bg-base p-6">
@@ -117,6 +145,11 @@ export function SettingsPage() {
           </h2>
           <div className="border border-base rounded-lg bg-white p-4 dark:bg-[#121212]">
             <div className="flex flex-wrap gap-4">
+              <Checkbox
+                label="Enable Drag Resize"
+                checked={dragResizeEnabled}
+                onChange={handleToggleDragResize}
+              />
               <Checkbox
                 label="Close DevTools when clicking outside"
                 disabled
