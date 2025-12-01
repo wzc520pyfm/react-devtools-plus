@@ -26,7 +26,7 @@ function SpotlightCard({
   children,
   className = '',
   to,
-  spotlightColor = 'rgb(var(--color-primary-500-rgb) / 0.25)',
+  spotlightColor = 'rgb(var(--color-primary-500-rgb) / 0.5)',
 }: {
   children: React.ReactNode
   className?: string
@@ -71,9 +71,7 @@ function SpotlightCard({
   return (
     <div
       ref={divRef}
-      // Outer container acts as the border
-      // bg-gray-200/gray-800 is the default border color
-      className={`relative rounded-xl bg-gray-200 dark:bg-gray-800 shadow-sm transition-colors duration-300 ${to ? 'cursor-pointer' : ''} ${className}`}
+      className={`relative overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800/50 shadow-sm transition-colors duration-300 ${to ? 'cursor-pointer' : ''} ${className}`}
       onClick={handleClick}
       onMouseMove={handleMouseMove}
       onFocus={handleFocus}
@@ -81,25 +79,23 @@ function SpotlightCard({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Spotlight Border Layer */}
-      {/* This layer sits on top of the default border color but below the content */}
+      {/* Spotlight Border Layer - High intensity */}
       <div 
         className="pointer-events-none absolute inset-0 rounded-xl transition-opacity duration-300"
         style={{
           opacity: 1,
-          background: `radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), ${spotlightColor}, transparent 40%)`
+          background: `radial-gradient(500px circle at var(--mouse-x) var(--mouse-y), ${spotlightColor}, transparent 40%)`
         }}
       />
       
       {/* Content with inner border */}
-      {/* m-[1px] creates the border effect by revealing the background */}
-      <div className={`relative z-10 m-[1px] h-[calc(100%-2px)] w-[calc(100%-2px)] flex flex-col items-center justify-center gap-3 rounded-[11px] bg-base p-6 ${to ? 'transition-colors duration-300 hover:bg-gray-50 dark:hover:bg-[#1a1a1a]' : ''}`}>
-        {/* Inner Spotlight (Hover effect) */}
+      <div className={`relative z-10 m-[1px] h-[calc(100%-2px)] w-[calc(100%-2px)] flex flex-col items-center justify-center gap-3 rounded-[11px] bg-white p-6 dark:bg-[#121212] ${to ? 'transition-colors duration-300 hover:bg-gray-50 dark:hover:bg-[#1a1a1a]' : ''}`}>
+        {/* Inner Spotlight (Hover effect) - Optional/Subtle */}
         <div
           className="pointer-events-none absolute -inset-px opacity-0 transition duration-300 rounded-[11px]"
           style={{
             opacity,
-            background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, ${spotlightColor}, transparent 40%)`,
+            background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, ${spotlightColor.replace('/ 0.5)', '/ 0.05')}, transparent 40%)`,
           }}
         />
         <div className="relative z-10 flex flex-col items-center justify-center gap-3">
