@@ -50,7 +50,9 @@
     box-shadow 0.3s ease,
     height 0.3s ease,
     border-radius 0.3s ease,
-    padding 0.3s ease;
+    padding 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease;
   user-select: none;
   border: 1px solid rgba(0, 0, 0, 0.05);
   opacity: 0.95;
@@ -113,6 +115,7 @@
   background-color: rgba(0, 0, 0, 0.1);
   margin: 0 4px;
   flex-shrink: 0;
+  transition: background-color 0.3s ease;
 }
 
 .dark .react-devtools-divider {
@@ -142,7 +145,19 @@
   transition:
     width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
     height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
-    opacity 0.4s ease;
+    opacity 0.4s ease,
+    fill 0.3s ease,
+    stroke 0.3s ease,
+    color 0.3s ease;
+}
+
+.react-devtools-button-icon svg circle,
+.react-devtools-button-icon svg ellipse,
+.react-devtools-button-icon svg path {
+  transition:
+    fill 0.3s ease,
+    stroke 0.3s ease,
+    color 0.3s ease;
 }
 
 /* Enlarge first icon when hidden/docked */
