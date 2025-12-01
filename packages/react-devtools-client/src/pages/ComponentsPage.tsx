@@ -94,7 +94,7 @@ function TreeNode({ node, showHostComponents, selectedNodeId, onSelectNode, forc
     <li>
       <div
         ref={elementRef}
-        className={`flex cursor-pointer select-none items-center py-1 pr-2 transition-colors ${isSelected ? 'bg-primary-500 text-white' : 'hover:bg-[color-mix(in_srgb,var(--color-primary-500),transparent_90%)] text-gray-700 dark:text-gray-300'}`}
+        className={`min-w-full w-fit flex cursor-pointer select-none items-center py-1 pr-2 transition-colors ${isSelected ? 'bg-primary-500 text-white' : 'hover:bg-[color-mix(in_srgb,var(--color-primary-500),transparent_90%)] text-gray-700 dark:text-gray-300'}`}
         style={{ paddingLeft: `${depth * 16 + 4}px` }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -110,7 +110,7 @@ function TreeNode({ node, showHostComponents, selectedNodeId, onSelectNode, forc
                 : <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>)
             : null}
         </span>
-        <span className="truncate text-sm font-mono">
+        <span className="whitespace-nowrap text-sm font-mono">
           <span className={isSelected ? 'text-white' : 'text-primary-600 dark:text-primary-400'}>{'<'}</span>
           {node.name}
           <span className={isSelected ? 'text-white' : 'text-primary-600 dark:text-primary-400'}>{'>'}</span>
