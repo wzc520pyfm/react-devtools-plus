@@ -175,17 +175,17 @@ export function ScanPage() {
   useEffect(() => {
     if (isRunning && autoRefresh) {
       fetchPerformanceData()
-      fetchFps()
-
       const dataInterval = setInterval(fetchPerformanceData, 1000) // Refresh data every second
-      const fpsInterval = setInterval(fetchFps, 500) // Refresh FPS every 500ms
-
-      return () => {
-        clearInterval(dataInterval)
-        clearInterval(fpsInterval)
-      }
+      return () => clearInterval(dataInterval)
     }
   }, [isRunning, autoRefresh])
+
+  // Always refresh FPS
+  useEffect(() => {
+    fetchFps()
+    const fpsInterval = setInterval(fetchFps, 500) // Refresh FPS every 500ms
+    return () => clearInterval(fpsInterval)
+  }, [])
 
   const handleToggleScan = async () => {
     const rpc = getRpcClient<ServerRpcFunctions>()
