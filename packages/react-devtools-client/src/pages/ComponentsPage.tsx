@@ -160,6 +160,101 @@ function filterTree(node: ComponentTreeNode, search: string): ComponentTreeNode 
   return null
 }
 
+interface SplitPaneProps {
+  tree: ComponentTreeNode | null
+  showHostComponents: boolean
+  selectedNodeId?: string | null
+  onSelectNode: (id: string) => void
+  search: string
+  isLoadingDetails: boolean
+  componentDetails: ComponentDetails | null
+}
+
+function SplitPane({ tree, showHostComponents, selectedNodeId, onSelectNode, search, isLoadingDetails, componentDetails }: SplitPaneProps) {
+  const [panelWidth, setPanelWidth] = useState(320)
+  const isDragging = useRef(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault()
+    isDragging.current = true
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current || !containerRef.current)
+        return
+
+      const containerRect = containerRef.current.getBoundingClientRect()
+      const newWidth = containerRect.right - e.clientX
+
+      // Clamp width between min and max
+      const clampedWidth = Math.max(200, Math.min(newWidth, containerRect.width - 200))
+      setPanelWidth(clampedWidth)
+    }
+
+    const handleMouseUp = () => {
+      isDragging.current = false
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }
+
+  return (
+    <div ref={containerRef} className="flex flex-1 overflow-hidden">
+      {/* Left: Component Tree */}
+      <div className="min-w-0 flex-1 overflow-auto panel-grids">
+        <ul className="m-0 list-none p-0">
+          {tree && (
+            <TreeNode
+              node={tree}
+              showHostComponents={showHostComponents}
+              selectedNodeId={selectedNodeId}
+              onSelectNode={onSelectNode}
+              forceExpand={!!search}
+            />
+          )}
+        </ul>
+      </div>
+
+      {/* Resize Handle */}
+      <div
+        className="w-1 flex-shrink-0 cursor-col-resize bg-gray-200 transition-colors active:bg-primary-500 dark:bg-gray-700 hover:bg-primary-400 dark:hover:bg-primary-500"
+        onMouseDown={handleMouseDown}
+      />
+
+      {/* Right: Component Details */}
+      <div
+        className="flex-shrink-0 overflow-hidden border-l border-gray-200 bg-white dark:border-gray-700 dark:bg-[#121212]"
+        style={{ width: panelWidth }}
+      >
+        {isLoadingDetails
+          ? (
+              <div className="h-full flex items-center justify-center">
+                <div className="animate-spin">
+                  <svg className="h-5 w-5 text-primary-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </div>
+              </div>
+            )
+          : (
+              <ComponentDetailsPanel
+                details={componentDetails}
+                onSelectNode={onSelectNode}
+              />
+            )}
+      </div>
+    </div>
+  )
+}
+
 export function ComponentsPage({ tree, selectedNodeId, onSelectNode }: ComponentsPageProps) {
   const [showHostComponents, setShowHostComponents] = useState(false)
   const [search, setSearch] = useState('')
@@ -298,43 +393,15 @@ export function ComponentsPage({ tree, selectedNodeId, onSelectNode }: Component
       </div>
 
       {/* Main Content - Split Layout */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left: Component Tree */}
-        <div className="min-w-0 flex-1 overflow-auto panel-grids">
-          <ul className="m-0 list-none p-0">
-            {filteredTree && (
-              <TreeNode
-                node={filteredTree}
-                showHostComponents={showHostComponents}
-                selectedNodeId={selectedNodeId}
-                onSelectNode={handleSelectNode}
-                forceExpand={!!search}
-              />
-            )}
-          </ul>
-        </div>
-
-        {/* Right: Component Details */}
-        <div className="w-72 flex-shrink-0 border-l border-gray-200 bg-white dark:border-gray-700 dark:bg-[#121212]">
-          {isLoadingDetails
-            ? (
-                <div className="h-full flex items-center justify-center">
-                  <div className="animate-spin">
-                    <svg className="h-5 w-5 text-primary-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                  </div>
-                </div>
-              )
-            : (
-                <ComponentDetailsPanel
-                  details={componentDetails}
-                  onSelectNode={handleSelectNode}
-                />
-              )}
-        </div>
-      </div>
+      <SplitPane
+        tree={filteredTree}
+        showHostComponents={showHostComponents}
+        selectedNodeId={selectedNodeId}
+        onSelectNode={handleSelectNode}
+        search={search}
+        isLoadingDetails={isLoadingDetails}
+        componentDetails={componentDetails}
+      />
     </div>
   )
 }
