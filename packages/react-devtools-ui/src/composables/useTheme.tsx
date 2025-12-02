@@ -137,7 +137,7 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({
       const nextMode = currentMode === 'light' ? 'dark' : 'light'
 
       // Use View Transitions API if available
-      // @ts-expect-error View Transition API is experimental
+      // View Transition API is experimental
       if (!document.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         setConfig(prev => ({ ...prev, mode: nextMode }))
         return
@@ -146,15 +146,16 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({
       // Get click position or center of screen
       const x = event?.clientX ?? window.innerWidth / 2
       const y = event?.clientY ?? window.innerHeight / 2
-      
+
       // Calculate distance to furthest corner
       const endRadius = Math.hypot(
         Math.max(x, window.innerWidth - x),
         Math.max(y, window.innerHeight - y),
       )
 
-      // @ts-expect-error View Transition API is experimental
+      // View Transition API is experimental
       const transition = document.startViewTransition(() => {
+        // eslint-disable-next-line react-dom/no-flush-sync
         flushSync(() => {
           setConfig(prev => ({ ...prev, mode: nextMode }))
         })
@@ -169,7 +170,7 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({
         // Animate the new view expanding from the click point
         document.documentElement.animate(
           {
-            clipPath: clipPath,
+            clipPath,
           },
           {
             duration: 400,

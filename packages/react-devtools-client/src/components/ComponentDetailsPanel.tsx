@@ -21,7 +21,7 @@ function CollapsibleSection({ title, children, defaultOpen = true, badge }: Coll
     <div className="border-b border-gray-200 dark:border-gray-700">
       <button
         type="button"
-        className="w-full flex items-center justify-between px-3 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+        className="w-full flex items-center justify-between px-3 py-2 text-left text-sm text-gray-700 font-medium hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800/50"
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-center gap-2">
@@ -39,8 +39,10 @@ function CollapsibleSection({ title, children, defaultOpen = true, badge }: Coll
         {badge}
       </button>
       {isOpen && (
-        <div className="px-3 pb-3">
-          {children}
+        <div className="overflow-x-auto px-3 pb-3">
+          <div className="min-w-fit">
+            {children}
+          </div>
         </div>
       )}
     </div>
@@ -91,7 +93,7 @@ function PropsSection({ props }: { props: Record<string, PropValue> }) {
 
   if (entries.length === 0) {
     return (
-      <div className="text-xs text-gray-400 italic py-1">No props</div>
+      <div className="py-1 text-xs text-gray-400 italic">No props</div>
     )
   }
 
@@ -122,7 +124,7 @@ function HookDisplay({ hook, index }: { hook: HookInfo, index: number }) {
 function HooksSection({ hooks }: { hooks: HookInfo[] }) {
   if (hooks.length === 0) {
     return (
-      <div className="text-xs text-gray-400 italic py-1">No hooks</div>
+      <div className="py-1 text-xs text-gray-400 italic">No hooks</div>
     )
   }
 
@@ -155,7 +157,7 @@ function getBadgeForTag(tag?: number) {
 function RenderedBySection({ renderedBy, onSelectNode }: { renderedBy: RenderedByInfo[], onSelectNode?: (id: string) => void }) {
   if (renderedBy.length === 0) {
     return (
-      <div className="text-xs text-gray-400 italic py-1">Root component</div>
+      <div className="py-1 text-xs text-gray-400 italic">Root component</div>
     )
   }
 
@@ -199,7 +201,7 @@ function RenderedBySection({ renderedBy, onSelectNode }: { renderedBy: RenderedB
 function SourceSection({ source, onOpenInEditor }: { source?: ComponentDetails['source'], onOpenInEditor?: () => void }) {
   if (!source) {
     return (
-      <div className="text-xs text-gray-400 italic py-1">Source not available</div>
+      <div className="py-1 text-xs text-gray-400 italic">Source not available</div>
     )
   }
 
@@ -217,7 +219,10 @@ function SourceSection({ source, onOpenInEditor }: { source?: ComponentDetails['
         <polyline points="13 2 13 9 20 9" />
       </svg>
       <span className="text-blue-600 dark:text-blue-400">{fileName}</span>
-      <span className="text-gray-400">:{source.lineNumber}</span>
+      <span className="text-gray-400">
+        :
+        {source.lineNumber}
+      </span>
     </button>
   )
 }
@@ -225,8 +230,8 @@ function SourceSection({ source, onOpenInEditor }: { source?: ComponentDetails['
 export function ComponentDetailsPanel({ details, onSelectNode }: ComponentDetailsPanelProps) {
   if (!details) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-gray-400 text-sm">
-        <svg className="h-12 w-12 mb-2 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <div className="h-full flex flex-col items-center justify-center text-sm text-gray-400">
+        <svg className="mb-2 h-12 w-12 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
           <path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6" />
           <path d="m12 12 4 10 1.7-4.3L22 16Z" />
         </svg>
@@ -256,7 +261,7 @@ export function ComponentDetailsPanel({ details, onSelectNode }: ComponentDetail
       {/* Header */}
       <div className="flex items-center justify-between border-b border-gray-200 px-3 py-2 dark:border-gray-700">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-mono text-primary-600 dark:text-primary-400">
+          <span className="text-sm text-primary-600 font-mono dark:text-primary-400">
             {'<'}
             {details.name}
             {'>'}
@@ -280,7 +285,7 @@ export function ComponentDetailsPanel({ details, onSelectNode }: ComponentDetail
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-x-hidden overflow-y-auto">
         <CollapsibleSection
           title="props"
           badge={propsCount > 0 ? <span className="text-xs text-gray-400">{propsCount}</span> : undefined}
@@ -307,8 +312,10 @@ export function ComponentDetailsPanel({ details, onSelectNode }: ComponentDetail
 
         {details.key !== undefined && details.key !== null && (
           <CollapsibleSection title="key" defaultOpen={false}>
-            <div className="text-xs font-mono text-yellow-600 dark:text-yellow-400 py-1">
-              "{details.key}"
+            <div className="py-1 text-xs text-yellow-600 font-mono dark:text-yellow-400">
+              "
+              {details.key}
+              "
             </div>
           </CollapsibleSection>
         )}
@@ -316,4 +323,3 @@ export function ComponentDetailsPanel({ details, onSelectNode }: ComponentDetail
     </div>
   )
 }
-
