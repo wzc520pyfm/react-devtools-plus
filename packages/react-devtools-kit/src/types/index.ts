@@ -39,6 +39,8 @@ export interface PropValue {
   type: 'string' | 'number' | 'boolean' | 'null' | 'undefined' | 'object' | 'array' | 'function' | 'symbol' | 'element' | 'unknown'
   value: string
   preview?: string
+  /** For objects and arrays, contains the nested properties */
+  children?: Record<string, PropValue>
 }
 
 /**

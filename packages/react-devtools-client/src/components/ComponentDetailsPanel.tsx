@@ -49,41 +49,95 @@ function CollapsibleSection({ title, children, defaultOpen = true, badge }: Coll
   )
 }
 
-function PropValueDisplay({ value, name }: { value: PropValue, name?: string }) {
-  const getColorClass = () => {
-    switch (value.type) {
-      case 'string':
-        return 'text-green-600 dark:text-green-400'
-      case 'number':
-        return 'text-blue-600 dark:text-blue-400'
-      case 'boolean':
-        return 'text-purple-600 dark:text-purple-400'
-      case 'null':
-      case 'undefined':
-        return 'text-gray-400 dark:text-gray-500'
-      case 'function':
-        return 'text-cyan-600 dark:text-cyan-400'
-      case 'element':
-        return 'text-primary-600 dark:text-primary-400'
-      case 'array':
-      case 'object':
-        return 'text-yellow-600 dark:text-yellow-400'
-      default:
-        return 'text-gray-600 dark:text-gray-400'
+function getValueColorClass(type: PropValue['type']) {
+  switch (type) {
+    case 'string':
+      return 'text-green-600 dark:text-green-400'
+    case 'number':
+      return 'text-blue-600 dark:text-blue-400'
+    case 'boolean':
+      return 'text-purple-600 dark:text-purple-400'
+    case 'null':
+    case 'undefined':
+      return 'text-gray-400 dark:text-gray-500'
+    case 'function':
+      return 'text-cyan-600 dark:text-cyan-400'
+    case 'element':
+      return 'text-primary-600 dark:text-primary-400'
+    case 'array':
+    case 'object':
+      return 'text-yellow-600 dark:text-yellow-400'
+    default:
+      return 'text-gray-600 dark:text-gray-400'
+  }
+}
+
+function PropValueDisplay({ value, name, depth = 0 }: { value: PropValue, name?: string, depth?: number }) {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const hasChildren = value.children && Object.keys(value.children).length > 0
+  const isExpandable = hasChildren && (value.type === 'object' || value.type === 'array')
+
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (isExpandable) {
+      setIsExpanded(!isExpanded)
     }
   }
 
   return (
-    <div className="flex items-start gap-2 py-1 text-xs font-mono">
-      {name && (
-        <>
-          <span className="text-pink-600 dark:text-pink-400">{name}</span>
-          <span className="text-gray-400">:</span>
-        </>
+    <div className="text-xs font-mono">
+      <div
+        className={`flex items-start gap-1 py-0.5 ${isExpandable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded' : ''}`}
+        style={{ paddingLeft: `${depth * 12}px` }}
+        onClick={handleToggle}
+      >
+        {/* Expand/collapse arrow */}
+        {isExpandable
+          ? (
+              <svg
+                className={`mt-0.5 h-3 w-3 flex-shrink-0 text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            )
+          : (
+              <span className="w-3 flex-shrink-0" />
+            )}
+
+        {/* Property name */}
+        {name !== undefined && (
+          <>
+            <span className="text-pink-600 dark:text-pink-400">{name}</span>
+            <span className="text-gray-400">:</span>
+          </>
+        )}
+
+        {/* Value */}
+        <span className={getValueColorClass(value.type)} title={value.preview || value.value}>
+          {value.value}
+          {value.preview && !isExpanded && (
+            <span className="ml-1 text-gray-400">{value.preview}</span>
+          )}
+        </span>
+      </div>
+
+      {/* Expanded children */}
+      {isExpanded && hasChildren && (
+        <div>
+          {Object.entries(value.children!).map(([childName, childValue]) => (
+            <PropValueDisplay
+              key={childName}
+              name={childName}
+              value={childValue}
+              depth={depth + 1}
+            />
+          ))}
+        </div>
       )}
-      <span className={getColorClass()} title={value.preview || value.value}>
-        {value.value}
-      </span>
     </div>
   )
 }
@@ -107,15 +161,67 @@ function PropsSection({ props }: { props: Record<string, PropValue> }) {
 }
 
 function HookDisplay({ hook, index }: { hook: HookInfo, index: number }) {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const hasChildren = hook.value?.children && Object.keys(hook.value.children).length > 0
+  const isExpandable = hasChildren && (hook.value?.type === 'object' || hook.value?.type === 'array')
+
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (isExpandable) {
+      setIsExpanded(!isExpanded)
+    }
+  }
+
   return (
-    <div className="flex items-start gap-2 py-1 text-xs font-mono">
-      <span className="text-gray-400">{index}</span>
-      <span className="text-cyan-600 dark:text-cyan-400">{hook.name}</span>
-      {hook.value && (
-        <>
-          <span className="text-gray-400">:</span>
-          <PropValueDisplay value={hook.value} />
-        </>
+    <div className="text-xs font-mono">
+      <div
+        className={`flex items-start gap-1 py-0.5 ${isExpandable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded' : ''}`}
+        onClick={handleToggle}
+      >
+        {/* Expand/collapse arrow */}
+        {isExpandable
+          ? (
+              <svg
+                className={`mt-0.5 h-3 w-3 flex-shrink-0 text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            )
+          : (
+              <span className="w-3 flex-shrink-0" />
+            )}
+
+        <span className="text-gray-400">{index}</span>
+        <span className="text-cyan-600 dark:text-cyan-400">{hook.name}</span>
+        {hook.value && (
+          <>
+            <span className="text-gray-400">:</span>
+            <span className={getValueColorClass(hook.value.type)}>
+              {hook.value.value}
+              {hook.value.preview && !isExpanded && (
+                <span className="ml-1 text-gray-400">{hook.value.preview}</span>
+              )}
+            </span>
+          </>
+        )}
+      </div>
+
+      {/* Expanded children */}
+      {isExpanded && hasChildren && (
+        <div>
+          {Object.entries(hook.value!.children!).map(([childName, childValue]) => (
+            <PropValueDisplay
+              key={childName}
+              name={childName}
+              value={childValue}
+              depth={1}
+            />
+          ))}
+        </div>
       )}
     </div>
   )

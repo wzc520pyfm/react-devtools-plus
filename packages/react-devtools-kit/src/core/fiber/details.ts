@@ -9,8 +9,8 @@ import { getDisplayName, getFiberId } from './utils'
 /**
  * Serialize a value into a displayable PropValue
  */
-function serializeValue(value: any, depth = 0): PropValue {
-  if (depth > 3) {
+function serializeValue(value: any, depth = 0, maxDepth = 5): PropValue {
+  if (depth > maxDepth) {
     return { type: 'unknown', value: '...' }
   }
 
@@ -46,10 +46,17 @@ function serializeValue(value: any, depth = 0): PropValue {
   }
 
   if (Array.isArray(value)) {
-    const preview = value.length > 3
-      ? `Array(${value.length})`
-      : `[${value.slice(0, 3).map(v => serializeValue(v, depth + 1).value).join(', ')}]`
-    return { type: 'array', value: `Array(${value.length})`, preview }
+    const children: Record<string, PropValue> = {}
+    // Serialize array items as children with index as key
+    value.forEach((item, index) => {
+      children[String(index)] = serializeValue(item, depth + 1, maxDepth)
+    })
+
+    return {
+      type: 'array',
+      value: `Array(${value.length})`,
+      children: Object.keys(children).length > 0 ? children : undefined,
+    }
   }
 
   if (type === 'object') {
@@ -59,12 +66,25 @@ function serializeValue(value: any, depth = 0): PropValue {
       return { type: 'element', value: `<${elementName} />` }
     }
 
-    // Regular object
+    // Regular object - serialize all properties as children
     const keys = Object.keys(value)
-    const preview = keys.length > 3
-      ? `{${keys.slice(0, 3).join(', ')}, ...}`
-      : `{${keys.join(', ')}}`
-    return { type: 'object', value: `Object`, preview }
+    const children: Record<string, PropValue> = {}
+
+    for (const key of keys) {
+      try {
+        children[key] = serializeValue(value[key], depth + 1, maxDepth)
+      }
+      catch {
+        children[key] = { type: 'unknown', value: '[Error reading property]' }
+      }
+    }
+
+    return {
+      type: 'object',
+      value: `Object`,
+      preview: keys.length > 0 ? `{${keys.slice(0, 3).join(', ')}${keys.length > 3 ? ', ...' : ''}}` : '{}',
+      children: Object.keys(children).length > 0 ? children : undefined,
+    }
   }
 
   return { type: 'unknown', value: String(value) }
