@@ -1,6 +1,6 @@
 import type { ComponentDetails, HookInfo, PropValue, RenderedByInfo } from '@react-devtools/kit'
 import { getRpcClient, REACT_TAGS } from '@react-devtools/kit'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 interface ComponentDetailsPanelProps {
   details: ComponentDetails | null
@@ -15,21 +15,46 @@ interface CollapsibleSectionProps {
   badge?: React.ReactNode
 }
 
-// Simple Tooltip component - shows below the element to avoid being clipped
+// Smart Tooltip component - auto-adjusts position based on available space
 function Tooltip({ content, children }: { content: string, children: React.ReactNode }) {
   const [visible, setVisible] = useState(false)
+  const [position, setPosition] = useState<'bottom' | 'left'>('bottom')
+  const triggerRef = useRef<HTMLDivElement>(null)
+
+  const handleMouseEnter = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect()
+      const tooltipWidth = content.length * 7 + 16 // Estimate tooltip width
+
+      // Check if tooltip would overflow on the right
+      if (rect.right + tooltipWidth / 2 > window.innerWidth) {
+        setPosition('left')
+      }
+      else {
+        setPosition('bottom')
+      }
+    }
+    setVisible(true)
+  }
 
   return (
     <div
+      ref={triggerRef}
       className="relative inline-flex"
-      onMouseEnter={() => setVisible(true)}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={() => setVisible(false)}
     >
       {children}
-      {visible && (
+      {visible && position === 'bottom' && (
         <div className="absolute left-1/2 top-full z-[9999] mt-1.5 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white shadow-lg -translate-x-1/2 dark:bg-gray-700">
           {content}
           <div className="absolute bottom-full left-1/2 border-4 border-transparent border-b-gray-900 -translate-x-1/2 dark:border-b-gray-700" />
+        </div>
+      )}
+      {visible && position === 'left' && (
+        <div className="absolute right-full top-1/2 z-[9999] mr-1.5 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white shadow-lg -translate-y-1/2 dark:bg-gray-700">
+          {content}
+          <div className="absolute left-full top-1/2 border-4 border-transparent border-l-gray-900 -translate-y-1/2 dark:border-l-gray-700" />
         </div>
       )}
     </div>
