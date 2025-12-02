@@ -1,5 +1,4 @@
 import type { ComponentTreeNode, FiberRoot, ReactDevToolsHook } from '../../types'
-import { hideHighlight } from '../fiber/highlight'
 import { buildTree } from '../fiber/tree'
 
 const fiberRoots = new Map<number, Set<FiberRoot>>()
@@ -116,7 +115,6 @@ function handleTreeUpdate(root: FiberRoot, showHostComponents: () => boolean) {
     if (tree) {
       emitTree(tree)
     }
-    hideHighlight()
     updateTimer = null
   }, 200)
 }
@@ -131,7 +129,6 @@ export function rebuildTree(showHostComponents: boolean) {
     if (tree) {
       emitTree(tree)
     }
-    hideHighlight()
   }, 100)
 }
 

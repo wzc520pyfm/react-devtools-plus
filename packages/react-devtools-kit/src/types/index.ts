@@ -15,6 +15,7 @@ export interface FiberNode {
     lineNumber: number
     columnNumber: number
   }
+  _debugHookTypes?: string[]
 }
 
 export interface FiberRoot {
@@ -29,6 +30,56 @@ export interface ComponentTreeNode {
   meta?: {
     tag: number
   }
+}
+
+/**
+ * Serializable prop value for display
+ */
+export interface PropValue {
+  type: 'string' | 'number' | 'boolean' | 'null' | 'undefined' | 'object' | 'array' | 'function' | 'symbol' | 'element' | 'unknown'
+  value: string
+  preview?: string
+}
+
+/**
+ * Hook information extracted from fiber
+ */
+export interface HookInfo {
+  name: string
+  value: PropValue
+  subHooks?: HookInfo[]
+}
+
+/**
+ * Parent component in the render chain
+ */
+export interface RenderedByInfo {
+  id: string
+  name: string
+  tag?: number
+}
+
+/**
+ * Source location information
+ */
+export interface SourceInfo {
+  fileName: string
+  lineNumber: number
+  columnNumber: number
+}
+
+/**
+ * Detailed component information for the inspector panel
+ */
+export interface ComponentDetails {
+  id: string
+  name: string
+  tag?: number
+  props: Record<string, PropValue>
+  hooks: HookInfo[]
+  renderedBy: RenderedByInfo[]
+  source?: SourceInfo
+  key?: string | null
 }
 
 export type TreeListener = (tree: ComponentTreeNode | null) => void

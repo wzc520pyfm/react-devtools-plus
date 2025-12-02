@@ -1,7 +1,8 @@
-import type { ComponentTreeNode } from '@react-devtools/kit'
+import type { ComponentDetails, ComponentTreeNode } from '@react-devtools/kit'
 import { getRpcClient, REACT_TAGS } from '@react-devtools/kit'
 import { Checkbox } from '@react-devtools/ui'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ComponentDetailsPanel } from '~/components/ComponentDetailsPanel'
 import { useComponentTreeHook } from '~/composables/useComponentTreeHook'
 
 interface ComponentsPageProps {
@@ -17,6 +18,10 @@ interface TreeNodeProps {
   onSelectNode?: (id: string) => void
   forceExpand?: boolean
   depth?: number
+}
+
+interface ServerRpcFunctions {
+  getComponentDetails: (fiberId: string) => Promise<ComponentDetails | null>
 }
 
 function getBadge(node: ComponentTreeNode) {
@@ -159,6 +164,8 @@ export function ComponentsPage({ tree, selectedNodeId, onSelectNode }: Component
   const [showHostComponents, setShowHostComponents] = useState(false)
   const [search, setSearch] = useState('')
   const [inspectorMode, setInspectorMode] = useState<'select-component' | 'open-in-editor' | null>(null)
+  const [componentDetails, setComponentDetails] = useState<ComponentDetails | null>(null)
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false)
 
   // Ensure component tree hook is installed
   useComponentTreeHook(tree)
@@ -177,7 +184,36 @@ export function ComponentsPage({ tree, selectedNodeId, onSelectNode }: Component
     if (rpc?.rebuildTree) {
       rpc.rebuildTree(showHostComponents).catch(() => {})
     }
-  }, [showHostComponents])
+  }, [showHostComponents, tree])
+
+  // Fetch component details when selection changes
+  useEffect(() => {
+    if (!selectedNodeId) {
+      // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
+      setComponentDetails(null)
+      return
+    }
+
+    const fetchDetails = async () => {
+      setIsLoadingDetails(true)
+      try {
+        const rpc = getRpcClient<ServerRpcFunctions>()
+        if (rpc?.getComponentDetails) {
+          const details = await rpc.getComponentDetails(selectedNodeId)
+          setComponentDetails(details)
+        }
+      }
+      catch (error) {
+        console.debug('[Components Page] Failed to fetch component details:', error)
+        setComponentDetails(null)
+      }
+      finally {
+        setIsLoadingDetails(false)
+      }
+    }
+
+    fetchDetails()
+  }, [selectedNodeId])
 
   // When selection changes (e.g. from inspector), turn off inspector
   useEffect(() => {
@@ -205,6 +241,10 @@ export function ComponentsPage({ tree, selectedNodeId, onSelectNode }: Component
       }
     }
   }
+
+  const handleSelectNode = useCallback((id: string) => {
+    onSelectNode?.(id)
+  }, [onSelectNode])
 
   if (!tree) {
     return (
@@ -257,19 +297,43 @@ export function ComponentsPage({ tree, selectedNodeId, onSelectNode }: Component
         />
       </div>
 
-      {/* Tree */}
-      <div className="flex-1 overflow-auto panel-grids">
-        <ul className="m-0 list-none p-0">
-          {filteredTree && (
-            <TreeNode
-              node={filteredTree}
-              showHostComponents={showHostComponents}
-              selectedNodeId={selectedNodeId}
-              onSelectNode={onSelectNode}
-              forceExpand={!!search}
-            />
-          )}
-        </ul>
+      {/* Main Content - Split Layout */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left: Component Tree */}
+        <div className="min-w-0 flex-1 overflow-auto panel-grids">
+          <ul className="m-0 list-none p-0">
+            {filteredTree && (
+              <TreeNode
+                node={filteredTree}
+                showHostComponents={showHostComponents}
+                selectedNodeId={selectedNodeId}
+                onSelectNode={handleSelectNode}
+                forceExpand={!!search}
+              />
+            )}
+          </ul>
+        </div>
+
+        {/* Right: Component Details */}
+        <div className="w-72 flex-shrink-0 border-l border-gray-200 bg-white dark:border-gray-700 dark:bg-[#121212]">
+          {isLoadingDetails
+            ? (
+                <div className="h-full flex items-center justify-center">
+                  <div className="animate-spin">
+                    <svg className="h-5 w-5 text-primary-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </div>
+                </div>
+              )
+            : (
+                <ComponentDetailsPanel
+                  details={componentDetails}
+                  onSelectNode={handleSelectNode}
+                />
+              )}
+        </div>
       </div>
     </div>
   )
