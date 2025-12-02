@@ -9,11 +9,8 @@ import { getDisplayName, getFiberId } from './utils'
 /**
  * Serialize a value into a displayable PropValue
  */
-function serializeValue(value: any, depth = 0, maxDepth = 5): PropValue {
-  if (depth > maxDepth) {
-    return { type: 'unknown', value: '...' }
-  }
-
+function serializeValue(value: any, depth = 0, maxDepth = 8): PropValue {
+  // Check null/undefined first before depth check
   if (value === null) {
     return { type: 'null', value: 'null' }
   }
@@ -24,8 +21,11 @@ function serializeValue(value: any, depth = 0, maxDepth = 5): PropValue {
 
   const type = typeof value
 
+  // Primitive types don't need depth limiting
   if (type === 'string') {
-    return { type: 'string', value: `"${value}"` }
+    // Truncate very long strings
+    const displayValue = value.length > 100 ? `${value.slice(0, 100)}...` : value
+    return { type: 'string', value: `"${displayValue}"` }
   }
 
   if (type === 'number') {
@@ -43,6 +43,14 @@ function serializeValue(value: any, depth = 0, maxDepth = 5): PropValue {
 
   if (type === 'symbol') {
     return { type: 'symbol', value: value.toString() }
+  }
+
+  // Only apply depth limit to complex types (objects/arrays)
+  if (depth > maxDepth) {
+    if (Array.isArray(value)) {
+      return { type: 'array', value: `Array(${value.length})` }
+    }
+    return { type: 'object', value: 'Object' }
   }
 
   if (Array.isArray(value)) {
@@ -75,7 +83,7 @@ function serializeValue(value: any, depth = 0, maxDepth = 5): PropValue {
         children[key] = serializeValue(value[key], depth + 1, maxDepth)
       }
       catch {
-        children[key] = { type: 'unknown', value: '[Error reading property]' }
+        children[key] = { type: 'unknown', value: '[Error]' }
       }
     }
 
@@ -109,8 +117,8 @@ function extractProps(fiber: FiberNode): Record<string, PropValue> {
         if (Array.isArray(value)) {
           props[key] = { type: 'array', value: `[${value.length} children]` }
         }
-        else if (typeof value === 'object' && value.$$typeof) {
-          const elementName = value.type?.displayName || value.type?.name || value.type || 'Element'
+        else if (typeof value === 'object' && (value as any).$$typeof) {
+          const elementName = (value as any).type?.displayName || (value as any).type?.name || (value as any).type || 'Element'
           props[key] = { type: 'element', value: `<${elementName} />` }
         }
         else if (typeof value === 'string') {
