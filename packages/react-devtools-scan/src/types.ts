@@ -66,6 +66,35 @@ export interface ComponentInfo {
   domElement: Element | null
 }
 
+/**
+ * Change info for a single prop/state/context value
+ */
+export interface ChangeInfo {
+  name: string
+  previousValue: any
+  currentValue: any
+  count: number
+}
+
+/**
+ * Aggregated changes for a component render
+ */
+export interface AggregatedChanges {
+  propsChanges: ChangeInfo[]
+  stateChanges: ChangeInfo[]
+  contextChanges: ChangeInfo[]
+}
+
+/**
+ * Focused component render info with changes
+ */
+export interface FocusedComponentRenderInfo {
+  componentName: string
+  renderCount: number
+  changes: AggregatedChanges
+  timestamp: number
+}
+
 export interface ScanInstance {
   /**
    * Get current scan options
@@ -156,6 +185,27 @@ export interface ScanInstance {
    * Get current FPS
    */
   getFPS: () => number
+
+  /**
+   * Get focused component render info with changes
+   */
+  getFocusedComponentRenderInfo: () => FocusedComponentRenderInfo | null
+
+  /**
+   * Subscribe to focused component changes (re-renders)
+   */
+  onFocusedComponentChange: (callback: (info: FocusedComponentRenderInfo) => void) => () => void
+
+  /**
+   * Clear the focused component's change history
+   */
+  clearFocusedComponentChanges: () => void
+
+  /**
+   * Set the focused component by name for render tracking
+   * This is used when inspectState.kind is not 'focused' but we still want to track renders
+   */
+  setFocusedComponentByName: (componentName: string) => void
 }
 
 /**

@@ -116,23 +116,51 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
       try {
         const scan = getScanInstance()
         if (scan) {
+          // Track the last hovered component during inspection
+          let lastInspectedComponent: { componentName: string } | null = null
+
           scan.onInspectStateChange((state: any) => {
             // Emit inspect state change event
             // Sanitize state for RPC
             const sanitizedState = {
               kind: state.kind,
+              // Include component name if available
+              componentName: state.fiber ? (state.fiber.type?.displayName || state.fiber.type?.name || 'Unknown') : undefined,
             }
             emit('inspect-state-changed', sanitizedState)
 
-            // If a component is focused, emit focused component info
+            // Track component during inspecting state
+            if (state.kind === 'inspecting' && state.hoveredDomElement) {
+              // Try to get component name from the hovered element
+              // This will be used when inspection ends
+            }
+
+            // If a component is focused, emit focused component info and set up tracking
             if (state.kind === 'focused') {
               const focusedComponent = scan.getFocusedComponent()
               if (focusedComponent) {
                 // Sanitize for RPC - remove non-serializable fields
                 const { fiber, domElement, ...serializableComponent } = focusedComponent as any
                 emit('component-focused', serializableComponent)
+                // Set up render tracking
+                scan.setFocusedComponentByName(focusedComponent.componentName)
               }
             }
+
+            // When inspection ends (inspect-off), check if we had a hovered component
+            // and emit it as focused
+            if (state.kind === 'inspect-off' && lastInspectedComponent) {
+              emit('component-focused', lastInspectedComponent)
+              scan.setFocusedComponentByName(lastInspectedComponent.componentName)
+              lastInspectedComponent = null
+            }
+          })
+
+          // Subscribe to focused component render changes
+          scan.onFocusedComponentChange((info) => {
+            // Emit focused component render event with changes
+            console.log('[React Scan Plugin] Focused component changed:', info)
+            emit('focused-component-render', info)
           })
         }
       }
@@ -520,6 +548,56 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
         catch (error) {
           console.error('[React Scan Plugin] Failed to get focused component:', error)
           return null
+        }
+      },
+
+      /**
+       * Get focused component render info with changes
+       */
+      getFocusedComponentRenderInfo: () => {
+        try {
+          const scan = getScanInstance()
+          return scan?.getFocusedComponentRenderInfo() || null
+        }
+        catch (error) {
+          console.error('[React Scan Plugin] Failed to get focused component render info:', error)
+          return null
+        }
+      },
+
+      /**
+       * Clear focused component changes
+       */
+      clearFocusedComponentChanges: () => {
+        try {
+          const scan = getScanInstance()
+          if (scan) {
+            scan.clearFocusedComponentChanges()
+            return true
+          }
+          return false
+        }
+        catch (error) {
+          console.error('[React Scan Plugin] Failed to clear focused component changes:', error)
+          return false
+        }
+      },
+
+      /**
+       * Set focused component by name for render tracking
+       */
+      setFocusedComponentByName: (componentName: string) => {
+        try {
+          const scan = getScanInstance()
+          if (scan && componentName) {
+            scan.setFocusedComponentByName(componentName)
+            return true
+          }
+          return false
+        }
+        catch (error) {
+          console.error('[React Scan Plugin] Failed to set focused component by name:', error)
+          return false
         }
       },
     },

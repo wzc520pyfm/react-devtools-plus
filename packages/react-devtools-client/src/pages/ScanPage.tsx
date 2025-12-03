@@ -1,6 +1,7 @@
 import { getRpcClient } from '@react-devtools/kit'
 import { Checkbox, Select, Switch } from '@react-devtools/ui'
 import { useEffect, useState } from 'react'
+import { RenderReasonPanel } from '../components/RenderReasonPanel'
 import { pluginEvents } from '../events'
 
 interface ScanConfig {
@@ -34,10 +35,30 @@ interface ComponentInfo {
   domElement: Element | null
 }
 
+interface ChangeInfo {
+  name: string
+  previousValue: any
+  currentValue: any
+  count: number
+}
+
+interface AggregatedChanges {
+  propsChanges: ChangeInfo[]
+  stateChanges: ChangeInfo[]
+  contextChanges: ChangeInfo[]
+}
+
+interface FocusedComponentRenderInfo {
+  componentName: string
+  renderCount: number
+  changes: AggregatedChanges
+  timestamp: number
+}
+
 // Define server-side RPC functions that the client can call
 interface ServerRpcFunctions {
   callPluginRPC: (pluginId: string, rpcName: string, ...args: any[]) => Promise<any>
-  subscribeToPluginEvent: (pluginId: string, eventName: string) => () => void
+  subscribeToPluginEvent: (pluginId: string, eventName: string) => void
   togglePanel: (visible: boolean) => void
 }
 
@@ -75,6 +96,7 @@ export function ScanPage() {
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [isInspecting, setIsInspecting] = useState(false)
   const [focusedComponent, setFocusedComponent] = useState<ComponentInfo | null>(null)
+  const [focusedRenderInfo, setFocusedRenderInfo] = useState<FocusedComponentRenderInfo | null>(null)
   const [fps, setFps] = useState<number | null>(null)
 
   const fetchFps = async () => {
@@ -125,10 +147,11 @@ export function ScanPage() {
           console.debug('[Scan Page] Failed to get initial config:', err)
         })
 
-      // Subscribe to events via RPC
-      const unsubConfig = rpc.subscribeToPluginEvent('react-scan', 'config-changed')
-      const unsubInspect = rpc.subscribeToPluginEvent('react-scan', 'inspect-state-changed')
-      const unsubFocus = rpc.subscribeToPluginEvent('react-scan', 'component-focused')
+      // Subscribe to events via RPC (fire-and-forget, unsubscribe handled on server)
+      rpc.subscribeToPluginEvent('react-scan', 'config-changed')
+      rpc.subscribeToPluginEvent('react-scan', 'inspect-state-changed')
+      rpc.subscribeToPluginEvent('react-scan', 'component-focused')
+      rpc.subscribeToPluginEvent('react-scan', 'focused-component-render')
 
       // Listen to local events emitted by RPC handler
       const handleConfigChange = (newConfig: ScanConfig) => {
@@ -136,7 +159,7 @@ export function ScanPage() {
         setIsRunning(newConfig.enabled ?? false)
       }
 
-      const handleInspectChange = (state: any) => {
+      const handleInspectChange = async (state: any) => {
         const isInspectingNow = state.kind === 'inspecting'
         setIsInspecting(isInspectingNow)
 
@@ -145,28 +168,41 @@ export function ScanPage() {
         }
         else if (state.kind === 'focused' || state.kind === 'inspect-off') {
           rpc.togglePanel(true)
+
+          // If we have a component name from the state, set up tracking
+          if (state.componentName && state.componentName !== 'Unknown') {
+            try {
+              await rpc.callPluginRPC('react-scan', 'setFocusedComponentByName', state.componentName)
+              setFocusedComponent({ componentName: state.componentName })
+              setFocusedRenderInfo(null)
+            }
+            catch (e) {
+              console.error('[Scan Page] Failed to set focused component:', e)
+            }
+          }
         }
       }
 
       const handleFocusChange = (component: ComponentInfo) => {
         setFocusedComponent(component)
+        // Reset render info when focusing a new component
+        setFocusedRenderInfo(null)
+      }
+
+      const handleFocusedComponentRender = (info: FocusedComponentRenderInfo) => {
+        setFocusedRenderInfo(info)
       }
 
       pluginEvents.on('react-scan:config-changed', handleConfigChange)
       pluginEvents.on('react-scan:inspect-state-changed', handleInspectChange)
       pluginEvents.on('react-scan:component-focused', handleFocusChange)
+      pluginEvents.on('react-scan:focused-component-render', handleFocusedComponentRender)
 
       return () => {
-        if (typeof unsubConfig === 'function')
-          unsubConfig()
-        if (typeof unsubInspect === 'function')
-          unsubInspect()
-        if (typeof unsubFocus === 'function')
-          unsubFocus()
-
         pluginEvents.off('react-scan:config-changed', handleConfigChange)
         pluginEvents.off('react-scan:inspect-state-changed', handleInspectChange)
         pluginEvents.off('react-scan:component-focused', handleFocusChange)
+        pluginEvents.off('react-scan:focused-component-render', handleFocusedComponentRender)
       }
     }
   }, [])
@@ -314,6 +350,20 @@ export function ScanPage() {
     }
   }
 
+  const handleClearFocusedChanges = async () => {
+    const rpc = getRpcClient<ServerRpcFunctions>()
+    if (!rpc?.callPluginRPC)
+      return
+
+    try {
+      await rpc.callPluginRPC('react-scan', 'clearFocusedComponentChanges')
+      setFocusedRenderInfo(null)
+    }
+    catch (error) {
+      console.error('[Scan Page] Failed to clear focused component changes:', error)
+    }
+  }
+
   return (
     <div className="h-full flex flex-col bg-base">
       {/* Header */}
@@ -358,23 +408,14 @@ export function ScanPage() {
       {/* Content */}
       <div className="flex-1 overflow-auto p-4">
         <div className="mx-auto max-w-2xl space-y-6">
-          {/* Focused Component Card */}
+          {/* Focused Component Render Reason Panel */}
           {focusedComponent && (
-            <div className="border border-base rounded-lg bg-white p-4 shadow-sm dark:bg-neutral-900">
-              <h3 className="mb-2 text-sm text-gray-700 font-medium dark:text-gray-300">
-                Focused Component
-              </h3>
-              <div className="rounded-lg bg-gray-50 p-3 dark:bg-neutral-800">
-                <div className="text-sm">
-                  <div className="text-gray-600 font-mono dark:text-gray-400">
-                    {focusedComponent.componentName}
-                  </div>
-                  <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    Click to inspect this component in the host app
-                  </div>
-                </div>
-              </div>
-            </div>
+            <RenderReasonPanel
+              componentName={focusedComponent.componentName}
+              renderCount={focusedRenderInfo?.renderCount || 0}
+              renderInfo={focusedRenderInfo}
+              onClear={handleClearFocusedChanges}
+            />
           )}
 
           {/* Performance Summary Card */}

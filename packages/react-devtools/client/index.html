@@ -9,6 +9,42 @@
       window.__vite_plugin_react_preamble_installed__ = true
       window.$RefreshReg$ = () => {}
       window.$RefreshSig$ = () => (type) => type
+
+      // Pre-apply theme to prevent flash of unstyled content (FOUC)
+      try {
+        // Check parent config first (since we are inside iframe)
+        let config = null
+        if (window.parent && window.parent !== window) {
+          try {
+            config = window.parent.__REACT_DEVTOOLS_CONFIG__
+          } catch (e) {}
+        }
+
+        // Also check local storage as fallback
+        if (!config) {
+          try {
+            const stored = localStorage.getItem('react-devtools-panel-theme')
+            if (stored) config = JSON.parse(stored)
+          } catch (e) {}
+        }
+
+        const theme = config?.theme
+        const mode = theme?.mode || 'auto'
+        const isDark = mode === 'dark' || (mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+
+        if (isDark) {
+          document.documentElement.classList.add('dark')
+          // Set initial background to avoid white flash
+          document.documentElement.style.backgroundColor = '#0a0a0a' // Matches neutral-950
+          document.body.style.backgroundColor = '#0a0a0a'
+        } else {
+          document.documentElement.classList.remove('dark')
+          document.documentElement.style.backgroundColor = '#ffffff'
+          document.body.style.backgroundColor = '#ffffff'
+        }
+      } catch (e) {
+        // Ignore errors
+      }
     </script>
     <style>
       * {
@@ -28,8 +64,8 @@
         height: 100vh;
       }
     </style>
-    <script type="module" crossorigin src="./assets/main-DT-FhM70.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/main-CCwcfMUL.css">
+    <script type="module" crossorigin src="./assets/main-BSJm7Txg.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/main-B03ICUhC.css">
   </head>
   <body>
     <div id="root"></div>

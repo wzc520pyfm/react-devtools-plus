@@ -3,8 +3,8 @@
  * Provides a clean interface to control React Scan from the DevTools UI
  */
 
-import type { ComponentPerformanceData, PerformanceSummary, ReactDevtoolsScanOptions, ScanInstance } from './types'
-import { getDisplayName } from 'bippy'
+import type { AggregatedChanges, ChangeInfo, ComponentPerformanceData, FocusedComponentRenderInfo, PerformanceSummary, ReactDevtoolsScanOptions, ScanInstance } from './types'
+import { getDisplayName, getFiberId } from 'bippy'
 import { getOptions as getScanOptions, ReactScanInternals, scan, setOptions as setScanOptions } from 'react-scan'
 
 // Helper to get shared internals from global window
@@ -31,11 +31,50 @@ function getGlobalObject(key: string) {
 }
 
 function getInternals() {
-  return getGlobalObject('__REACT_SCAN_INTERNALS__') || ReactScanInternals
+  // react-scan exposes internals at window.__REACT_SCAN__.ReactScanInternals
+  try {
+    if (typeof window !== 'undefined') {
+      // Check parent window first (Host App)
+      if (window.parent && window.parent !== window && (window.parent as any).__REACT_SCAN__?.ReactScanInternals) {
+        console.log('[React Scan] Using parent window ReactScanInternals')
+        return (window.parent as any).__REACT_SCAN__.ReactScanInternals
+      }
+      // Then check current window
+      if ((window as any).__REACT_SCAN__?.ReactScanInternals) {
+        console.log('[React Scan] Using current window ReactScanInternals')
+        return (window as any).__REACT_SCAN__.ReactScanInternals
+      }
+    }
+  }
+  catch (e) {
+    console.error('[React Scan] Error accessing window.__REACT_SCAN__:', e)
+  }
+  console.log('[React Scan] Using imported ReactScanInternals')
+  return ReactScanInternals
 }
 
 function getSetOptions() {
-  return getGlobalObject('__REACT_SCAN_SET_OPTIONS__') || setScanOptions
+  // react-scan exposes setOptions via the module export
+  // We need to use the one from the same react-scan instance
+  try {
+    if (typeof window !== 'undefined') {
+      // Check parent window first (Host App)
+      if (window.parent && window.parent !== window && (window.parent as any).__REACT_SCAN__?.setOptions) {
+        console.log('[React Scan] Using parent window setOptions')
+        return (window.parent as any).__REACT_SCAN__.setOptions
+      }
+      // Then check current window
+      if ((window as any).__REACT_SCAN__?.setOptions) {
+        console.log('[React Scan] Using current window setOptions')
+        return (window as any).__REACT_SCAN__.setOptions
+      }
+    }
+  }
+  catch (e) {
+    // Accessing parent might fail cross-origin
+  }
+  console.log('[React Scan] Using imported setOptions')
+  return setScanOptions
 }
 
 function getGetOptions() {
@@ -84,6 +123,334 @@ function updateToolbarVisibility(visible: boolean) {
 
 let scanInstance: ScanInstance | null = null
 let currentOptions: ReactDevtoolsScanOptions = {}
+
+// Store for focused component render tracking
+interface FocusedComponentTracker {
+  componentName: string
+  renderCount: number
+  changes: AggregatedChanges
+  timestamp: number
+  unsubscribe: (() => void) | null
+}
+
+let focusedComponentTracker: FocusedComponentTracker | null = null
+const focusedComponentChangeCallbacks = new Set<(info: FocusedComponentRenderInfo) => void>()
+
+/**
+ * Convert react-scan's internal changes format to our serializable format
+ */
+function convertChangesToSerializable(changesMap: Map<string, any>): ChangeInfo[] {
+  const result: ChangeInfo[] = []
+  changesMap.forEach((value, key) => {
+    result.push({
+      name: value.changes?.name || key,
+      previousValue: serializeValue(value.changes?.previousValue),
+      currentValue: serializeValue(value.changes?.currentValue),
+      count: value.changes?.count || 1,
+    })
+  })
+  return result
+}
+
+/**
+ * Serialize a value for RPC transfer
+ */
+function serializeValue(value: any): any {
+  if (value === undefined)
+    return undefined
+  if (value === null)
+    return null
+  if (typeof value === 'function')
+    return `[Function: ${value.name || 'anonymous'}]`
+  if (typeof value === 'symbol')
+    return `[Symbol: ${value.description || ''}]`
+  if (value instanceof Element)
+    return `[Element: ${value.tagName}]`
+  if (typeof value === 'object') {
+    if (Array.isArray(value)) {
+      if (value.length > 10)
+        return `[Array(${value.length})]`
+      return value.map(serializeValue)
+    }
+    // Handle React elements
+    if (value.$$typeof)
+      return `[React Element]`
+    // Handle circular references and complex objects
+    try {
+      const keys = Object.keys(value)
+      if (keys.length > 20)
+        return `[Object with ${keys.length} keys]`
+      const serialized: Record<string, any> = {}
+      for (const key of keys.slice(0, 20)) {
+        serialized[key] = serializeValue(value[key])
+      }
+      return serialized
+    }
+    catch {
+      return '[Object]'
+    }
+  }
+  return value
+}
+
+/**
+ * Get the current focused fiber and its ID
+ */
+function getFocusedFiberInfo(): { fiber: any, fiberId: string } | null {
+  try {
+    const { Store } = getInternals()
+    if (Store?.inspectState?.value?.kind === 'focused') {
+      const fiber = Store.inspectState.value.fiber
+      if (fiber) {
+        // Use bippy's getFiberId to get the correct fiber ID that matches react-scan's internal usage
+        const fiberId = getFiberId(fiber)
+        return { fiber, fiberId }
+      }
+    }
+    return null
+  }
+  catch {
+    return null
+  }
+}
+
+/**
+ * Subscribe to changes for a specific fiber ID
+ */
+function subscribeToFiberChanges(fiberId: string, callback: (changes: any) => void): () => void {
+  try {
+    const { Store } = getInternals()
+    if (!Store?.changesListeners)
+      return () => {}
+
+    let listeners = Store.changesListeners.get(fiberId)
+    if (!listeners) {
+      listeners = []
+      Store.changesListeners.set(fiberId, listeners)
+    }
+
+    listeners.push(callback)
+
+    return () => {
+      const currentListeners = Store.changesListeners.get(fiberId)
+      if (currentListeners) {
+        const index = currentListeners.indexOf(callback)
+        if (index > -1) {
+          currentListeners.splice(index, 1)
+        }
+      }
+    }
+  }
+  catch {
+    return () => {}
+  }
+}
+
+/**
+ * Setup onRender callback to track focused component renders
+ * This is more reliable than changesListeners as it doesn't depend on showToolbar
+ */
+function setupOnRenderCallback(): () => void {
+  try {
+    const internals = getInternals()
+    if (!internals) {
+      console.warn('[React Scan] No internals found for onRender setup')
+      return () => {}
+    }
+
+    console.log('[React Scan] Setting up onRender callback')
+
+    // Get the current onRender callback if any
+    const originalOnRender = internals.options?.value?.onRender
+
+    // Create our render tracking callback
+    const trackingOnRender = (fiber: any, renders: any[]) => {
+      // Call original callback first
+      if (originalOnRender) {
+        originalOnRender(fiber, renders)
+      }
+
+      // Check if we have a focused component tracker
+      if (!focusedComponentTracker) {
+        return
+      }
+
+      // Get the fiber name to compare with focused component
+      const fiberName = getDisplayName(fiber.type) || 'Unknown'
+
+      // Compare by component name (simpler approach)
+      if (fiberName !== focusedComponentTracker.componentName) {
+        return
+      }
+
+      // Update tracker
+      focusedComponentTracker.renderCount++
+      focusedComponentTracker.timestamp = Date.now()
+
+      // Extract changes directly from fiber since react-scan's trackChanges is false by default
+      const propsChanges: ChangeInfo[] = []
+      const stateChanges: ChangeInfo[] = []
+      const contextChanges: ChangeInfo[] = []
+
+      try {
+        // Get props changes
+        const currentProps = fiber.memoizedProps || {}
+        const prevProps = fiber.alternate?.memoizedProps || {}
+
+        for (const key of Object.keys(currentProps)) {
+          if (key === 'children')
+            continue
+          const prevValue = prevProps[key]
+          const currentValue = currentProps[key]
+          if (prevValue !== currentValue) {
+            propsChanges.push({
+              name: key,
+              previousValue: serializeValue(prevValue),
+              currentValue: serializeValue(currentValue),
+              count: 1,
+            })
+          }
+        }
+
+        // Get state changes (for functional components with hooks)
+        let currentState = fiber.memoizedState
+        let prevState = fiber.alternate?.memoizedState
+        let hookIndex = 0
+
+        while (currentState) {
+          // Check if this is a useState/useReducer hook (has memoizedState)
+          if (currentState.memoizedState !== undefined) {
+            const currentValue = currentState.memoizedState
+            const prevValue = prevState?.memoizedState
+
+            if (prevValue !== currentValue && prevState) {
+              stateChanges.push({
+                name: `Hook ${hookIndex + 1}`,
+                previousValue: serializeValue(prevValue),
+                currentValue: serializeValue(currentValue),
+                count: 1,
+              })
+            }
+          }
+
+          currentState = currentState.next
+          prevState = prevState?.next
+          hookIndex++
+        }
+      }
+      catch (e) {
+        console.error('[React Scan] Error extracting changes:', e)
+      }
+
+      // Accumulate changes - increment count if same name exists, otherwise add new
+      for (const change of propsChanges) {
+        const existing = focusedComponentTracker.changes.propsChanges.find(c => c.name === change.name)
+        if (existing) {
+          existing.count++
+          existing.previousValue = change.previousValue
+          existing.currentValue = change.currentValue
+        }
+        else {
+          focusedComponentTracker.changes.propsChanges.push(change)
+        }
+      }
+
+      for (const change of stateChanges) {
+        const existing = focusedComponentTracker.changes.stateChanges.find(c => c.name === change.name)
+        if (existing) {
+          existing.count++
+          existing.previousValue = change.previousValue
+          existing.currentValue = change.currentValue
+        }
+        else {
+          focusedComponentTracker.changes.stateChanges.push(change)
+        }
+      }
+
+      for (const change of contextChanges) {
+        const existing = focusedComponentTracker.changes.contextChanges.find(c => c.name === change.name)
+        if (existing) {
+          existing.count++
+          existing.previousValue = change.previousValue
+          existing.currentValue = change.currentValue
+        }
+        else {
+          focusedComponentTracker.changes.contextChanges.push(change)
+        }
+      }
+
+      // Notify all callbacks
+      const info: FocusedComponentRenderInfo = {
+        componentName: focusedComponentTracker.componentName,
+        renderCount: focusedComponentTracker.renderCount,
+        changes: focusedComponentTracker.changes,
+        timestamp: focusedComponentTracker.timestamp,
+      }
+
+      console.log('[React Scan] Notifying callbacks, count:', focusedComponentChangeCallbacks.size)
+      focusedComponentChangeCallbacks.forEach((cb) => {
+        try {
+          cb(info)
+        }
+        catch (e) {
+          console.error('[React Scan] Error in focused component change callback:', e)
+        }
+      })
+    }
+
+    // Set onRender directly on window.__REACT_SCAN__.ReactScanInternals.options.value
+    // This is the exact same method that works when manually tested in console
+    try {
+      const globalReactScan = (window as any).__REACT_SCAN__
+      if (globalReactScan?.ReactScanInternals?.options?.value) {
+        const currentOptions = globalReactScan.ReactScanInternals.options.value
+        globalReactScan.ReactScanInternals.options.value = {
+          ...currentOptions,
+          onRender: trackingOnRender,
+        }
+        console.log('[React Scan] onRender set directly on window.__REACT_SCAN__.ReactScanInternals.options.value')
+        console.log('[React Scan] Verification:', globalReactScan.ReactScanInternals.options.value.onRender === trackingOnRender)
+      }
+      else {
+        console.warn('[React Scan] window.__REACT_SCAN__.ReactScanInternals.options.value not available')
+      }
+    }
+    catch (e) {
+      console.error('[React Scan] Failed to set onRender on global:', e)
+    }
+
+    // Log the current state for debugging
+    const isPaused = internals.instrumentation?.isPaused?.value
+    const inspectState = internals.Store?.inspectState?.value?.kind
+    console.log('[React Scan] Current state - isPaused:', isPaused, 'inspectState:', inspectState)
+
+    // Ensure instrumentation is not paused if we want to track renders
+    if (internals.instrumentation?.isPaused) {
+      console.log('[React Scan] Ensuring instrumentation is not paused')
+      internals.instrumentation.isPaused.value = false
+    }
+
+    return () => {
+      // Restore original onRender callback
+      try {
+        const globalReactScan = (window as any).__REACT_SCAN__
+        if (globalReactScan?.ReactScanInternals?.options?.value) {
+          globalReactScan.ReactScanInternals.options.value.onRender = originalOnRender || null
+        }
+      }
+      catch (e) {
+        // ignore
+      }
+    }
+  }
+  catch (error) {
+    console.error('[React Scan] Failed to setup onRender callback:', error)
+    return () => {}
+  }
+}
+
+// Track whether onRender callback is set up
+let onRenderCleanup: (() => void) | null = null
 
 // Internal FPS counter
 let fps = 60
@@ -232,7 +599,10 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
       const internals = getInternals()
       const { instrumentation } = internals || {}
 
+      console.log('[React Scan] start() called, instrumentation:', !!instrumentation)
+
       if (instrumentation && instrumentation.isPaused) {
+        console.log('[React Scan] Setting isPaused to false')
         instrumentation.isPaused.value = false
       }
 
@@ -243,10 +613,13 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
       const scanFn = getScan()
       const isInstrumented = internals?.instrumentation && !internals.instrumentation.isPaused.value
 
+      console.log('[React Scan] start() - scanFn:', !!scanFn, 'isInstrumented:', isInstrumented)
+
       // Only reinitialize if not already instrumented
       if (scanFn) {
         // Always call scanFn to ensure options are applied and it's active
         // Even if instrumented, we need to ensure it's using our options
+        console.log('[React Scan] Calling scanFn with options:', effectiveOptions)
         scanFn(effectiveOptions)
       }
       else {
@@ -264,6 +637,22 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
       currentOptions = options
       // Apply visibility override
       updateToolbarVisibility(!!currentOptions.showToolbar)
+
+      // Re-apply onRender callback AFTER scan() has reset options
+      // This is critical because scan() calls setOptions() which replaces the entire options.value object
+      if (onRenderCleanup) {
+        onRenderCleanup()
+      }
+      onRenderCleanup = setupOnRenderCallback()
+
+      // Log the final state after setup
+      const finalInternals = getInternals()
+      console.log('[React Scan] After start() - internals:', {
+        hasOptions: !!finalInternals?.options,
+        hasOnRender: !!finalInternals?.options?.value?.onRender,
+        isPaused: finalInternals?.instrumentation?.isPaused?.value,
+        fiberRootsCount: finalInternals?.instrumentation?.fiberRoots?.size || 'N/A',
+      })
     },
 
     stop: () => {
@@ -413,7 +802,101 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
       try {
         const { Store } = getInternals()
         if (Store?.inspectState) {
-          return Store.inspectState.subscribe(callback)
+          // Set up the onRender callback for tracking renders
+          if (!onRenderCleanup) {
+            onRenderCleanup = setupOnRenderCallback()
+          }
+
+          // Subscribe to inspect state changes
+          const unsubscribe = Store.inspectState.subscribe((state: any) => {
+            // Update focused component tracker when state changes
+            if (state.kind === 'focused') {
+              const componentName = getDisplayName(state.fiber?.type) || 'Unknown'
+              const fiberInfo = getFocusedFiberInfo()
+
+              // Initialize or update tracker
+              if (!focusedComponentTracker || focusedComponentTracker.componentName !== componentName) {
+                // Clean up previous subscription
+                if (focusedComponentTracker?.unsubscribe) {
+                  focusedComponentTracker.unsubscribe()
+                }
+
+                focusedComponentTracker = {
+                  componentName,
+                  renderCount: 0,
+                  changes: { propsChanges: [], stateChanges: [], contextChanges: [] },
+                  timestamp: Date.now(),
+                  unsubscribe: null,
+                }
+
+                // Subscribe to changes for this fiber using the correct fiberId from bippy
+                // This is a backup mechanism - main tracking is done via onRender callback
+                if (fiberInfo) {
+                  focusedComponentTracker.unsubscribe = subscribeToFiberChanges(fiberInfo.fiberId, (changes: any) => {
+                    if (focusedComponentTracker) {
+                      focusedComponentTracker.renderCount++
+                      focusedComponentTracker.timestamp = Date.now()
+
+                      // Convert changes to serializable format
+                      // changes is { propsChanges: [...], stateChanges: [...], contextChanges: [...] }
+                      if (changes.propsChanges && Array.isArray(changes.propsChanges)) {
+                        focusedComponentTracker.changes.propsChanges = changes.propsChanges.map((c: any) => ({
+                          name: c.name || 'unknown',
+                          previousValue: serializeValue(c.prevValue),
+                          currentValue: serializeValue(c.value),
+                          count: 1,
+                        }))
+                      }
+                      if (changes.stateChanges && Array.isArray(changes.stateChanges)) {
+                        focusedComponentTracker.changes.stateChanges = changes.stateChanges.map((c: any) => ({
+                          name: c.name || `Hook ${c.index || 0}`,
+                          previousValue: serializeValue(c.prevValue),
+                          currentValue: serializeValue(c.value),
+                          count: 1,
+                        }))
+                      }
+                      if (changes.contextChanges && Array.isArray(changes.contextChanges)) {
+                        focusedComponentTracker.changes.contextChanges = changes.contextChanges.map((c: any) => ({
+                          name: c.name || 'Context',
+                          previousValue: serializeValue(c.prevValue),
+                          currentValue: serializeValue(c.value),
+                          count: 1,
+                        }))
+                      }
+
+                      // Notify all callbacks
+                      const info: FocusedComponentRenderInfo = {
+                        componentName: focusedComponentTracker.componentName,
+                        renderCount: focusedComponentTracker.renderCount,
+                        changes: focusedComponentTracker.changes,
+                        timestamp: focusedComponentTracker.timestamp,
+                      }
+
+                      focusedComponentChangeCallbacks.forEach((cb) => {
+                        try {
+                          cb(info)
+                        }
+                        catch (e) {
+                          console.error('[React Scan] Error in focused component change callback:', e)
+                        }
+                      })
+                    }
+                  })
+                }
+              }
+            }
+            else if (state.kind === 'inspect-off') {
+              // Clean up when inspect is turned off
+              if (focusedComponentTracker?.unsubscribe) {
+                focusedComponentTracker.unsubscribe()
+              }
+              focusedComponentTracker = null
+            }
+
+            // Call the original callback
+            callback(state)
+          })
+          return unsubscribe
         }
         return () => {}
       }
@@ -424,6 +907,59 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
     },
 
     getFPS: () => fps,
+
+    getFocusedComponentRenderInfo: () => {
+      if (!focusedComponentTracker)
+        return null
+
+      return {
+        componentName: focusedComponentTracker.componentName,
+        renderCount: focusedComponentTracker.renderCount,
+        changes: focusedComponentTracker.changes,
+        timestamp: focusedComponentTracker.timestamp,
+      }
+    },
+
+    onFocusedComponentChange: (callback: (info: FocusedComponentRenderInfo) => void) => {
+      console.log('[React Scan] Registering focused component change callback')
+      focusedComponentChangeCallbacks.add(callback)
+      console.log('[React Scan] Total callbacks registered:', focusedComponentChangeCallbacks.size)
+      return () => {
+        focusedComponentChangeCallbacks.delete(callback)
+      }
+    },
+
+    /**
+     * Set the focused component by name for render tracking
+     * This is used when inspectState.kind is not 'focused' but we still want to track renders
+     */
+    setFocusedComponentByName: (componentName: string) => {
+      console.log('[React Scan] Setting focused component by name:', componentName)
+
+      // Clean up previous tracker
+      if (focusedComponentTracker?.unsubscribe) {
+        focusedComponentTracker.unsubscribe()
+      }
+
+      // Create new tracker
+      focusedComponentTracker = {
+        componentName,
+        renderCount: 0,
+        changes: { propsChanges: [], stateChanges: [], contextChanges: [] },
+        timestamp: Date.now(),
+        unsubscribe: null,
+      }
+
+      console.log('[React Scan] Focused component tracker created for:', componentName)
+    },
+
+    clearFocusedComponentChanges: () => {
+      if (focusedComponentTracker) {
+        focusedComponentTracker.renderCount = 0
+        focusedComponentTracker.changes = { propsChanges: [], stateChanges: [], contextChanges: [] }
+        focusedComponentTracker.timestamp = Date.now()
+      }
+    },
   }
 }
 
