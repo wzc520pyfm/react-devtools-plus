@@ -617,6 +617,38 @@ function getFiberRenderCount(fiber: any): number {
 }
 
 /**
+ * Collect all composite component descendants from a fiber subtree
+ */
+function collectCompositeDescendants(fiber: any, depth: number, maxDepth: number, results: ComponentTreeNode[]): void {
+  if (!fiber || depth > maxDepth)
+    return
+
+  try {
+    const isComposite = isCompositeFiber(fiber)
+    const name = getDisplayName(fiber.type)
+
+    if (isComposite && name) {
+      // Found a composite component, add it to results
+      const node = buildTreeNode(fiber, depth, maxDepth)
+      if (node) {
+        results.push(node)
+      }
+    }
+    else {
+      // Not composite, continue searching in children
+      let child = fiber.child
+      while (child) {
+        collectCompositeDescendants(child, depth, maxDepth, results)
+        child = child.sibling
+      }
+    }
+  }
+  catch {
+    // Ignore errors
+  }
+}
+
+/**
  * Build component tree node from fiber
  */
 function buildTreeNode(fiber: any, depth: number = 0, maxDepth: number = 50): ComponentTreeNode | null {
@@ -642,24 +674,10 @@ function buildTreeNode(fiber: any, depth: number = 0, maxDepth: number = 50): Co
         children: [],
       }
 
-      // Process children
+      // Process children - collect all composite descendants
       let child = fiber.child
       while (child) {
-        const childNode = buildTreeNode(child, depth + 1, maxDepth)
-        if (childNode) {
-          node.children.push(childNode)
-        }
-        else if (child.child) {
-          // If the child itself is not composite, traverse its children
-          let grandChild = child.child
-          while (grandChild) {
-            const grandChildNode = buildTreeNode(grandChild, depth + 1, maxDepth)
-            if (grandChildNode) {
-              node.children.push(grandChildNode)
-            }
-            grandChild = grandChild.sibling
-          }
-        }
+        collectCompositeDescendants(child, depth + 1, maxDepth, node.children)
         child = child.sibling
       }
 
@@ -670,10 +688,7 @@ function buildTreeNode(fiber: any, depth: number = 0, maxDepth: number = 50): Co
     let child = fiber.child
     const compositeChildren: ComponentTreeNode[] = []
     while (child) {
-      const childNode = buildTreeNode(child, depth, maxDepth)
-      if (childNode) {
-        compositeChildren.push(childNode)
-      }
+      collectCompositeDescendants(child, depth, maxDepth, compositeChildren)
       child = child.sibling
     }
 
