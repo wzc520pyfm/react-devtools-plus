@@ -6,6 +6,10 @@ export interface RouteInfo {
   name?: string
   element?: string
   children?: RouteInfo[]
+  /** Whether this is an index route (renders at parent's path) */
+  isIndex?: boolean
+  /** Whether this is a layout route (has children but may not add URL segment) */
+  isLayout?: boolean
 }
 
 export interface RouterState {
@@ -58,42 +62,54 @@ function extractRouteFromElement(element: any, parentPath: string = ''): RouteIn
   const props = element.props
   const isIndex = props.index === true
 
-  let path = ''
+  // Calculate the actual path for this route
+  let displayPath = ''
+  let fullPath = ''
+
   if (isIndex) {
-    path = parentPath || '/'
+    // Index routes render at parent's path
+    displayPath = 'index'
+    fullPath = parentPath || '/'
   }
   else if (props.path) {
-    path = props.path.startsWith('/')
+    displayPath = props.path
+    fullPath = props.path.startsWith('/')
       ? props.path
       : `${parentPath}/${props.path}`.replace(/\/+/g, '/')
   }
   else {
-    path = parentPath || '/'
+    // Layout route without explicit path
+    displayPath = parentPath || '/'
+    fullPath = parentPath || '/'
   }
 
-  const routeInfo: RouteInfo = {
-    path: path || '/',
-    name: props.id || undefined,
-    element: getElementName(props.element),
-  }
-
-  // Extract nested routes from children
+  // Extract nested routes from children first to determine if this is a layout route
+  const childRoutes: RouteInfo[] = []
   if (props.children) {
     const children = Array.isArray(props.children) ? props.children : [props.children]
-    const childRoutes: RouteInfo[] = []
 
     for (const child of children) {
       if (child && child.type && (child.type.name === 'Route' || child.type?.displayName === 'Route')) {
-        const childRoute = extractRouteFromElement(child, path)
+        const childRoute = extractRouteFromElement(child, fullPath)
         if (childRoute) {
           childRoutes.push(childRoute)
         }
       }
     }
+  }
 
-    if (childRoutes.length > 0) {
-      routeInfo.children = childRoutes
-    }
+  const hasChildren = childRoutes.length > 0
+
+  const routeInfo: RouteInfo = {
+    path: fullPath || '/',
+    name: props.id || undefined,
+    element: getElementName(props.element),
+    isIndex,
+    isLayout: hasChildren,
+  }
+
+  if (hasChildren) {
+    routeInfo.children = childRoutes
   }
 
   return routeInfo

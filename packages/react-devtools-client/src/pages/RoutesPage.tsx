@@ -6,6 +6,8 @@ interface RouteInfo {
   name?: string
   element?: string
   children?: RouteInfo[]
+  isIndex?: boolean
+  isLayout?: boolean
 }
 
 interface RouterState {
@@ -37,77 +39,154 @@ function ChevronDownIcon({ className }: { className?: string }) {
   )
 }
 
-function flattenRoutes(routes: RouteInfo[], parentPath = ''): RouteInfo[] {
-  const result: RouteInfo[] = []
+function countRoutes(routes: RouteInfo[]): number {
+  let count = 0
   for (const route of routes) {
-    const fullPath = route.path.startsWith('/')
-      ? route.path
-      : `${parentPath}/${route.path}`.replace(/\/+/g, '/')
-    result.push({ ...route, path: fullPath || '/' })
+    count += 1
     if (route.children) {
-      result.push(...flattenRoutes(route.children, fullPath))
+      count += countRoutes(route.children)
     }
   }
-  return result
+  return count
 }
 
-function RouteItem({
+function FolderIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
+    </svg>
+  )
+}
+
+function FileIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+      <polyline points="14 2 14 8 20 8" />
+    </svg>
+  )
+}
+
+function HomeIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <polyline points="9 22 9 12 15 12 15 22" />
+    </svg>
+  )
+}
+
+function RouteTreeItem({
   route,
-  isActive,
+  currentPath,
   level = 0,
   onNavigate,
 }: {
   route: RouteInfo
-  isActive: boolean
+  currentPath: string
   level?: number
   onNavigate: (path: string) => void
 }) {
   const [expanded, setExpanded] = useState(true)
   const hasChildren = route.children && route.children.length > 0
 
+  // Determine if this route is active
+  // For index routes and leaf routes, check exact match
+  // For layout routes, they are "active" if they are in the matched path chain
+  const isExactMatch = route.path === currentPath
+  const isLayoutActive = hasChildren && (currentPath === route.path || currentPath.startsWith(route.path === '/' ? '/' : `${route.path}/`))
+
+  // Only show "active" badge for the exact matching route (not layout parents)
+  const showActiveBadge = isExactMatch && !hasChildren
+
+  // Highlight style for layout routes that contain the current route
+  const isHighlighted = isExactMatch || (isLayoutActive && !hasChildren)
+
+  // Display path - show "index" for index routes, relative path for children
+  const displayPath = route.isIndex ? 'index' : (level > 0 ? route.path.split('/').pop() || route.path : route.path)
+
   return (
     <div className="w-full">
       <div
-        className={`group flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 transition-colors ${
-          isActive
-            ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-300'
-            : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800/50'
+        className={`group flex cursor-pointer items-center gap-1.5 py-1.5 pr-3 transition-colors ${
+          isHighlighted
+            ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
+            : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800/30'
         }`}
-        style={{ paddingLeft: `${12 + level * 16}px` }}
+        style={{ paddingLeft: `${12 + level * 20}px` }}
         onClick={() => onNavigate(route.path)}
       >
-        {hasChildren && (
+        {/* Expand/Collapse button for layout routes */}
+        {hasChildren ? (
           <button
-            className="shrink-0 p-0.5 -ml-1"
+            className="shrink-0 p-0.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
             onClick={(e) => {
               e.stopPropagation()
               setExpanded(!expanded)
             }}
           >
             <ChevronDownIcon
-              className={`h-4 w-4 text-gray-400 transition-transform ${expanded ? '' : '-rotate-90'}`}
+              className={`h-3.5 w-3.5 text-gray-400 transition-transform ${expanded ? '' : '-rotate-90'}`}
             />
           </button>
+        ) : (
+          <span className="w-5" /> // Spacer for alignment
         )}
+
+        {/* Route type icon */}
+        {hasChildren ? (
+          <FolderIcon className="h-4 w-4 shrink-0 text-amber-500" />
+        ) : route.isIndex ? (
+          <HomeIcon className="h-4 w-4 shrink-0 text-blue-500" />
+        ) : (
+          <FileIcon className="h-4 w-4 shrink-0 text-gray-400" />
+        )}
+
+        {/* Route path */}
         <div className="min-w-0 flex flex-1 items-center gap-2">
-          {isActive && (
+          <span className={`truncate text-sm font-mono ${
+            isHighlighted ? 'text-primary-600 dark:text-primary-400' : ''
+          }`}>
+            {displayPath}
+          </span>
+
+          {/* Badges */}
+          {showActiveBadge && (
             <span className="shrink-0 rounded bg-primary-500 px-1.5 py-0.5 text-xs text-white font-medium">
               active
             </span>
           )}
-          <span className="truncate text-sm font-mono">{route.path}</span>
+          {route.isIndex && (
+            <span className="shrink-0 rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-600 font-medium dark:bg-blue-900/50 dark:text-blue-400">
+              index
+            </span>
+          )}
+          {route.isLayout && (
+            <span className="shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-600 font-medium dark:bg-amber-900/50 dark:text-amber-400">
+              layout
+            </span>
+          )}
         </div>
-        {route.name && (
-          <span className="shrink-0 text-xs text-gray-400">{route.name}</span>
-        )}
+
+        {/* Element name */}
+        <span className="shrink-0 text-xs text-gray-400 font-mono">
+          {route.element || '-'}
+        </span>
       </div>
+
+      {/* Children routes */}
       {hasChildren && expanded && (
-        <div className="mt-0.5">
+        <div className="relative">
+          {/* Vertical line connector */}
+          <div
+            className="absolute left-0 top-0 bottom-2 w-px bg-gray-200 dark:bg-gray-700"
+            style={{ marginLeft: `${22 + level * 20}px` }}
+          />
           {route.children!.map((child, index) => (
-            <RouteItem
+            <RouteTreeItem
               key={`${child.path}-${index}`}
               route={child}
-              isActive={false}
+              currentPath={currentPath}
               level={level + 1}
               onNavigate={onNavigate}
             />
@@ -180,7 +259,7 @@ export function RoutesPage() {
     }
   }
 
-  const flatRoutes = flattenRoutes(routes)
+  const totalRoutes = countRoutes(routes)
 
   if (isLoading) {
     return (
@@ -242,7 +321,7 @@ export function RoutesPage() {
         </p>
       </div>
 
-      {/* Routes List */}
+      {/* Routes Tree */}
       <div className="flex-1 overflow-auto p-4">
         <div className="border border-gray-200 rounded-xl bg-white dark:border-gray-800 dark:bg-[#121212]">
           {/* Section Header */}
@@ -252,11 +331,9 @@ export function RoutesPage() {
           >
             <div className="flex items-center gap-2">
               <RouteIcon className="h-5 w-5 text-gray-400" />
-              <span className="text-gray-900 font-medium dark:text-white">All Routes</span>
+              <span className="text-gray-900 font-medium dark:text-white">Route Tree</span>
               <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-                {flatRoutes.length}
-                {' '}
-                routes registered in your application
+                {totalRoutes} route{totalRoutes === 1 ? '' : 's'}
               </span>
             </div>
             <ChevronDownIcon
@@ -264,18 +341,18 @@ export function RoutesPage() {
             />
           </button>
 
-          {/* Routes Table */}
+          {/* Routes Tree */}
           {!isCollapsed && (
             <div className="border-t border-gray-200 dark:border-gray-800">
               {/* Table Header */}
               <div className="flex border-b border-gray-100 bg-gray-50/50 px-4 py-2 text-xs text-gray-500 font-semibold tracking-wide uppercase dark:border-gray-800 dark:bg-gray-900/50 dark:text-gray-400">
                 <div className="flex-1">Route Path</div>
-                <div className="w-32 text-right">Name</div>
+                <div className="w-24 text-right">Component</div>
               </div>
 
-              {/* Routes */}
-              <div className="divide-y divide-gray-100 dark:divide-gray-800">
-                {flatRoutes.length === 0
+              {/* Route Tree */}
+              <div className="py-2">
+                {routes.length === 0
                   ? (
                       <div className="px-4 py-8 text-center text-gray-400">
                         <RouteIcon className="mx-auto mb-2 h-8 w-8 opacity-50" />
@@ -284,44 +361,34 @@ export function RoutesPage() {
                       </div>
                     )
                   : (
-                      flatRoutes.map((route, index) => {
-                        const isActive = route.path === currentPath
-                        return (
-                          <div
-                            key={`${route.path}-${index}`}
-                            className={`group flex cursor-pointer items-center px-4 py-2.5 transition-colors ${
-                              isActive
-                                ? 'bg-primary-50 dark:bg-primary-900/20'
-                                : 'hover:bg-gray-50 dark:hover:bg-gray-900/50'
-                            }`}
-                            onClick={() => handleNavigate(route.path)}
-                          >
-                            <div className="flex flex-1 items-center gap-2">
-                              {isActive && (
-                                <span className="shrink-0 rounded bg-primary-500 px-1.5 py-0.5 text-xs text-white font-medium">
-                                  active
-                                </span>
-                              )}
-                              <span
-                                className={`text-sm font-mono ${
-                                  isActive
-                                    ? 'text-primary-600 dark:text-primary-400'
-                                    : 'text-gray-700 dark:text-gray-300'
-                                }`}
-                              >
-                                {route.path}
-                              </span>
-                            </div>
-                            <div className="w-32 text-right text-sm text-gray-400">
-                              {route.name || route.element || '-'}
-                            </div>
-                          </div>
-                        )
-                      })
+                      routes.map((route, index) => (
+                        <RouteTreeItem
+                          key={`${route.path}-${index}`}
+                          route={route}
+                          currentPath={currentPath}
+                          onNavigate={handleNavigate}
+                        />
+                      ))
                     )}
               </div>
             </div>
           )}
+        </div>
+
+        {/* Legend */}
+        <div className="mt-4 flex flex-wrap items-center gap-4 px-2 text-xs text-gray-400">
+          <div className="flex items-center gap-1.5">
+            <FolderIcon className="h-3.5 w-3.5 text-amber-500" />
+            <span>Layout route (has nested routes)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <HomeIcon className="h-3.5 w-3.5 text-blue-500" />
+            <span>Index route (default child)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <FileIcon className="h-3.5 w-3.5 text-gray-400" />
+            <span>Regular route</span>
+          </div>
         </div>
       </div>
     </div>
