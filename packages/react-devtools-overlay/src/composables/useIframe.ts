@@ -1,5 +1,5 @@
 import { globalPluginManager } from '@react-devtools/core'
-import { createRpcServer, getComponentDetails, getFiberById, getReactVersion, getRouterInfo, getRpcServer, hideHighlight, highlightNode, navigateTo, onInspectorSelect, onOpenInEditor, onTreeUpdated, openInEditor, rebuildTree, scrollToNode, setIframeServerContext, toggleInspector } from '@react-devtools/kit'
+import { clearNavigationHistory, createRpcServer, getComponentDetails, getFiberById, getReactVersion, getRouterInfo, getRpcServer, hideHighlight, highlightNode, navigateTo, onInspectorSelect, onOpenInEditor, onTreeUpdated, openInEditor, rebuildTree, scrollToNode, setIframeServerContext, toggleInspector } from '@react-devtools/kit'
 import { useEffect, useRef } from 'react'
 
 /**
@@ -229,6 +229,9 @@ export function useIframe(
         },
         navigateTo(path: string) {
           return navigateTo(path)
+        },
+        clearNavigationHistory() {
+          return clearNavigationHistory()
         },
         async callPluginRPC(pluginId: string, rpcName: string, ...args: any[]) {
           try {

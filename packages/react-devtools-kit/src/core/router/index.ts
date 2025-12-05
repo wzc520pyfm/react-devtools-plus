@@ -10,18 +10,64 @@ export interface RouteInfo {
   isIndex?: boolean
   /** Whether this is a layout route (has children but may not add URL segment) */
   isLayout?: boolean
+  /** Whether this route has a loader function */
+  hasLoader?: boolean
+  /** Whether this route has an action function */
+  hasAction?: boolean
+  /** Whether this route uses lazy loading */
+  isLazy?: boolean
+  /** Whether this route has an error boundary */
+  hasErrorBoundary?: boolean
+  /** Dynamic segments in the path (e.g., :id, :userId) */
+  params?: string[]
+}
+
+export interface MatchedRoute {
+  path: string
+  params: Record<string, string>
+  element?: string
+}
+
+export interface NavigationEntry {
+  path: string
+  search: string
+  hash: string
+  timestamp: number
+  duration?: number
 }
 
 export interface RouterState {
   currentPath: string
+  search: string
+  hash: string
   routes: RouteInfo[]
   routerType: 'react-router' | 'unknown' | null
+  /** Current matched route chain */
+  matchedRoutes: MatchedRoute[]
+  /** Current route params */
+  params: Record<string, string>
+  /** Navigation history */
+  history: NavigationEntry[]
+  /** Last navigation duration in ms */
+  lastNavigationDuration?: number
 }
 
 /**
  * Global variable to store the React fiber root reference
  */
 let fiberRoot: FiberRoot | null = null
+
+/**
+ * Navigation history storage
+ */
+const navigationHistory: NavigationEntry[] = []
+let lastNavigationStart: number | null = null
+let lastNavigationDuration: number | undefined
+
+/**
+ * Max history entries to keep
+ */
+const MAX_HISTORY_ENTRIES = 50
 
 /**
  * Set the fiber root reference (called from hook)
@@ -38,6 +84,33 @@ export function getFiberRoot(): FiberRoot | null {
 }
 
 /**
+ * Extract dynamic params from a path pattern
+ */
+function extractParamsFromPath(path: string): string[] {
+  const params: string[] = []
+  const regex = /:([^/]+)/g
+  let match
+  while ((match = regex.exec(path)) !== null) {
+    params.push(match[1])
+  }
+  return params
+}
+
+/**
+ * Check if element is lazy loaded
+ */
+function isLazyElement(element: any): boolean {
+  if (!element)
+    return false
+  // Check for React.lazy wrapper
+  if (element.$$typeof?.toString() === 'Symbol(react.lazy)')
+    return true
+  if (element.type?.$$typeof?.toString() === 'Symbol(react.lazy)')
+    return true
+  return false
+}
+
+/**
  * Get element name from React element
  */
 function getElementName(element: any): string | undefined {
@@ -49,6 +122,9 @@ function getElementName(element: any): string | undefined {
     return element.type.name
   if (element.type?.displayName)
     return element.type.displayName
+  // Handle lazy components
+  if (element.type?._payload?._result?.name)
+    return element.type._payload._result.name
   return undefined
 }
 
@@ -100,12 +176,20 @@ function extractRouteFromElement(element: any, parentPath: string = ''): RouteIn
 
   const hasChildren = childRoutes.length > 0
 
+  // Extract dynamic params from the path
+  const params = extractParamsFromPath(props.path || '')
+
   const routeInfo: RouteInfo = {
     path: fullPath || '/',
     name: props.id || undefined,
     element: getElementName(props.element),
     isIndex,
     isLayout: hasChildren,
+    hasLoader: !!props.loader,
+    hasAction: !!props.action,
+    isLazy: isLazyElement(props.element) || !!props.lazy,
+    hasErrorBoundary: !!props.errorElement || !!props.ErrorBoundary,
+    params: params.length > 0 ? params : undefined,
   }
 
   if (hasChildren) {
@@ -169,6 +253,9 @@ function extractRoutesFromFiber(fiber: FiberNode): RouteInfo[] {
           path: match?.pathname || route?.path || parentPath || '/',
           name: route?.id || undefined,
           element: route?.element?.type?.name || route?.element?.type?.displayName || getElementName(props.element),
+          hasLoader: !!route?.loader,
+          hasAction: !!route?.action,
+          hasErrorBoundary: !!route?.errorElement,
         }
 
         // Don't add duplicate paths
@@ -242,18 +329,132 @@ function findAndExtractRoutes(fiber: FiberNode | null): RouteInfo[] {
 }
 
 /**
+ * Match a path against a route pattern and extract params
+ */
+function matchPath(pattern: string, pathname: string): { matched: boolean, params: Record<string, string> } {
+  const params: Record<string, string> = {}
+
+  // Normalize paths
+  const patternParts = pattern.split('/').filter(Boolean)
+  const pathParts = pathname.split('/').filter(Boolean)
+
+  // Index route matches empty path
+  if (patternParts.length === 0 && pathParts.length === 0) {
+    return { matched: true, params }
+  }
+
+  let patternIndex = 0
+  let pathIndex = 0
+
+  while (patternIndex < patternParts.length && pathIndex < pathParts.length) {
+    const patternPart = patternParts[patternIndex]
+    const pathPart = pathParts[pathIndex]
+
+    if (patternPart.startsWith(':')) {
+      // Dynamic segment
+      const paramName = patternPart.slice(1).replace('?', '')
+      params[paramName] = pathPart
+    }
+    else if (patternPart === '*') {
+      // Splat route - matches rest of path
+      params['*'] = pathParts.slice(pathIndex).join('/')
+      return { matched: true, params }
+    }
+    else if (patternPart !== pathPart) {
+      return { matched: false, params: {} }
+    }
+
+    patternIndex++
+    pathIndex++
+  }
+
+  // Check for optional params at the end
+  while (patternIndex < patternParts.length) {
+    const part = patternParts[patternIndex]
+    if (!part.endsWith('?') && !part.startsWith(':')) {
+      return { matched: false, params: {} }
+    }
+    patternIndex++
+  }
+
+  // Layout routes can match even if there are more path parts
+  return { matched: true, params }
+}
+
+/**
+ * Find matched routes for a given path
+ */
+function findMatchedRoutes(routes: RouteInfo[], pathname: string): MatchedRoute[] {
+  const matched: MatchedRoute[] = []
+
+  function findInRoutes(routeList: RouteInfo[], currentPath: string): boolean {
+    for (const route of routeList) {
+      const { matched: isMatch, params } = matchPath(route.path, pathname)
+
+      if (isMatch) {
+        matched.push({
+          path: route.path,
+          params,
+          element: route.element,
+        })
+
+        // If this is a layout route with children, continue matching
+        if (route.children && route.children.length > 0) {
+          findInRoutes(route.children, route.path)
+        }
+
+        // If this matches exactly or is an index route at current level, we're done
+        if (route.path === pathname || route.isIndex) {
+          return true
+        }
+      }
+    }
+    return matched.length > 0
+  }
+
+  findInRoutes(routes, pathname)
+  return matched
+}
+
+/**
+ * Get current URL information
+ */
+function getCurrentUrlInfo(): { path: string, search: string, hash: string } {
+  // Check for hash router first
+  if (window.location.hash && window.location.hash.startsWith('#/')) {
+    const hashContent = window.location.hash.slice(1)
+    const [pathAndSearch, hash] = hashContent.split('#')
+    const [path, search] = (pathAndSearch || '/').split('?')
+    return {
+      path: path || '/',
+      search: search ? `?${search}` : '',
+      hash: hash ? `#${hash}` : '',
+    }
+  }
+
+  return {
+    path: window.location.pathname || '/',
+    search: window.location.search || '',
+    hash: window.location.hash || '',
+  }
+}
+
+/**
  * Get current path from window.location
  */
 function getCurrentPath(): string {
-  // Check for hash router first
-  if (window.location.hash && window.location.hash.startsWith('#')) {
-    const hashPath = window.location.hash.slice(1)
-    // Remove query string from hash if present
-    return hashPath.split('?')[0] || '/'
-  }
+  return getCurrentUrlInfo().path
+}
 
-  // Regular path
-  return window.location.pathname || '/'
+/**
+ * Extract all params from matched routes
+ */
+function extractAllParams(matchedRoutes: MatchedRoute[]): Record<string, string> {
+  const params: Record<string, string> = {}
+  for (const route of matchedRoutes) {
+    Object.assign(params, route.params)
+  }
+  return params
 }
 
 /**
@@ -306,17 +507,52 @@ function detectRouterType(fiber: FiberNode | null): 'react-router' | 'unknown' |
 }
 
 /**
+ * Record navigation to history
+ */
+function recordNavigation(path: string, search: string, hash: string) {
+  const now = Date.now()
+
+  // Calculate duration if we have a start time
+  if (lastNavigationStart !== null) {
+    lastNavigationDuration = now - lastNavigationStart
+  }
+
+  // Add to history
+  navigationHistory.unshift({
+    path,
+    search,
+    hash,
+    timestamp: now,
+    duration: lastNavigationDuration,
+  })
+
+  // Keep only MAX_HISTORY_ENTRIES
+  if (navigationHistory.length > MAX_HISTORY_ENTRIES) {
+    navigationHistory.pop()
+  }
+
+  lastNavigationStart = null
+}
+
+/**
  * Get router information from the current React app
  */
 export function getRouterInfo(): RouterState | null {
   const root = fiberRoot
+  const urlInfo = getCurrentUrlInfo()
 
   if (!root?.current) {
     // Fallback: just return current path
     return {
-      currentPath: getCurrentPath(),
+      currentPath: urlInfo.path,
+      search: urlInfo.search,
+      hash: urlInfo.hash,
       routes: [],
       routerType: null,
+      matchedRoutes: [],
+      params: {},
+      history: [...navigationHistory],
+      lastNavigationDuration,
     }
   }
 
@@ -328,10 +564,22 @@ export function getRouterInfo(): RouterState | null {
   // Extract routes from fiber tree
   const routes = findAndExtractRoutes(fiber.child)
 
+  // Find matched routes for current path
+  const matchedRoutes = findMatchedRoutes(routes, urlInfo.path)
+
+  // Extract all params from matched routes
+  const params = extractAllParams(matchedRoutes)
+
   return {
-    currentPath: getCurrentPath(),
+    currentPath: urlInfo.path,
+    search: urlInfo.search,
+    hash: urlInfo.hash,
     routes,
     routerType,
+    matchedRoutes,
+    params,
+    history: [...navigationHistory],
+    lastNavigationDuration,
   }
 }
 
@@ -340,6 +588,13 @@ export function getRouterInfo(): RouterState | null {
  */
 export function navigateTo(path: string): boolean {
   try {
+    // Start timing
+    lastNavigationStart = Date.now()
+
+    // Parse the path for search and hash
+    const [pathname, rest] = path.split('?')
+    const [search, hash] = (rest || '').split('#')
+
     // Try using History API (works with BrowserRouter)
     if (window.history && window.history.pushState) {
       // Check if we're using a hash router
@@ -351,15 +606,73 @@ export function navigateTo(path: string): boolean {
         // Dispatch a popstate event to notify React Router
         window.dispatchEvent(new PopStateEvent('popstate'))
       }
+
+      // Record the navigation
+      recordNavigation(
+        pathname || '/',
+        search ? `?${search}` : '',
+        hash ? `#${hash}` : '',
+      )
+
       return true
     }
 
     // Fallback: direct location change
     window.location.href = path
+    recordNavigation(pathname || '/', search ? `?${search}` : '', hash ? `#${hash}` : '')
     return true
   }
   catch (e) {
     console.error('[React DevTools] Failed to navigate:', e)
+    lastNavigationStart = null
     return false
   }
+}
+
+/**
+ * Clear navigation history
+ */
+export function clearNavigationHistory(): void {
+  navigationHistory.length = 0
+  lastNavigationDuration = undefined
+}
+
+/**
+ * Initialize navigation tracking by listening to popstate events
+ */
+if (typeof window !== 'undefined') {
+  let currentPath = getCurrentPath()
+
+  window.addEventListener('popstate', () => {
+    const urlInfo = getCurrentUrlInfo()
+    if (urlInfo.path !== currentPath) {
+      recordNavigation(urlInfo.path, urlInfo.search, urlInfo.hash)
+      currentPath = urlInfo.path
+    }
+  })
+
+  // Also track pushState and replaceState
+  const originalPushState = window.history.pushState
+  const originalReplaceState = window.history.replaceState
+
+  window.history.pushState = function (...args) {
+    const result = originalPushState.apply(this, args)
+    const urlInfo = getCurrentUrlInfo()
+    if (urlInfo.path !== currentPath) {
+      recordNavigation(urlInfo.path, urlInfo.search, urlInfo.hash)
+      currentPath = urlInfo.path
+    }
+    return result
+  }
+
+  window.history.replaceState = function (...args) {
+    const result = originalReplaceState.apply(this, args)
+    const urlInfo = getCurrentUrlInfo()
+    currentPath = urlInfo.path
+    return result
+  }
+
+  // Record initial navigation
+  const urlInfo = getCurrentUrlInfo()
+  recordNavigation(urlInfo.path, urlInfo.search, urlInfo.hash)
 }
