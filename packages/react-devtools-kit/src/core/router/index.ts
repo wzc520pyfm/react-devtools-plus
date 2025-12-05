@@ -591,10 +591,6 @@ export function navigateTo(path: string): boolean {
     // Start timing
     lastNavigationStart = Date.now()
 
-    // Parse the path for search and hash
-    const [pathname, rest] = path.split('?')
-    const [search, hash] = (rest || '').split('#')
-
     // Try using History API (works with BrowserRouter)
     if (window.history && window.history.pushState) {
       // Check if we're using a hash router
@@ -607,19 +603,11 @@ export function navigateTo(path: string): boolean {
         window.dispatchEvent(new PopStateEvent('popstate'))
       }
 
-      // Record the navigation
-      recordNavigation(
-        pathname || '/',
-        search ? `?${search}` : '',
-        hash ? `#${hash}` : '',
-      )
-
       return true
     }
 
     // Fallback: direct location change
     window.location.href = path
-    recordNavigation(pathname || '/', search ? `?${search}` : '', hash ? `#${hash}` : '')
     return true
   }
   catch (e) {
@@ -638,41 +626,50 @@ export function clearNavigationHistory(): void {
 }
 
 /**
- * Initialize navigation tracking by listening to popstate events
+ * Initialize navigation tracking by listening to navigation events
  */
 if (typeof window !== 'undefined') {
-  let currentPath = getCurrentPath()
+  let currentFullPath = ''
 
-  window.addEventListener('popstate', () => {
+  const updateCurrentPath = () => {
     const urlInfo = getCurrentUrlInfo()
-    if (urlInfo.path !== currentPath) {
-      recordNavigation(urlInfo.path, urlInfo.search, urlInfo.hash)
-      currentPath = urlInfo.path
-    }
-  })
+    currentFullPath = `${urlInfo.path}${urlInfo.search}${urlInfo.hash}`
+  }
 
-  // Also track pushState and replaceState
+  const handleNavigation = () => {
+    const urlInfo = getCurrentUrlInfo()
+    const newFullPath = `${urlInfo.path}${urlInfo.search}${urlInfo.hash}`
+
+    if (newFullPath !== currentFullPath) {
+      recordNavigation(urlInfo.path, urlInfo.search, urlInfo.hash)
+      currentFullPath = newFullPath
+    }
+  }
+
+  // Listen for popstate (browser back/forward)
+  window.addEventListener('popstate', handleNavigation)
+
+  // Listen for hashchange (HashRouter)
+  window.addEventListener('hashchange', handleNavigation)
+
+  // Also track pushState and replaceState (BrowserRouter)
   const originalPushState = window.history.pushState
   const originalReplaceState = window.history.replaceState
 
   window.history.pushState = function (...args) {
     const result = originalPushState.apply(this, args)
-    const urlInfo = getCurrentUrlInfo()
-    if (urlInfo.path !== currentPath) {
-      recordNavigation(urlInfo.path, urlInfo.search, urlInfo.hash)
-      currentPath = urlInfo.path
-    }
+    handleNavigation()
     return result
   }
 
   window.history.replaceState = function (...args) {
     const result = originalReplaceState.apply(this, args)
-    const urlInfo = getCurrentUrlInfo()
-    currentPath = urlInfo.path
+    updateCurrentPath()
     return result
   }
 
   // Record initial navigation
   const urlInfo = getCurrentUrlInfo()
   recordNavigation(urlInfo.path, urlInfo.search, urlInfo.hash)
+  currentFullPath = `${urlInfo.path}${urlInfo.search}${urlInfo.hash}`
 }
