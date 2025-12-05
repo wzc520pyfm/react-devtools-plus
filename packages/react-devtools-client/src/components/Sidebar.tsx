@@ -46,6 +46,22 @@ function ContextIcon({ className }: { className?: string }) {
   )
 }
 
+function GraphIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="12" cy="12" r="2" />
+      <circle cx="6" cy="6" r="2" />
+      <circle cx="18" cy="6" r="2" />
+      <circle cx="6" cy="18" r="2" />
+      <circle cx="18" cy="18" r="2" />
+      <path d="M10.3 10.3 7.5 7.5" />
+      <path d="m13.7 10.3 2.8-2.8" />
+      <path d="m7.5 16.5 2.8-2.8" />
+      <path d="m13.7 13.7 2.8 2.8" />
+    </svg>
+  )
+}
+
 function SettingsIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -113,6 +129,7 @@ export function Sidebar({ plugins = [] }: { plugins?: LoadedPlugin[] }) {
         <NavItem to="/components" icon={ComponentsIcon} label="Components" />
         <NavItem to="/routes" icon={RoutesIcon} label="Routes" />
         <NavItem to="/context" icon={ContextIcon} label="Context" />
+        <NavItem to="/graph" icon={GraphIcon} label="Graph" />
         <NavItem to="/scan" icon={ScanIcon} label="React Scan" />
         {plugins.map(plugin => (
           <NavItem

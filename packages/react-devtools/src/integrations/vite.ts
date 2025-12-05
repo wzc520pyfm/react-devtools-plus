@@ -7,7 +7,7 @@ import type { PreviewServer, ResolvedConfig, ViteDevServer } from 'vite'
 import type { ResolvedPluginConfig } from '../config/types'
 import fs from 'node:fs'
 import path from 'node:path'
-import { createOpenInEditorMiddleware, serveClient } from '../middleware'
+import { createGraphMiddleware, createOpenInEditorMiddleware, getViteModuleGraph, serveClient } from '../middleware'
 import { OVERLAY_CHUNK_NAME } from '../utils/paths'
 
 /**
@@ -105,14 +105,21 @@ export function setupDevServerMiddlewares(
   config: ResolvedPluginConfig,
   clientPath: string,
 ) {
+  const base = server.config.base || '/'
+
   // Open in editor middleware
   server.middlewares.use(createOpenInEditorMiddleware(
     config.projectRoot,
     config.sourcePathMode,
   ))
 
+  // Graph middleware for module dependency visualization (must be before client serving)
+  server.middlewares.use(createGraphMiddleware(
+    getViteModuleGraph(server, config.projectRoot),
+    base,
+  ))
+
   // Client serving middleware
-  const base = server.config.base || '/'
   server.middlewares.use(`${base}__react_devtools__`, serveClient(clientPath))
 }
 

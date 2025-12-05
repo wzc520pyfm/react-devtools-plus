@@ -23,7 +23,8 @@
     "@react-devtools/ui": "workspace:^",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "react-router-dom": "^6.26.0"
+    "react-router-dom": "^6.26.0",
+    "vis-network": "^9.1.9"
   },
   "devDependencies": {
     "@types/node": "catalog:",

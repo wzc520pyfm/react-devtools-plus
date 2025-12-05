@@ -7,6 +7,7 @@ import { Sidebar } from '~/components/Sidebar'
 import { pluginEvents } from './events'
 import { ComponentsPage } from './pages/ComponentsPage'
 import { ContextPage } from './pages/ContextPage'
+import { GraphPage } from './pages/GraphPage'
 import { OverviewPage } from './pages/OverviewPage'
 import { RoutesPage } from './pages/RoutesPage'
 import { ScanPage } from './pages/ScanPage'
@@ -183,6 +184,7 @@ export function App() {
           />
           <Route path="/routes" element={<RoutesPage />} />
           <Route path="/context" element={<ContextPage />} />
+          <Route path="/graph" element={<GraphPage />} />
           <Route path="/scan" element={<ScanPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           {plugins.map((plugin) => {
