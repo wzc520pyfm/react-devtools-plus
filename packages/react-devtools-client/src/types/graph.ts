@@ -141,4 +141,3 @@ export function getGraphOptions(isDark: boolean): Options {
     groups: fileTypes,
   }
 }
-
