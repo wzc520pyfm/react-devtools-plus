@@ -1,5 +1,5 @@
 import { globalPluginManager } from '@react-devtools/core'
-import { clearNavigationHistory, createRpcServer, getComponentDetails, getFiberById, getReactVersion, getRouterInfo, getRpcServer, hideHighlight, highlightNode, navigateTo, onInspectorSelect, onOpenInEditor, onTreeUpdated, openInEditor, rebuildTree, scrollToNode, setIframeServerContext, toggleInspector } from '@react-devtools/kit'
+import { clearNavigationHistory, createRpcServer, getAllContexts, getAppFiberRoot, getComponentDetails, getContextProviderInfo, getFiberById, getReactVersion, getRouterInfo, getRpcServer, hideHighlight, highlightNode, isEditableProp, navigateTo, onInspectorSelect, onOpenInEditor, onTreeUpdated, openInEditor, rebuildTree, scrollToNode, setComponentProp, setIframeServerContext, toggleInspector } from '@react-devtools/kit'
 import { useEffect, useRef } from 'react'
 
 /**
@@ -232,6 +232,24 @@ export function useIframe(
         },
         clearNavigationHistory() {
           return clearNavigationHistory()
+        },
+        setComponentProp(fiberId: string, propPath: string, value: string, valueType: string) {
+          return setComponentProp(fiberId, propPath, value, valueType)
+        },
+        isEditableProp(propName: string, valueType: string) {
+          return isEditableProp(propName, valueType)
+        },
+        getContextTree() {
+          const root = getAppFiberRoot()
+          if (!root)
+            return null
+          return getAllContexts(root)
+        },
+        getContextProviderDetails(fiberId: string) {
+          const root = getAppFiberRoot()
+          if (!root)
+            return null
+          return getContextProviderInfo(root, fiberId)
         },
         async callPluginRPC(pluginId: string, rpcName: string, ...args: any[]) {
           try {

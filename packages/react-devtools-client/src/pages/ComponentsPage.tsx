@@ -250,6 +250,17 @@ function SplitPane({ tree, showHostComponents, selectedNodeId, onSelectNode, sea
                 details={componentDetails}
                 onSelectNode={onSelectNode}
                 onScrollToComponent={onScrollToComponent}
+                onPropChange={() => {
+                  // Re-fetch component details after prop change
+                  if (selectedNodeId) {
+                    const rpc = getRpcClient<ServerRpcFunctions>()
+                    if (rpc?.getComponentDetails) {
+                      rpc.getComponentDetails(selectedNodeId)
+                        .then(setComponentDetails)
+                        .catch(console.debug)
+                    }
+                  }
+                }}
               />
             )}
       </div>

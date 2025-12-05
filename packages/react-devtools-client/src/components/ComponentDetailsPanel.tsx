@@ -1,11 +1,17 @@
 import type { ComponentDetails, HookInfo, PropValue, RenderedByInfo } from '@react-devtools/kit'
 import { getRpcClient, REACT_TAGS } from '@react-devtools/kit'
-import { useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
+
+interface ServerRpcFunctions {
+  setComponentProp: (fiberId: string, propPath: string, value: string, valueType: string) => boolean
+  isEditableProp: (propName: string, valueType: string) => boolean
+}
 
 interface ComponentDetailsPanelProps {
   details: ComponentDetails | null
   onSelectNode?: (id: string) => void
   onScrollToComponent?: () => void
+  onPropChange?: () => void
 }
 
 interface CollapsibleSectionProps {
@@ -119,10 +125,108 @@ function getValueColorClass(type: PropValue['type']) {
   }
 }
 
-function PropValueDisplay({ value, name, depth = 0 }: { value: PropValue, name?: string, depth?: number }) {
+/**
+ * Check if a prop type is editable
+ */
+function isEditableType(type: string): boolean {
+  const editableTypes = ['string', 'number', 'boolean', 'null', 'undefined']
+  return editableTypes.includes(type)
+}
+
+/**
+ * Check if a prop name is editable
+ */
+function isEditablePropName(name: string): boolean {
+  const nonEditableProps = ['children', 'key', 'ref', '$$typeof']
+  return !nonEditableProps.includes(name)
+}
+
+interface EditableValueInputProps {
+  value: string
+  type: string
+  onSave: (newValue: string) => void
+  onCancel: () => void
+}
+
+function EditableValueInput({ value, type, onSave, onCancel }: EditableValueInputProps) {
+  // Remove quotes from string values for editing
+  const initialValue = type === 'string' ? value.replace(/^"|"$/g, '') : value
+  const [editValue, setEditValue] = useState(initialValue)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      onSave(editValue)
+    }
+    else if (e.key === 'Escape') {
+      e.preventDefault()
+      onCancel()
+    }
+  }
+
+  const handleBlur = () => {
+    onSave(editValue)
+  }
+
+  // Auto focus and select on mount
+  useState(() => {
+    setTimeout(() => {
+      inputRef.current?.focus()
+      inputRef.current?.select()
+    }, 0)
+  })
+
+  if (type === 'boolean') {
+    return (
+      <select
+        value={editValue}
+        onChange={e => setEditValue(e.target.value)}
+        onBlur={() => onSave(editValue)}
+        onKeyDown={handleKeyDown}
+        className="h-5 border border-primary-400 rounded bg-white px-1 text-xs text-purple-600 dark:bg-gray-800 dark:text-purple-400 focus:outline-none focus:ring-1 focus:ring-primary-500"
+        autoFocus
+      >
+        <option value="true">true</option>
+        <option value="false">false</option>
+      </select>
+    )
+  }
+
+  return (
+    <input
+      ref={inputRef}
+      type={type === 'number' ? 'number' : 'text'}
+      value={editValue}
+      onChange={e => setEditValue(e.target.value)}
+      onKeyDown={handleKeyDown}
+      onBlur={handleBlur}
+      className={`h-5 min-w-[60px] max-w-[200px] border border-primary-400 rounded bg-white px-1 text-xs font-mono dark:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-primary-500 ${getValueColorClass(type)}`}
+      style={{ width: `${Math.max(60, editValue.length * 7 + 16)}px` }}
+    />
+  )
+}
+
+interface PropValueDisplayProps {
+  value: PropValue
+  name?: string
+  depth?: number
+  fiberId?: string
+  propPath?: string
+  onPropChange?: () => void
+}
+
+function PropValueDisplay({ value, name, depth = 0, fiberId, propPath, onPropChange }: PropValueDisplayProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
   const hasChildren = value.children && Object.keys(value.children).length > 0
   const isExpandable = hasChildren && (value.type === 'object' || value.type === 'array')
+
+  const isEditable = name !== undefined
+    && fiberId
+    && propPath
+    && isEditableType(value.type)
+    && isEditablePropName(name)
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -131,12 +235,50 @@ function PropValueDisplay({ value, name, depth = 0 }: { value: PropValue, name?:
     }
   }
 
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (isEditable && !isEditing) {
+      setIsEditing(true)
+    }
+  }
+
+  const handleSave = useCallback(async (newValue: string) => {
+    if (!fiberId || !propPath)
+      return
+
+    const rpc = getRpcClient<ServerRpcFunctions>()
+    if (rpc?.setComponentProp) {
+      try {
+        const success = await rpc.setComponentProp(fiberId, propPath, newValue, value.type)
+        if (success) {
+          onPropChange?.()
+        }
+      }
+      catch (error) {
+        console.error('[ComponentDetailsPanel] Failed to set prop:', error)
+      }
+    }
+    setIsEditing(false)
+  }, [fiberId, propPath, value.type, onPropChange])
+
+  const handleCancel = useCallback(() => {
+    setIsEditing(false)
+  }, [])
+
+  // Build the full prop path for nested properties
+  const getChildPropPath = (childName: string) => {
+    if (!propPath)
+      return childName
+    return `${propPath}.${childName}`
+  }
+
   return (
     <div className="text-xs font-mono">
       <div
-        className={`flex items-start gap-1 py-0.5 ${isExpandable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded' : ''}`}
+        className={`group flex items-start gap-1 py-0.5 ${isExpandable ? 'cursor-pointer' : ''} ${isEditable ? 'hover:bg-primary-50 dark:hover:bg-primary-900/20' : ''} rounded`}
         style={{ paddingLeft: `${depth * 12}px` }}
         onClick={handleToggle}
+        onDoubleClick={handleDoubleClick}
       >
         {/* Expand/collapse arrow */}
         {isExpandable
@@ -163,13 +305,32 @@ function PropValueDisplay({ value, name, depth = 0 }: { value: PropValue, name?:
           </>
         )}
 
-        {/* Value */}
-        <span className={getValueColorClass(value.type)} title={value.preview || value.value}>
-          {value.value}
-          {value.preview && !isExpanded && (
-            <span className="ml-1 text-gray-400">{value.preview}</span>
-          )}
-        </span>
+        {/* Value - editable or readonly */}
+        {isEditing
+          ? (
+              <EditableValueInput
+                value={value.value}
+                type={value.type}
+                onSave={handleSave}
+                onCancel={handleCancel}
+              />
+            )
+          : (
+              <>
+                <span className={getValueColorClass(value.type)} title={value.preview || value.value}>
+                  {value.value}
+                  {value.preview && !isExpanded && (
+                    <span className="ml-1 text-gray-400">{value.preview}</span>
+                  )}
+                </span>
+                {/* Edit hint */}
+                {isEditable && (
+                  <span className="ml-1 text-[10px] text-gray-300 opacity-0 transition-opacity group-hover:opacity-100 dark:text-gray-600">
+                    (double-click to edit)
+                  </span>
+                )}
+              </>
+            )}
       </div>
 
       {/* Expanded children */}
@@ -181,6 +342,9 @@ function PropValueDisplay({ value, name, depth = 0 }: { value: PropValue, name?:
               name={childName}
               value={childValue}
               depth={depth + 1}
+              fiberId={fiberId}
+              propPath={getChildPropPath(childName)}
+              onPropChange={onPropChange}
             />
           ))}
         </div>
@@ -189,7 +353,13 @@ function PropValueDisplay({ value, name, depth = 0 }: { value: PropValue, name?:
   )
 }
 
-function PropsSection({ props }: { props: Record<string, PropValue> }) {
+interface PropsSectionProps {
+  props: Record<string, PropValue>
+  fiberId?: string
+  onPropChange?: () => void
+}
+
+function PropsSection({ props, fiberId, onPropChange }: PropsSectionProps) {
   const entries = Object.entries(props)
 
   if (entries.length === 0) {
@@ -201,7 +371,14 @@ function PropsSection({ props }: { props: Record<string, PropValue> }) {
   return (
     <div className="space-y-0.5">
       {entries.map(([name, value]) => (
-        <PropValueDisplay key={name} name={name} value={value} />
+        <PropValueDisplay
+          key={name}
+          name={name}
+          value={value}
+          fiberId={fiberId}
+          propPath={name}
+          onPropChange={onPropChange}
+        />
       ))}
     </div>
   )
@@ -380,7 +557,7 @@ function SourceSection({ source, onOpenInEditor }: { source?: ComponentDetails['
   )
 }
 
-export function ComponentDetailsPanel({ details, onSelectNode, onScrollToComponent }: ComponentDetailsPanelProps) {
+export function ComponentDetailsPanel({ details, onSelectNode, onScrollToComponent, onPropChange }: ComponentDetailsPanelProps) {
   if (!details) {
     return (
       <div className="h-full flex flex-col items-center justify-center text-sm text-gray-400">
@@ -488,7 +665,11 @@ export function ComponentDetailsPanel({ details, onSelectNode, onScrollToCompone
           title="props"
           badge={propsCount > 0 ? <span className="text-xs text-gray-400">{propsCount}</span> : undefined}
         >
-          <PropsSection props={details.props} />
+          <PropsSection
+            props={details.props}
+            fiberId={details.id}
+            onPropChange={onPropChange}
+          />
         </CollapsibleSection>
 
         <CollapsibleSection

@@ -1,5 +1,7 @@
+export * from './context'
 export * from './fiber/details'
 export * from './fiber/highlight'
+export * from './fiber/props'
 export * from './fiber/tree'
 export * from './fiber/utils'
 export * from './hook'

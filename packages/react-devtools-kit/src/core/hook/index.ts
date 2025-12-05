@@ -103,6 +103,13 @@ function findAppRoot(): FiberRoot | null {
   return null
 }
 
+/**
+ * Get the current app fiber root (exported for context debugging)
+ */
+export function getAppFiberRoot(): FiberRoot | null {
+  return findAppRoot()
+}
+
 function handleTreeUpdate(root: FiberRoot, showHostComponents: () => boolean) {
   // Check if this root should be tracked based on rootSelector config
   if (lastRootCurrent === root?.current)
