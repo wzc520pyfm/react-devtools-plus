@@ -527,6 +527,7 @@ export function AssetsPage() {
             {/* Search */}
             <div className="relative max-w-md flex-1">
               <Input
+                size="sm"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search..."

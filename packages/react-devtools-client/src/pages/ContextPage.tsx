@@ -914,6 +914,7 @@ export function ContextPage() {
             {/* Search */}
             <div>
               <Input
+                size="sm"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search..."
