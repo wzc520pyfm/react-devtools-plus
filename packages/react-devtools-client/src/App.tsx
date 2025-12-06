@@ -12,6 +12,7 @@ import { OverviewPage } from './pages/OverviewPage'
 import { RoutesPage } from './pages/RoutesPage'
 import { ScanPage } from './pages/ScanPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { TimelinePage } from './pages/TimelinePage'
 
 interface ServerRpcFunctions {
   inspectNode: (fiberId: string) => void
@@ -184,6 +185,7 @@ export function App() {
           />
           <Route path="/routes" element={<RoutesPage />} />
           <Route path="/context" element={<ContextPage />} />
+          <Route path="/timeline" element={<TimelinePage />} />
           <Route path="/graph" element={<GraphPage />} />
           <Route path="/scan" element={<ScanPage />} />
           <Route path="/settings" element={<SettingsPage />} />

@@ -113,6 +113,9 @@ export const REACT_TAGS = {
   SimpleMemoComponent: 15,
 } as const
 
+// Re-export Timeline types
+export type { TimelineEvent, TimelineLayer, TimelineLayersState } from '../core/timeline'
+
 declare global {
   interface Window {
     __REACT_DEVTOOLS_GLOBAL_HOOK__?: ReactDevToolsHook

@@ -1,5 +1,5 @@
 import { globalPluginManager } from '@react-devtools/core'
-import { clearNavigationHistory, createRpcServer, getAllContexts, getAppFiberRoot, getComponentDetails, getComponentHookStates, getContextProviderInfo, getFiberById, getReactVersion, getRouterInfo, getRpcServer, hideHighlight, highlightNode, isEditableProp, navigateTo, onInspectorSelect, onOpenInEditor, onTreeUpdated, openInEditor, rebuildTree, scrollToNode, setComponentProp, setContextValue, setContextValueAtPath, setContextValueFromJson, setHookState, setHookStateFromJson, setIframeServerContext, toggleInspector } from '@react-devtools/kit'
+import { clearNavigationHistory, clearTimeline, createRpcServer, getAllContexts, getAppFiberRoot, getComponentDetails, getComponentHookStates, getContextProviderInfo, getFiberById, getReactVersion, getRouterInfo, getRpcServer, getTimelineState, hideHighlight, highlightNode, installTimelineEventListeners, isEditableProp, navigateTo, onInspectorSelect, onOpenInEditor, onTimelineEvent, onTreeUpdated, openInEditor, rebuildTree, scrollToNode, setComponentProp, setContextValue, setContextValueAtPath, setContextValueFromJson, setHookState, setHookStateFromJson, setIframeServerContext, toggleInspector, updateTimelineState } from '@react-devtools/kit'
 import { useEffect, useRef } from 'react'
 
 /**
@@ -105,10 +105,22 @@ export function useIframe(
       }
     })
 
+    // Install timeline event listeners
+    installTimelineEventListeners()
+
+    // Subscribe to timeline events and broadcast to client
+    const disposeTimelineEvent = onTimelineEvent((layerId, event) => {
+      const rpcServer = getRpcServer()
+      if (rpcServer && (rpcServer as any).broadcast && rpcServerReadyRef.current) {
+        (rpcServer as any).broadcast.onPluginEvent('timeline', 'event', { layerId, event }).catch(() => {})
+      }
+    })
+
     return () => {
       dispose()
       disposeSelect()
       disposeOpenInEditor()
+      disposeTimelineEvent()
     }
   }, [])
 
@@ -268,6 +280,16 @@ export function useIframe(
         },
         setHookStateFromJson(fiberId: string, hookIndex: number, jsonValue: string) {
           return setHookStateFromJson(fiberId, hookIndex, jsonValue)
+        },
+        // Timeline RPC methods
+        getTimelineState() {
+          return getTimelineState()
+        },
+        updateTimelineState(state: Record<string, any>) {
+          updateTimelineState(state)
+        },
+        clearTimeline() {
+          clearTimeline()
         },
         async callPluginRPC(pluginId: string, rpcName: string, ...args: any[]) {
           try {
