@@ -1,5 +1,6 @@
 import type { PropValue } from '@react-devtools-plus/kit'
 import { getRpcClient } from '@react-devtools-plus/kit'
+import { Checkbox, Input } from '@react-devtools-plus/ui'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 /**
@@ -908,32 +909,31 @@ export function ContextPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-nowrap items-center gap-3">
             {/* Search */}
-            <div className="relative w-48">
-              <svg className="absolute left-3 top-1/2 h-4 w-4 text-gray-400 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
-              <input
-                type="text"
+            <div>
+              <Input
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg bg-gray-50 py-1.5 pl-9 pr-3 text-sm transition-colors dark:border-gray-700 focus:border-primary-500 dark:bg-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500"
                 placeholder="Search..."
+                prefix={(
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.3-4.3" />
+                  </svg>
+                )}
+                allowClear
+                onClear={() => setSearchQuery('')}
               />
             </div>
 
             {/* Auto refresh toggle */}
-            <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-              <input
-                type="checkbox"
-                checked={autoRefresh}
-                onChange={e => setAutoRefresh(e.target.checked)}
-                className="rounded"
-              />
-              Auto
-            </label>
+            <Checkbox
+              className="flex-shrink-0"
+              label="Auto"
+              checked={autoRefresh}
+              onChange={setAutoRefresh}
+            />
 
             {/* Refresh button */}
             <button
