@@ -1,5 +1,15 @@
 import type { ColorPalette } from './types'
-import { colord } from 'colord'
+import { colord, extend } from 'colord'
+import a11yPlugin from 'colord/plugins/a11y'
+
+extend([a11yPlugin])
+
+// Choose an accessible text color (black/white) based on background contrast
+function pickTextColor(bg: string): string {
+  const whiteContrast = colord(bg).contrast('#ffffff')
+  const darkContrast = colord(bg).contrast('#0f172a')
+  return whiteContrast >= darkContrast ? '#ffffff' : '#0f172a'
+}
 
 /**
  * Design tokens for spacing
@@ -261,6 +271,12 @@ export function generateCSSVariables(
   setVar('--semantic-success', colors.success[500])
   setVar('--semantic-warning', colors.warning[500])
   setVar('--semantic-error', colors.error[500])
+  setVar('--on-accent', pickTextColor(colors.primary[500]))
+  setVar('--on-success', pickTextColor(colors.success[500]))
+  setVar('--on-warning', pickTextColor(colors.warning[500]))
+  setVar('--on-error', pickTextColor(colors.error[500]))
+  setVar('--on-info', pickTextColor(colors.info[500]))
+  setVar('--on-neutral', pickTextColor(colors.neutral[500]))
 
   // Spacing
   Object.entries(spacing).forEach(([key, value]) => {

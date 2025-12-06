@@ -1,6 +1,6 @@
 import type { PropValue } from '@react-devtools-plus/kit'
 import { getRpcClient } from '@react-devtools-plus/kit'
-import { Checkbox, Input } from '@react-devtools-plus/ui'
+import { Badge, Checkbox, Input } from '@react-devtools-plus/ui'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 /**
@@ -897,16 +897,16 @@ export function ContextPage() {
             <ContextIcon className="h-5 w-5 text-primary-500" />
             <h1 className="text-lg text-gray-900 font-semibold dark:text-white">Context</h1>
             <div className="flex items-center gap-2">
-              <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-600 font-medium dark:bg-purple-900/50 dark:text-purple-400">
+              <Badge color="primary" size="sm">
                 {contextTree?.totalProviders || 0}
                 {' '}
                 providers
-              </span>
-              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+              </Badge>
+              <Badge color="neutral" size="sm">
                 {contextTree?.totalConsumers || 0}
                 {' '}
                 consumers
-              </span>
+              </Badge>
             </div>
           </div>
 

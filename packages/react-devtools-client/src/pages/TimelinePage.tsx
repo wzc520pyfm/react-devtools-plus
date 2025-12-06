@@ -1,5 +1,6 @@
 import type { TimelineEvent, TimelineLayersState } from '@react-devtools-plus/kit'
 import { getRpcClient } from '@react-devtools-plus/kit'
+import { Tag } from '@react-devtools-plus/ui'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { pluginEvents } from '../events'
 
@@ -331,33 +332,67 @@ export function TimelinePage() {
 
         {/* Layer List */}
         <div className="flex-1 overflow-auto p-2">
-          <ul className="space-y-1">
-            {TIMELINE_LAYERS.map(layer => (
-              <li
-                key={layer.id}
-                className={`group relative cursor-pointer rounded-md px-3 py-2 text-sm transition-colors ${
-                  layer.id === selectedLayer
-                    ? 'bg-primary-500 text-white'
-                    : layerEnabled[layer.id]
-                      ? 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
-                      : 'text-gray-400 opacity-60 hover:bg-gray-100 dark:text-gray-500 dark:hover:bg-gray-800'
-                }`}
-                onClick={() => selectLayer(layer.id)}
-              >
-                {layer.label}
-                <span
-                  className={`absolute right-2 top-1/2 hidden rounded bg-primary-500 px-1 text-xs text-white opacity-0 transition-opacity group-hover:block -translate-y-1/2 group-hover:opacity-80 hover:opacity-100 ${
-                    layer.id === selectedLayer ? 'bg-primary-400 dark:bg-gray-600' : ''
-                  }`}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    toggleLayerEnabled(layer.id)
-                  }}
-                >
-                  {layerEnabled[layer.id] ? 'Disable' : 'Enable'}
-                </span>
-              </li>
-            ))}
+          <ul>
+            {TIMELINE_LAYERS.map((layer) => {
+              const isSelected = layer.id === selectedLayer
+              const enabled = layerEnabled[layer.id]
+              const baseRowClass = [
+                'group',
+                'flex',
+                'w-full',
+                'items-center',
+                'justify-between',
+                'gap-2',
+                'rounded-md',
+                'px-3',
+                'py-2.5',
+                'text-left',
+                'transition-colors',
+              ].join(' ')
+              return (
+                <li key={layer.id}>
+                  <button
+                    type="button"
+                    onClick={() => selectLayer(layer.id)}
+                    // eslint-disable-next-line unocss/order
+                    className={`${baseRowClass} ${
+                      isSelected
+                        ? enabled
+                          ? 'bg-[var(--color-primary-500)] text-[var(--on-accent)]'
+                          : 'bg-[color-mix(in_srgb,var(--color-primary-500),transparent_80%)] text-[var(--color-text-primary)] opacity-70'
+                        : enabled
+                          ? 'bg-transparent hover:bg-[color-mix(in_srgb,var(--color-primary-500),transparent_80%)] text-[var(--color-text-primary)]'
+                          : 'bg-transparent hover:bg-[var(--surface-control-strong)] text-[var(--color-text-tertiary)] opacity-70'
+                    }`}
+                  >
+                    <span className="text-sm">{layer.label}</span>
+                    <Tag
+                      size="sm"
+                      color="primary"
+                      variant="solid"
+                      // eslint-disable-next-line unocss/order
+                      className="duration-200 opacity-0 transition-opacity group-hover:opacity-100"
+                      style={{
+                        background: enabled ? 'var(--color-primary-600)' : 'var(--surface-control)',
+                        borderColor: enabled ? 'var(--color-primary-600)' : 'var(--border-strong)',
+                        color: enabled ? 'var(--on-accent)' : 'var(--color-text-disabled)',
+                        borderRadius: '6px',
+                        paddingInline: '8px',
+                        height: '20px',
+                        fontSize: '11px',
+                        lineHeight: 1,
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        toggleLayerEnabled(layer.id)
+                      }}
+                    >
+                      {enabled ? 'Disable' : 'Enable'}
+                    </Tag>
+                  </button>
+                </li>
+              )
+            })}
           </ul>
         </div>
       </div>

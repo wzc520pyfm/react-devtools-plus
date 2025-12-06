@@ -74,30 +74,30 @@
 /* Colors */
 .color-primary {
   background-color: var(--color-primary-500);
-  color: #ffffff;
+  color: var(--on-accent);
 }
 
 .color-success {
   background-color: var(--color-success-500);
-  color: #ffffff;
+  color: var(--on-success);
 }
 
 .color-warning {
   background-color: var(--color-warning-500);
-  color: #ffffff;
+  color: var(--on-warning);
 }
 
 .color-error {
   background-color: var(--color-error-500);
-  color: #ffffff;
+  color: var(--on-error);
 }
 
 .color-info {
   background-color: var(--color-info-500);
-  color: #ffffff;
+  color: var(--on-info);
 }
 
 .color-neutral {
   background-color: var(--color-neutral-500);
-  color: #ffffff;
+  color: var(--on-neutral);
 }

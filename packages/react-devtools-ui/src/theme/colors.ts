@@ -97,7 +97,7 @@ export function generateNeutralColors(isDark: boolean = false) {
  * 预设的主题色
  */
 export const PRESET_COLORS = {
-  react: '#61dafb', // React 蓝色
+  react: '#4fbff0', // React 蓝色（提升对比度的变体）
   blue: '#3b82f6', // 蓝色
   green: '#10b981', // 绿色
   purple: '#8b5cf6', // 紫色

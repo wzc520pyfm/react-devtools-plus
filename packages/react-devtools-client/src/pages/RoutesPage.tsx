@@ -1,5 +1,5 @@
 import { getRpcClient } from '@react-devtools-plus/kit'
-import { Input } from '@react-devtools-plus/ui'
+import { Badge, Button, Input, Tag } from '@react-devtools-plus/ui'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 interface RouteInfo {
@@ -279,39 +279,39 @@ function RouteTreeItem({
 
           {/* Badges */}
           {showActiveBadge && (
-            <span className="shrink-0 rounded bg-primary-500 px-1.5 py-0.5 text-xs text-white font-medium">
+            <Tag size="sm" color="primary" variant="solid" className="shrink-0">
               active
-            </span>
+            </Tag>
           )}
           {route.isIndex && (
-            <span className="shrink-0 rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-600 font-medium dark:bg-blue-900/50 dark:text-blue-400">
+            <Tag size="sm" color="info" variant="outline" className="shrink-0">
               index
-            </span>
+            </Tag>
           )}
           {route.isLayout && (
-            <span className="shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-600 font-medium dark:bg-amber-900/50 dark:text-amber-400">
+            <Tag size="sm" color="warning" variant="outline" className="shrink-0">
               layout
-            </span>
+            </Tag>
           )}
           {route.hasLoader && (
-            <span className="shrink-0 rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-600 font-medium dark:bg-green-900/50 dark:text-green-400">
+            <Tag size="sm" color="success" variant="outline" className="shrink-0">
               loader
-            </span>
+            </Tag>
           )}
           {route.hasAction && (
-            <span className="shrink-0 rounded bg-purple-100 px-1.5 py-0.5 text-xs text-purple-600 font-medium dark:bg-purple-900/50 dark:text-purple-400">
+            <Tag size="sm" color="primary" variant="outline" className="shrink-0">
               action
-            </span>
+            </Tag>
           )}
           {route.isLazy && (
-            <span className="shrink-0 rounded bg-cyan-100 px-1.5 py-0.5 text-xs text-cyan-600 font-medium dark:bg-cyan-900/50 dark:text-cyan-400">
+            <Tag size="sm" color="info" variant="outline" className="shrink-0">
               lazy
-            </span>
+            </Tag>
           )}
           {route.hasErrorBoundary && (
-            <span className="shrink-0 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-600 font-medium dark:bg-red-900/50 dark:text-red-400">
+            <Tag size="sm" color="error" variant="outline" className="shrink-0">
               error
-            </span>
+            </Tag>
           )}
         </div>
 
@@ -498,9 +498,9 @@ export function RoutesPage() {
             <RouteIcon className="h-5 w-5 text-primary-500" />
             <h1 className="text-lg text-gray-900 font-semibold dark:text-white">Routes</h1>
             {routerState?.routerType && (
-              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+              <Tag size="sm" variant="outline" color="neutral">
                 {routerState.routerType}
-              </span>
+              </Tag>
             )}
           </div>
 
@@ -529,12 +529,15 @@ export function RoutesPage() {
               {routerState.matchedRoutes.map((route, index) => (
                 <div key={index} className="flex items-center">
                   {index > 0 && <ChevronRightIcon className="h-4 w-4 text-gray-400" />}
-                  <button
-                    className="rounded bg-primary-100 px-2 py-0.5 text-primary-600 font-mono transition-colors dark:bg-primary-900/50 hover:bg-primary-200 dark:text-primary-400 dark:hover:bg-primary-900"
+                  <Tag
+                    size="sm"
+                    color="primary"
+                    variant="outline"
                     onClick={() => handleNavigate(route.path)}
+                    className="font-mono"
                   >
                     {route.element || route.path}
-                  </button>
+                  </Tag>
                 </div>
               ))}
             </div>
@@ -551,17 +554,14 @@ export function RoutesPage() {
             <div className="mt-1.5 flex flex-wrap items-center gap-2">
               <span className="text-xs text-gray-500 dark:text-gray-400">Params:</span>
               {Object.entries(routerState.params).map(([key, value]) => (
-                <span
-                  key={key}
-                  className="rounded bg-amber-100 px-2 py-0.5 text-xs font-mono dark:bg-amber-900/50"
-                >
-                  <span className="text-amber-600 dark:text-amber-400">
+                <Tag key={key} size="sm" color="warning" variant="outline" className="font-mono">
+                  <span className="text-amber-700 dark:text-amber-300">
                     :
                     {key}
                   </span>
                   <span className="text-gray-500 dark:text-gray-400"> = </span>
-                  <span className="text-gray-700 dark:text-gray-300">{value}</span>
-                </span>
+                  <span className="text-gray-800 dark:text-gray-200">{value}</span>
+                </Tag>
               ))}
             </div>
           )}
@@ -648,12 +648,14 @@ export function RoutesPage() {
               block
             />
           </div>
-          <button
-            type="submit"
-            className="shrink-0 rounded-lg bg-primary-500 px-4 py-2 text-sm text-white font-medium transition-colors disabled:cursor-not-allowed hover:bg-primary-600 disabled:opacity-50"
+          <Button
+            htmlType="submit"
+            variant="primary"
+            size="md"
+            className="shrink-0"
           >
             Go
-          </button>
+          </Button>
         </form>
         {copiedPath && (
           <p className="mt-1 text-xs text-green-500">
@@ -677,8 +679,10 @@ export function RoutesPage() {
           >
             <RouteIcon className="mr-1.5 inline h-4 w-4" />
             Routes
-            <span className="ml-1.5 rounded-full bg-gray-100 px-1.5 py-0.5 text-xs dark:bg-gray-800">
-              {totalRoutes}
+            <span className="ml-1.5">
+              <Badge color="neutral" size="sm">
+                {totalRoutes}
+              </Badge>
             </span>
           </button>
           <button
@@ -691,8 +695,10 @@ export function RoutesPage() {
           >
             <ClockIcon className="mr-1.5 inline h-4 w-4" />
             History
-            <span className="ml-1.5 rounded-full bg-gray-100 px-1.5 py-0.5 text-xs dark:bg-gray-800">
-              {routerState?.history?.length || 0}
+            <span className="ml-1.5">
+              <Badge color="neutral" size="sm">
+                {routerState?.history?.length || 0}
+              </Badge>
             </span>
           </button>
         </div>
