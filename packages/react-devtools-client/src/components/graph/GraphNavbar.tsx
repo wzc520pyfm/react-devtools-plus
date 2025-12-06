@@ -4,6 +4,7 @@
  */
 
 import type { GraphSettings } from '~/types/graph'
+import { Checkbox } from '@react-devtools-plus/ui'
 
 interface GraphNavbarProps {
   searchText: string
@@ -44,7 +45,7 @@ export function GraphNavbar({
           value={searchText}
           onChange={e => onSearchChange(e.target.value)}
           placeholder="Search modules..."
-          className="h-8 w-48 border border-gray-200 rounded-md bg-white px-3 py-1 text-sm outline-none transition-colors dark:border-neutral-700 focus:border-primary-500 dark:bg-neutral-800 placeholder:text-gray-400 dark:placeholder:text-neutral-500"
+          className="h-8 w-48 border border-base rounded-md bg-white px-3 py-1 text-sm outline-none transition-colors focus:border-primary-500 dark:bg-neutral-800 placeholder:text-gray-400 dark:placeholder:text-neutral-500"
         />
         {searchText && (
           <button
@@ -61,19 +62,13 @@ export function GraphNavbar({
 
       {/* Filter checkboxes */}
       {selectableItems.map(([key, label]) => (
-        <label key={key} className="flex flex-shrink-0 cursor-pointer items-center gap-2">
-          <input
-            type="checkbox"
+        <div key={key} className="flex flex-shrink-0 items-center">
+          <Checkbox
             checked={settings[key]}
             onChange={() => handleSettingChange(key)}
-            className="h-4 w-4 cursor-pointer border-gray-300 rounded text-primary-600 dark:border-neutral-600 focus:ring-primary-500"
+            label={`Show ${label ?? key}`}
           />
-          <span className={settings[key] ? 'text-base' : 'text-gray-400 dark:text-gray-600'}>
-            Show
-            {' '}
-            {label ?? key}
-          </span>
-        </label>
+        </div>
       ))}
 
       {/* Spacer */}
