@@ -227,6 +227,7 @@ function RouteTreeItem({
   const isHighlighted = isExactMatch || (isLayoutActive && !hasChildren)
 
   const displayPath = route.isIndex ? 'index' : (level > 0 ? route.path.split('/').pop() || route.path : route.path)
+  const smallTagStyle = { height: '20px', paddingInline: '6px', fontSize: '11px', lineHeight: 1, borderRadius: '6px' }
 
   return (
     <div className="w-full">
@@ -279,37 +280,37 @@ function RouteTreeItem({
 
           {/* Badges */}
           {showActiveBadge && (
-            <Tag size="sm" color="primary" variant="solid" className="shrink-0">
+            <Tag size="sm" color="primary" variant="solid" className="shrink-0" style={smallTagStyle}>
               active
             </Tag>
           )}
           {route.isIndex && (
-            <Tag size="sm" color="info" variant="outline" className="shrink-0">
+            <Tag size="sm" color="info" variant="outline" className="shrink-0" style={smallTagStyle}>
               index
             </Tag>
           )}
           {route.isLayout && (
-            <Tag size="sm" color="warning" variant="outline" className="shrink-0">
+            <Tag size="sm" color="warning" variant="outline" className="shrink-0" style={smallTagStyle}>
               layout
             </Tag>
           )}
           {route.hasLoader && (
-            <Tag size="sm" color="success" variant="outline" className="shrink-0">
+            <Tag size="sm" color="success" variant="outline" className="shrink-0" style={smallTagStyle}>
               loader
             </Tag>
           )}
           {route.hasAction && (
-            <Tag size="sm" color="primary" variant="outline" className="shrink-0">
+            <Tag size="sm" color="primary" variant="outline" className="shrink-0" style={smallTagStyle}>
               action
             </Tag>
           )}
           {route.isLazy && (
-            <Tag size="sm" color="info" variant="outline" className="shrink-0">
+            <Tag size="sm" color="info" variant="outline" className="shrink-0" style={smallTagStyle}>
               lazy
             </Tag>
           )}
           {route.hasErrorBoundary && (
-            <Tag size="sm" color="error" variant="outline" className="shrink-0">
+            <Tag size="sm" color="error" variant="outline" className="shrink-0" style={smallTagStyle}>
               error
             </Tag>
           )}
@@ -653,6 +654,7 @@ export function RoutesPage() {
             variant="primary"
             size="md"
             className="shrink-0"
+            style={{ borderRadius: 'var(--radius-base)' }}
           >
             Go
           </Button>
