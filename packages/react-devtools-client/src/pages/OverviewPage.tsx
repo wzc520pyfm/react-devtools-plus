@@ -130,15 +130,15 @@ export function OverviewPage({ tree }: OverviewPageProps) {
       if (!gridRef.current)
         return
 
-      const cards = gridRef.current.getElementsByClassName('spotlight-card')
+      const cards = Array.from(gridRef.current.getElementsByClassName('spotlight-card')) as HTMLElement[]
       for (const card of cards) {
         const rect = card.getBoundingClientRect()
         const x = e.clientX - rect.left
         const y = e.clientY - rect.top
 
         // Update CSS variables for border light
-        ;(card as HTMLElement).style.setProperty('--mouse-x', `${x}px`)
-        ;(card as HTMLElement).style.setProperty('--mouse-y', `${y}px`)
+        card.style.setProperty('--mouse-x', `${x}px`)
+        card.style.setProperty('--mouse-y', `${y}px`)
       }
     }
 
@@ -160,6 +160,26 @@ export function OverviewPage({ tree }: OverviewPageProps) {
               <h1 className="m-0 from-gray-900 to-gray-600 bg-gradient-to-r bg-clip-text text-5xl text-transparent font-bold dark:from-white dark:to-gray-400">
                 DevTools
               </h1>
+              <span
+                className="absolute"
+                style={{
+                  top: -2,
+                  right: -24,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingInline: '6px',
+                  lineHeight: 1,
+                  fontSize: '24px',
+                  fontWeight: 600,
+                  color: 'var(--color-primary-300)',
+                  filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.35))',
+                }}
+                aria-label="Plus Edition"
+                title="DevTools Plus"
+              >
+                +
+              </span>
             </div>
           </div>
           <div className="text-center">
