@@ -13,9 +13,8 @@
 }
 
 .wrapper:focus-within:not(.disabled) {
-  border-color: var(--color-border-focus);
-  outline: 2px solid var(--color-primary-200);
-  outline-offset: 0;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 1px var(--color-primary-500);
 }
 
 /* Sizes */
@@ -43,7 +42,8 @@
 }
 
 .status-error:focus-within {
-  outline-color: var(--color-error-200);
+  border-color: var(--color-error-500);
+  box-shadow: 0 0 0 1px var(--color-error-500);
 }
 
 .status-warning {
@@ -51,7 +51,8 @@
 }
 
 .status-warning:focus-within {
-  outline-color: var(--color-warning-200);
+  border-color: var(--color-warning-500);
+  box-shadow: 0 0 0 1px var(--color-warning-500);
 }
 
 .status-success {
@@ -59,7 +60,8 @@
 }
 
 .status-success:focus-within {
-  outline-color: var(--color-success-200);
+  border-color: var(--color-success-500);
+  box-shadow: 0 0 0 1px var(--color-success-500);
 }
 
 /* States */
