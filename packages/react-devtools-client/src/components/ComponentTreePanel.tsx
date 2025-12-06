@@ -156,7 +156,7 @@ function TreeNode({
     <div className="tree-node-enter" ref={isSelected ? selectedNodeRef : undefined}>
       {/* Node row */}
       <div
-        className={` flex cursor-pointer items-center rounded px-2 py-1 transition-colors duration-150 ${isSelected ? 'bg-purple-500/20 border-l-2 border-purple-500' : 'hover:bg-white/5'}  ${matchesSearch ? 'bg-yellow-500/10' : ''}  `}
+        className={` flex cursor-pointer items-center rounded px-2 py-1 transition-colors duration-150 ${isSelected ? 'bg-purple-500/20 border-l-2 border-purple-500' : 'hover:bg-gray-100 dark:hover:bg-white/5'}  ${matchesSearch ? 'bg-yellow-500/10' : ''}  `}
         style={{ paddingLeft: `${depth * 16 + 8}px` }}
         onClick={() => onSelect?.(node)}
       >
@@ -437,7 +437,7 @@ export function ComponentTreePanel({
   return (
     <div className="h-full flex flex-col">
       {/* Header with search and stats */}
-      <div className="flex-shrink-0 border-b border-white/10 p-3">
+      <div className="flex-shrink-0 border-b border-gray-100 p-3 dark:border-white/10">
         {/* Search input */}
         <div className="relative mb-3">
           <input
@@ -446,7 +446,7 @@ export function ComponentTreePanel({
             placeholder="Component name, /regex..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full border border-white/10 rounded bg-black/30 px-3 py-1.5 pl-8 text-sm text-white transition-colors focus:border-purple-500/50 focus:outline-none placeholder-gray-500"
+            className="w-full border border-gray-200 rounded bg-gray-50 px-3 py-1.5 pl-8 text-sm text-gray-900 transition-colors dark:border-white/10 focus:border-purple-500/50 dark:bg-black/30 dark:text-white focus:outline-none placeholder-gray-400 dark:placeholder-gray-500"
           />
           <svg
             className="absolute left-2.5 top-1/2 h-4 w-4 text-gray-500 -translate-y-1/2"
@@ -459,7 +459,7 @@ export function ComponentTreePanel({
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
-              className="absolute right-2 top-1/2 text-gray-500 -translate-y-1/2 hover:text-gray-300"
+              className="absolute right-2 top-1/2 text-gray-500 -translate-y-1/2 hover:text-gray-700 dark:hover:text-gray-300"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -470,8 +470,8 @@ export function ComponentTreePanel({
 
         {/* Stats and controls */}
         <div className="flex items-center justify-between text-xs">
-          <span className="text-gray-400">
-            <span className="text-white font-medium">{stats.totalComponents}</span>
+          <span className="text-gray-500 dark:text-gray-400">
+            <span className="text-gray-900 font-medium dark:text-white">{stats.totalComponents}</span>
             {' '}
             components
           </span>
@@ -480,7 +480,7 @@ export function ComponentTreePanel({
             {/* Expand/Collapse buttons */}
             <button
               onClick={expandAll}
-              className="rounded px-2 py-0.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
+              className="rounded px-2 py-0.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white"
               title="Expand all"
             >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -489,7 +489,7 @@ export function ComponentTreePanel({
             </button>
             <button
               onClick={collapseAll}
-              className="rounded px-2 py-0.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
+              className="rounded px-2 py-0.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white"
               title="Collapse all"
             >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
