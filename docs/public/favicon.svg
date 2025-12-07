@@ -1,0 +1,28 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="50%" stop-color="#0ea5e9" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+  </defs>
+
+  <!-- React orbitals -->
+  <ellipse cx="50" cy="50" rx="40" ry="18" stroke="url(#logoGradient)" stroke-width="3" fill="none" />
+  <ellipse cx="50" cy="50" rx="40" ry="18" stroke="url(#logoGradient)" stroke-width="3" fill="none" transform="rotate(60 50 50)" />
+  <ellipse cx="50" cy="50" rx="40" ry="18" stroke="url(#logoGradient)" stroke-width="3" fill="none" transform="rotate(-60 50 50)" />
+
+  <!-- Gear teeth -->
+  <path d="M 55.79 51.94 L 59.27 52.43 L 59.27 54.57 L 55.79 55.06 Z" fill="url(#logoGradient)" />
+  <path d="M 52.9 55.4 L 54.64 58.4 L 52.78 59.47 L 50.39 56.81 Z" fill="url(#logoGradient)" />
+  <path d="M 47.1 55.4 L 49.61 56.81 L 47.22 59.47 L 45.36 58.4 Z" fill="url(#logoGradient)" />
+  <path d="M 44.21 51.94 L 44.21 55.06 L 40.73 54.57 L 40.73 52.43 Z" fill="url(#logoGradient)" />
+  <path d="M 47.1 48.6 L 45.36 45.6 L 47.22 44.53 L 49.61 47.19 Z" fill="url(#logoGradient)" />
+  <path d="M 52.9 48.6 L 50.39 47.19 L 52.78 44.53 L 54.64 45.6 Z" fill="url(#logoGradient)" />
+
+  <!-- Center gear body -->
+  <circle cx="50" cy="50" r="6" fill="url(#logoGradient)" />
+
+  <!-- Center hole -->
+  <circle cx="50" cy="50" r="2.5" fill="#0f172a" />
+</svg>

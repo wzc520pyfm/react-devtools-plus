@@ -42,6 +42,7 @@
     "prepare:type": "turbo prepare:type --filter='./packages/*'",
     "dev": "NODE_OPTIONS=\"--max-old-space-size=8192\" nr prepare:type && nr build:ui && nr build:client && turbo stub --concurrency 20",
     "dev:ui-story": "turbo dev --filter=./packages/ui-story",
+    "dev:docs": "pnpm -C docs dev",
     "build": "turbo build --filter='!./packages/playground/react17-scss' --filter='!./packages/playground/react17-webpack4'",
     "clean": "pnpm clean:cache && pnpm clean:dist",
     "clean:cache": "rm -rf .turbo node_modules/.cache packages/*/node_modules/.cache || true",
