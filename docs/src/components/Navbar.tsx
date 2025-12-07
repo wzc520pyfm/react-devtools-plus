@@ -1,6 +1,7 @@
 import { Menu, X } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link, useLocation } from 'react-router-dom'
 import { Button } from './ui/Button'
 import { Logo } from './ui/Logo'
 
@@ -8,6 +9,7 @@ export const Navbar: React.FC = () => {
   const { t, i18n } = useTranslation()
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const location = useLocation()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,14 +20,21 @@ export const Navbar: React.FC = () => {
   }, [])
 
   const navLinks = [
-    { name: t('common.nav.features'), href: '#features' },
-    { name: t('common.nav.integration'), href: '#integration' },
-    { name: t('common.nav.community'), href: '#community' },
-    { name: t('common.nav.docs'), href: '#docs' },
+    { name: t('common.nav.features'), href: '/features' },
+    { name: t('common.nav.integration'), href: '/integration' },
+    { name: t('common.nav.community'), href: '/community' },
+    { name: t('common.nav.docs'), href: '/docs' },
   ]
 
   const toggleLanguage = () => {
     i18n.changeLanguage(i18n.language === 'en' ? 'zh' : 'en')
+  }
+
+  const isActive = (href: string) => {
+    if (href === '/docs') {
+      return location.pathname.startsWith('/docs')
+    }
+    return location.pathname === href
   }
 
   return (
@@ -35,24 +44,28 @@ export const Navbar: React.FC = () => {
       }`}
     >
       <div className="container mx-auto flex items-center justify-between px-6">
-        <div className="group flex cursor-pointer items-center gap-2.5">
+        <Link to="/" className="group flex cursor-pointer items-center gap-2.5">
           <Logo size={36} className="transition-transform duration-300 group-hover:scale-105" />
           <span className="from-white to-slate-400 bg-gradient-to-r bg-clip-text text-xl text-transparent font-bold">
             DevTools
             <sup className="text-brand-400 relative text-sm -top-3">+</sup>
           </span>
-        </div>
+        </Link>
 
         {/* Desktop Nav */}
         <div className="hidden items-center gap-8 md:flex">
           {navLinks.map(link => (
-            <a
+            <Link
               key={link.name}
-              href={link.href}
-              className="text-sm text-slate-400 font-medium transition-colors hover:text-white"
+              to={link.href}
+              className={`text-sm font-medium transition-colors ${
+                isActive(link.href)
+                  ? 'text-white'
+                  : 'text-slate-400 hover:text-white'
+              }`}
             >
               {link.name}
-            </a>
+            </Link>
           ))}
           <Button
             variant="ghost"
@@ -64,7 +77,7 @@ export const Navbar: React.FC = () => {
           <Button
             variant="secondary"
             className="text-xs !px-4 !py-2"
-            onClick={() => window.open('https://github.com/vuejs/devtools', '_blank')}
+            onClick={() => window.open('https://github.com/nicepkg/react-devtools-plus', '_blank')}
           >
             {t('common.github.view')}
           </Button>
@@ -86,14 +99,18 @@ export const Navbar: React.FC = () => {
         <div className="animate-slide-up-fade absolute left-0 right-0 top-full border-b border-white/10 bg-slate-950 p-6 md:hidden">
           <div className="flex flex-col gap-4">
             {navLinks.map(link => (
-              <a
+              <Link
                 key={link.name}
-                href={link.href}
-                className="text-lg text-slate-300 font-medium hover:text-white"
+                to={link.href}
+                className={`text-lg font-medium ${
+                  isActive(link.href)
+                    ? 'text-white'
+                    : 'text-slate-300 hover:text-white'
+                }`}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {link.name}
-              </a>
+              </Link>
             ))}
             <Button
               variant="ghost"
@@ -107,7 +124,7 @@ export const Navbar: React.FC = () => {
             </Button>
             <Button
               className="mt-4 w-full"
-              onClick={() => window.open('https://github.com/vuejs/devtools', '_blank')}
+              onClick={() => window.open('https://github.com/nicepkg/react-devtools-plus', '_blank')}
             >
               {t('common.github.view')}
             </Button>
