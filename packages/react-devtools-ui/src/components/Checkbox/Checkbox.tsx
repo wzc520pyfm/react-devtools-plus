@@ -1,5 +1,4 @@
 import type { InputHTMLAttributes } from 'react'
-import { forwardRef } from 'react'
 import styles from './Checkbox.module.css'
 
 export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
@@ -8,14 +7,7 @@ export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement
   label?: string
 }
 
-export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(({
-  checked,
-  onChange,
-  label,
-  disabled,
-  className = '',
-  ...props
-}, ref) => {
+export const Checkbox = ({ ref, checked, onChange, label, disabled, className = '', ...props }: CheckboxProps & { ref?: React.RefObject<HTMLInputElement | null> }) => {
   return (
     <label className={`${styles.checkbox}  ${disabled ? styles.disabled : ''}  ${className}`}>
       <input
@@ -35,6 +27,6 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(({
       {label && <span className={styles.label}>{label}</span>}
     </label>
   )
-})
+}
 
 Checkbox.displayName = 'Checkbox'

@@ -1,5 +1,4 @@
 import type { SelectHTMLAttributes } from 'react'
-import { forwardRef } from 'react'
 import styles from './Select.module.css'
 
 export interface SelectOption {
@@ -16,14 +15,7 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
   size?: SelectSize
 }
 
-export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
-  options = [],
-  onChange,
-  className = '',
-  size = 'md',
-  children,
-  ...props
-}, ref) => {
+export const Select = ({ ref, options = [], onChange, className = '', size = 'md', children, ...props }: SelectProps & { ref?: React.RefObject<HTMLSelectElement | null> }) => {
   const selectClass = [
     styles.select,
     styles[`size-${size}`],
@@ -54,6 +46,6 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
       </svg>
     </div>
   )
-})
+}
 
 Select.displayName = 'Select'

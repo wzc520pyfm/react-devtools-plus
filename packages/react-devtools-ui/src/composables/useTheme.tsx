@@ -1,6 +1,6 @@
 import type { FC, ReactNode } from 'react'
 import type { Theme, ThemeConfig, ThemeMode } from '../theme/types'
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { createContext, use, useEffect, useMemo, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { applyTheme, createTheme, resolveThemeMode, watchSystemDarkMode } from '../theme'
 
@@ -183,9 +183,9 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({
   }), [theme, config])
 
   return (
-    <ThemeContext.Provider value={value}>
+    <ThemeContext value={value}>
       {children}
-    </ThemeContext.Provider>
+    </ThemeContext>
   )
 }
 
@@ -194,7 +194,7 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({
  */
 // eslint-disable-next-line react-refresh/only-export-components
 export function useTheme(): ThemeContextValue {
-  const context = useContext(ThemeContext)
+  const context = use(ThemeContext)
 
   if (!context) {
     throw new Error('useTheme must be used within ThemeProvider')

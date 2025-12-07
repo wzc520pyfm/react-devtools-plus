@@ -1,5 +1,4 @@
 import type { InputHTMLAttributes, ReactNode } from 'react'
-import { forwardRef } from 'react'
 import styles from './Input.module.css'
 
 export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'prefix'> {
@@ -42,19 +41,7 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   block?: boolean
 }
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(({
-  size = 'md',
-  status,
-  prefix,
-  suffix,
-  allowClear = false,
-  onClear,
-  block = false,
-  className = '',
-  disabled,
-  value,
-  ...rest
-}, ref) => {
+export const Input = ({ ref, size = 'md', status, prefix, suffix, allowClear = false, onClear, block = false, className = '', disabled, value, ...rest }: InputProps & { ref?: React.RefObject<HTMLInputElement | null> }) => {
   const wrapperClassNames = [
     styles.wrapper,
     styles[`size-${size}`],
@@ -93,6 +80,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
       )}
     </div>
   )
-})
+}
 
 Input.displayName = 'Input'
