@@ -110,6 +110,11 @@ const resources = {
       testimonials: {
         title: 'Shape DevTools+ from day 0.',
         subtitle: 'We are early-stage and want founding adopters to set the roadmap with us.',
+        card: {
+          badge: 'Early Stage',
+          title: 'Help us prioritize what matters for your stack.',
+          description: 'Share your framework versions, routing setup, Suspense usage, or perf blockers. We\'ll tailor the roadmap around real-world needs—not vanity features.',
+        },
         actions: [
           {
             title: 'Star & watch',
@@ -1012,6 +1017,11 @@ const resources = {
       testimonials: {
         title: '从 0 开始共建 DevTools+',
         subtitle: '我们还在早期，期待"首批使用者"一起决定路线图。',
+        card: {
+          badge: '早期阶段',
+          title: '帮助我们确定你最需要的功能优先级',
+          description: '分享你的框架版本、路由配置、Suspense 使用情况或性能瓶颈。我们会根据真实需求来规划路线图——而不是做花哨的功能。',
+        },
         actions: [
           {
             title: '加星 & 关注',

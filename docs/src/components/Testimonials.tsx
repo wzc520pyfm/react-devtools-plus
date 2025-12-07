@@ -41,13 +41,12 @@ export const Testimonials: React.FC = () => {
             }`}
             style={{ transitionDelay: isVisible ? '0.15s' : '0s' }}
           >
-            <p className="text-brand-200 mb-2 text-xs tracking-[0.2em] uppercase sm:mb-3 sm:text-sm sm:tracking-[0.25em]">early stage</p>
+            <p className="text-brand-200 mb-2 text-xs tracking-[0.2em] uppercase sm:mb-3 sm:text-sm sm:tracking-[0.25em]">{t('testimonials.card.badge')}</p>
             <h3 className="mb-2 text-lg text-white font-semibold sm:mb-3 sm:text-2xl">
-              Help us prioritize what matters for your stack.
+              {t('testimonials.card.title')}
             </h3>
             <p className="text-sm text-slate-400 leading-relaxed sm:text-base">
-              Share your framework versions, routing setup, Suspense usage, or perf blockers. We'll tailor
-              the roadmap around real-world needs—not vanity features.
+              {t('testimonials.card.description')}
             </p>
             <div className="mt-4 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:flex-wrap sm:gap-3">
               <Button
