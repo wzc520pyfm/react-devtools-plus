@@ -65,15 +65,6 @@ export const GlowCard: React.FC<GlowCardProps> = ({ children, className = '', mo
         <div className="h-full w-full rounded-[23px] bg-slate-900/95" />
       </div>
 
-      {/* Inner glow effect */}
-      <div
-        className="pointer-events-none absolute inset-[1px] rounded-[23px] transition-opacity duration-300"
-        style={{
-          opacity: isNear ? 1 : 0,
-          background: `radial-gradient(400px circle at ${localPosition.x}px ${localPosition.y}px, rgba(56, 189, 248, 0.08), transparent 50%)`,
-        }}
-      />
-
       {/* Card content */}
       <div className="relative h-full rounded-3xl p-6">
         {children}
