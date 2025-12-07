@@ -1,6 +1,6 @@
 import type { MouseEvent } from 'react'
 import { toggleInspector } from '@react-devtools-plus/kit'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { FloatingButton } from './components/FloatingButton'
 import { IframeContainer } from './components/IframeContainer'
 import { useIframe } from './composables/useIframe'

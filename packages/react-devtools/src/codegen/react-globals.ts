@@ -58,9 +58,13 @@ export function generateReactGlobalsESMCode(options: ReactGlobalsOptions = {}): 
   }
 
   // Try to add createRoot support for React 18+ (optional)
+  // Note: Use string concatenation to avoid Vite static analysis detecting the import
+  // This allows the code to work in React 16/17 where react-dom/client doesn't exist
   if (ReactDOM && ReactDOM.createRoot) {
     try {
-      const reactDomClientModule = await import('react-dom/client');
+      // Dynamic import with string concatenation to bypass Vite's static analysis
+      const clientPath = 'react-dom' + '/client';
+      const reactDomClientModule = await import(/* @vite-ignore */ clientPath);
       const ReactDOMClient = reactDomClientModule.default || reactDomClientModule;
       if (ReactDOMClient && ReactDOMClient.createRoot) {
         window.ReactDOM = { ...ReactDOM, ...ReactDOMClient };
