@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/public/screenshots/overview-full.png" alt="React DevTools Plus" width="800" />
+  <img src="docs/public/screenshots/overview.png" alt="React DevTools Plus" width="800" />
 </p>
 
 <h1 align="center">React DevTools Plus</h1>
