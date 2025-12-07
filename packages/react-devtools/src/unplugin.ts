@@ -493,9 +493,12 @@ export const unplugin = createUnplugin(unpluginFactory)
 
 export default unplugin
 
+type MakeFunctionParamsOptional<T extends (...args: any) => any>
+  = (...args: Partial<Parameters<T>>) => ReturnType<T>
+
 // Export for named imports
-export const vite = unplugin.vite
-export const webpack = unplugin.webpack
+export const vite = unplugin.vite as MakeFunctionParamsOptional<typeof unplugin.vite>
+export const webpack = unplugin.webpack as MakeFunctionParamsOptional<typeof unplugin.webpack>
 
 // Export types
 export type { ReactDevToolsPluginOptions }
