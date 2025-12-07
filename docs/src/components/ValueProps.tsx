@@ -15,7 +15,7 @@ export const ValueProps: React.FC = () => {
 
   return (
     <section className="relative overflow-hidden from-[#050712] via-slate-950 to-slate-950 bg-gradient-to-b py-20">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(56,189,248,0.08),transparent_45%),radial-gradient(circle_at_80%_0%,rgba(16,185,129,0.07),transparent_40%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(56,189,248,0.08),transparent_45%),radial-gradient(circle_at_80%_0%,rgba(236,72,153,0.07),transparent_40%)]" />
       <div className="container relative mx-auto px-6">
         <div className="mx-auto mb-14 max-w-3xl text-center">
           <div className="inline-flex items-center gap-2 border border-white/10 rounded-full bg-white/5 px-4 py-2 text-xs text-slate-300 tracking-[0.25em] uppercase">

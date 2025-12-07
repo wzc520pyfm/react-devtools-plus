@@ -22,11 +22,6 @@ export default {
           900: '#0c4a6e',
           950: '#082f49',
         },
-        accent: {
-          400: '#34d399',
-          500: '#10b981',
-          600: '#059669',
-        },
       },
       animation: {
         'spin-slow': 'spin 8s linear infinite',

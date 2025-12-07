@@ -14,7 +14,7 @@ export const Testimonials: React.FC = () => {
 
   return (
     <section id="testimonials" className="relative bg-slate-950 py-24">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(16,185,129,0.05),_transparent_50%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(236,72,153,0.05),_transparent_50%)]" />
       <div className="container relative mx-auto px-6">
         <div className="mx-auto mb-10 max-w-3xl text-center">
           <h2 className="text-3xl text-white font-bold md:text-4xl">

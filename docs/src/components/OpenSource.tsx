@@ -15,7 +15,7 @@ export const OpenSource: React.FC = () => {
 
   return (
     <section id="community" className="relative overflow-hidden bg-slate-950 py-24">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(14,165,233,0.08),transparent_35%),radial-gradient(circle_at_85%_10%,rgba(16,185,129,0.08),transparent_35%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(14,165,233,0.08),transparent_35%),radial-gradient(circle_at_85%_10%,rgba(236,72,153,0.08),transparent_35%)]" />
       <div className="container relative mx-auto px-6">
         <div className="max-w-3xl">
           <p className="inline-flex items-center gap-2 border border-white/10 rounded-full bg-white/5 px-3 py-1 text-xs text-slate-300">

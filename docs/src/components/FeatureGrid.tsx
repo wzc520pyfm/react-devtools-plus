@@ -50,7 +50,7 @@ export const FeatureGrid: React.FC = () => {
       description: t('features.items.fiber.description'),
       icon: iconMap[1],
       className: 'md:col-span-1',
-      gradient: 'from-accent-500/20 to-accent-900/5',
+      gradient: 'from-brand-400/20 to-brand-900/5',
     },
     {
       title: t('features.items.keyboard.title'),
@@ -72,7 +72,7 @@ export const FeatureGrid: React.FC = () => {
     <section ref={sectionRef} id="features" className="relative overflow-hidden from-slate-950 via-slate-950 to-[#050712] bg-gradient-to-b py-24">
       {/* Glows */}
       <div className="bg-brand-500/10 pointer-events-none absolute right-0 top-0 h-1/2 w-1/2 rounded-full blur-[160px]" />
-      <div className="bg-accent-500/10 pointer-events-none absolute bottom-0 left-0 h-1/2 w-1/2 rounded-full blur-[160px]" />
+      <div className="bg-brand-400/10 pointer-events-none absolute bottom-0 left-0 h-1/2 w-1/2 rounded-full blur-[160px]" />
 
       <div className="container mx-auto px-6">
         <div className="mx-auto mb-16 max-w-3xl text-center">
@@ -120,7 +120,7 @@ export const FeatureGrid: React.FC = () => {
 
                   <div className="mt-auto pt-8 opacity-70 transition-opacity duration-500 group-hover:opacity-100">
                     <div
-                      className="from-brand-500/70 via-accent-500/40 h-1 w-full origin-right rounded-full to-transparent bg-gradient-to-r"
+                      className="from-brand-500/70 via-brand-400/40 h-1 w-full origin-right rounded-full to-transparent bg-gradient-to-r"
                       style={{
                         transform: cardsAnimated ? 'scaleX(1)' : 'scaleX(0)',
                         transition: 'transform 0.5s ease-out',

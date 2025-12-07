@@ -213,7 +213,7 @@ export const Hero: React.FC = () => {
               {t('hero.titleLead')}
               {' '}
               <br />
-              <span className="from-brand-300 via-brand-500 to-accent-500 bg-gradient-to-r bg-clip-text text-transparent">
+              <span className="from-brand-300 via-brand-500 to-brand-700 bg-gradient-to-r bg-clip-text text-transparent">
                 {t('hero.titleHighlight')}
               </span>
             </h1>
@@ -255,7 +255,7 @@ export const Hero: React.FC = () => {
             style={{ animationDelay: '0.8s' }}
           >
             {/* Abstract Glow behind the card */}
-            <div className="from-brand-500 to-accent-600 absolute rounded-2xl bg-gradient-to-r opacity-20 blur transition duration-1000 -inset-1 group-hover:opacity-40"></div>
+            <div className="from-brand-500 to-brand-800 absolute rounded-2xl bg-gradient-to-r opacity-20 blur transition duration-1000 -inset-1 group-hover:opacity-40"></div>
 
             {/* The Main Card */}
             <div className="relative overflow-hidden border border-white/10 rounded-2xl bg-[#09090b] shadow-2xl backdrop-blur-sm">
@@ -336,7 +336,7 @@ export const Hero: React.FC = () => {
 
             {/* Decorative Floating Elements behind/around */}
             <div className="bg-brand-500/20 absolute h-24 w-24 rounded-full blur-3xl -right-12 -top-12"></div>
-            <div className="bg-accent-500/20 absolute h-32 w-32 rounded-full blur-3xl -bottom-12 -left-12"></div>
+            <div className="bg-brand-400/18 absolute h-32 w-32 rounded-full blur-3xl -bottom-12 -left-12"></div>
           </div>
         </div>
       </div>

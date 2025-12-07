@@ -19,7 +19,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 32, className = '' }) => {
         <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#38bdf8" />
           <stop offset="50%" stopColor="#0ea5e9" />
-          <stop offset="100%" stopColor="#10b981" />
+          <stop offset="100%" stopColor="#0284c7" />
         </linearGradient>
 
         {/* Glow filter */}

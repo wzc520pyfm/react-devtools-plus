@@ -7,11 +7,11 @@ export const DocsCTA: React.FC = () => {
   const { t } = useTranslation()
   return (
     <section id="docs" className="relative overflow-hidden py-20">
-      <div className="from-brand-500/10 via-accent-500/10 pointer-events-none absolute inset-0 to-transparent bg-gradient-to-r" />
+      <div className="from-brand-500/10 via-brand-400/10 pointer-events-none absolute inset-0 to-transparent bg-gradient-to-r" />
       <div className="container relative mx-auto px-6">
         <div className="overflow-hidden border border-white/10 rounded-3xl bg-white/[0.03] p-10 md:p-14">
           <div className="bg-brand-500/20 absolute h-64 w-64 blur-3xl -right-24 -top-24" />
-          <div className="bg-accent-500/20 absolute h-64 w-64 blur-3xl -bottom-24 -left-24" />
+          <div className="bg-brand-400/15 absolute h-64 w-64 blur-3xl -bottom-24 -left-24" />
           <div className="relative z-10 grid items-center gap-10 lg:grid-cols-[1.2fr_1fr]">
             <div>
               <div className="mb-4 inline-flex items-center gap-2 border border-white/10 rounded-full bg-white/5 px-3 py-1 text-xs text-slate-300">
@@ -39,7 +39,7 @@ export const DocsCTA: React.FC = () => {
               <div className="absolute inset-4 rounded-3xl from-white/5 to-white/0 bg-gradient-to-br blur-2xl" />
               <div className="relative border border-white/10 rounded-3xl bg-slate-950/80 p-6 shadow-2xl">
                 <div className="mb-3 flex items-center gap-2 text-xs text-slate-400 tracking-[0.2em] uppercase">
-                  <span className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
+                  <span className="bg-brand-400 h-2 w-2 animate-pulse rounded-full" />
                   Live playground
                 </div>
                 <div className="text-sm text-slate-200 font-mono space-y-3">
