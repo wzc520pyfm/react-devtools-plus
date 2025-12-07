@@ -1,6 +1,7 @@
 import { Rocket, ShieldCheck, Sparkles, Terminal } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { GlowCard, GlowCardGrid } from './ui/GlowCard'
 
 export const ValueProps: React.FC = () => {
   const { t } = useTranslation()
@@ -28,23 +29,23 @@ export const ValueProps: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {valueProps.map(item => (
-            <div
-              key={item.title}
-              className="group hover:border-brand-400/40 relative overflow-hidden border border-white/10 rounded-3xl bg-white/[0.02] p-6 backdrop-blur-sm transition-all duration-500 hover:-translate-y-1"
-            >
-              <div className="absolute inset-0 from-white/0 via-white/5 to-white/0 bg-gradient-to-br opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-              <div className="mb-4 flex items-center gap-3">
-                <div className="border border-white/10 rounded-2xl bg-white/5 p-3">
-                  <item.icon className="text-brand-300 h-5 w-5" />
-                </div>
-                <h3 className="text-xl text-white font-semibold">{item.title}</h3>
-              </div>
-              <p className="text-slate-400 leading-relaxed">{item.description}</p>
-            </div>
-          ))}
-        </div>
+        <GlowCardGrid className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {mousePosition => (
+            <>
+              {valueProps.map(item => (
+                <GlowCard key={item.title} mousePosition={mousePosition}>
+                  <div className="mb-4 flex items-center gap-3">
+                    <div className="border border-white/10 rounded-2xl bg-white/5 p-3">
+                      <item.icon className="text-brand-300 h-5 w-5" />
+                    </div>
+                    <h3 className="text-xl text-white font-semibold">{item.title}</h3>
+                  </div>
+                  <p className="text-slate-400 leading-relaxed">{item.description}</p>
+                </GlowCard>
+              ))}
+            </>
+          )}
+        </GlowCardGrid>
       </div>
     </section>
   )
