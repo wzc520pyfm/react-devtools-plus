@@ -1,4 +1,4 @@
-import { Info, Layers } from 'lucide-react'
+import { Info } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -13,15 +13,13 @@ export const ComponentTree: React.FC = () => {
         {t('docs.componentTree.description')}
       </p>
 
-      {/* Placeholder for screenshot */}
-      <div className="not-prose my-8 h-80 flex items-center justify-center border border-white/20 rounded-2xl border-dashed bg-white/5">
-        <div className="text-center">
-          <div className="mx-auto mb-3 h-12 w-12 flex items-center justify-center rounded-full bg-white/10">
-            <Layers className="h-6 w-6 text-slate-400" />
-          </div>
-          <p className="text-sm text-slate-400">{t('docs.common.screenshotPlaceholder')}</p>
-          <p className="mt-1 text-xs text-slate-500">Component Tree Overview</p>
-        </div>
+      {/* Component Tree Overview Screenshot */}
+      <div className="not-prose my-8 overflow-hidden border border-white/10 rounded-2xl">
+        <img
+          src="/screenshots/component-tree.png"
+          alt="Component Tree Overview"
+          className="w-full"
+        />
       </div>
 
       <h2 className="mb-4 mt-8 text-2xl text-white font-bold">{t('docs.componentTree.features.title')}</h2>
@@ -46,15 +44,13 @@ export const ComponentTree: React.FC = () => {
         ))}
       </ol>
 
-      {/* Placeholder for screenshot */}
-      <div className="not-prose my-8 h-64 flex items-center justify-center border border-white/20 rounded-2xl border-dashed bg-white/5">
-        <div className="text-center">
-          <div className="mx-auto mb-3 h-12 w-12 flex items-center justify-center rounded-full bg-white/10">
-            <Info className="h-6 w-6 text-slate-400" />
-          </div>
-          <p className="text-sm text-slate-400">{t('docs.common.screenshotPlaceholder')}</p>
-          <p className="mt-1 text-xs text-slate-500">Component Selection Demo</p>
-        </div>
+      {/* Component Selection Screenshot */}
+      <div className="not-prose my-8 overflow-hidden border border-white/10 rounded-2xl">
+        <img
+          src="/screenshots/component-tree-detail.png"
+          alt="Component Selection Demo"
+          className="w-full"
+        />
       </div>
 
       <h2 className="mb-4 mt-8 text-2xl text-white font-bold">{t('docs.componentTree.props.title')}</h2>

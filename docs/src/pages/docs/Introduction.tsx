@@ -14,6 +14,15 @@ export const Introduction: React.FC = () => {
         {t('docs.introduction.description')}
       </p>
 
+      {/* DevTools Overview Screenshot */}
+      <div className="not-prose my-8 overflow-hidden border border-white/10 rounded-2xl">
+        <img
+          src="/screenshots/overview-full.png"
+          alt="React DevTools Plus Overview"
+          className="w-full"
+        />
+      </div>
+
       <div className="not-prose my-8 border border-white/10 rounded-2xl bg-white/5 p-6">
         <h2 className="mb-4 text-xl text-white font-semibold">{t('docs.introduction.whatIs.title')}</h2>
         <p className="text-slate-300 leading-relaxed">
