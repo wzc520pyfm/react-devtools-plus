@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>React DevTools Plus</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              brand: {
+                50: '#f0f9ff',
+                100: '#e0f2fe',
+                200: '#bae6fd',
+                300: '#7dd3fc',
+                400: '#38bdf8',
+                500: '#0ea5e9', // Sky/Cyan base
+                600: '#0284c7',
+                700: '#0369a1',
+                800: '#075985',
+                900: '#0c4a6e',
+                950: '#082f49',
+              },
+              accent: {
+                500: '#8b5cf6', // Violet
+                600: '#7c3aed',
+              },
+            },
+            animation: {
+              'spin-slow': 'spin 8s linear infinite',
+              'border-beam': 'border-beam calc(var(--duration)*1s) infinite linear',
+              shimmer: 'shimmer 2s linear infinite',
+              'slide-up-fade': 'slide-up-fade 0.8s cubic-bezier(0.16, 1, 0.3, 1) both',
+              marquee: 'marquee var(--duration) linear infinite',
+            },
+            keyframes: {
+              'border-beam': {
+                '100%': {
+                  'offset-distance': '100%',
+                },
+              },
+              shimmer: {
+                from: {
+                  backgroundPosition: '0 0',
+                },
+                to: {
+                  backgroundPosition: '-200% 0',
+                },
+              },
+              'slide-up-fade': {
+                '0%': {
+                  opacity: 0,
+                  transform: 'translateY(20px) scale(0.96)',
+                  filter: 'blur(4px)',
+                },
+                '100%': {
+                  opacity: 1,
+                  transform: 'translateY(0) scale(1)',
+                  filter: 'blur(0)',
+                },
+              },
+              marquee: {
+                from: { transform: 'translateX(0)' },
+                to: { transform: 'translateX(calc(-100% - var(--gap)))' },
+              },
+              'line-grow': {
+                '0%': {
+                  transform: 'scaleX(0)',
+                },
+                '100%': {
+                  transform: 'scaleX(1)',
+                },
+              },
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      body {
+        background-color: #020617; /* Slate 950 */
+        color: #f8fafc;
+        overflow-x: hidden;
+      }
+
+      /* Smooth scrolling */
+      html {
+        scroll-behavior: smooth;
+      }
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #020617;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #1e293b;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #334155;
+      }
+
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      @keyframes lineGrow {
+        0% {
+          transform: scaleX(0);
+        }
+        100% {
+          transform: scaleX(1);
+        }
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://aistudiocdn.com/react@^19.2.1",
+          "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+          "react/": "https://aistudiocdn.com/react@^19.2.1/",
+          "lucide-react": "https://aistudiocdn.com/lucide-react@^0.556.0"
+        }
+      }
+    </script>
+    <link rel="stylesheet" href="/index.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
