@@ -1,7 +1,7 @@
 {
   "name": "@react-devtools-plus/scan",
   "type": "module",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "React Scan integration for React DevTools",
   "keywords": [
     "react",
