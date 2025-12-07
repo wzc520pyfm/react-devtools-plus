@@ -49,25 +49,27 @@ export function generateReactGlobalsESMCode(options: ReactGlobalsOptions = {}): 
   if (!ReactDOM) {
     try {
       const reactDomModule = await import('react-dom');
+      // In React 19, the module exports are at the top level, not under .default
       ReactDOM = reactDomModule.default || reactDomModule;
       window.ReactDOM = ReactDOM;
     } catch (e) {
       // ReactDOM not available via import, must be loaded via CDN
-      console.debug('[React DevTools] ReactDOM not found in node_modules, using window.ReactDOM');
     }
   }
 
   // Try to add createRoot support for React 18+ (optional)
-  // Note: Use string concatenation to avoid Vite static analysis detecting the import
-  // This allows the code to work in React 16/17 where react-dom/client doesn't exist
-  if (ReactDOM && ReactDOM.createRoot) {
+  // IMPORTANT: For React 18, createRoot is in react-dom/client
+  // For React 19, createRoot is exported from both react-dom and react-dom/client
+  if (ReactDOM && !ReactDOM.createRoot) {
     try {
-      // Dynamic import with string concatenation to bypass Vite's static analysis
-      const clientPath = 'react-dom' + '/client';
-      const reactDomClientModule = await import(/* @vite-ignore */ clientPath);
-      const ReactDOMClient = reactDomClientModule.default || reactDomClientModule;
-      if (ReactDOMClient && ReactDOMClient.createRoot) {
-        window.ReactDOM = { ...ReactDOM, ...ReactDOMClient };
+      // Import react-dom/client - Vite will transform this to the correct URL
+      const reactDomClientModule = await import('react-dom/client');
+      // Get createRoot from the module - it's a named export, not default
+      const createRoot = reactDomClientModule.createRoot;
+      const hydrateRoot = reactDomClientModule.hydrateRoot;
+      if (createRoot) {
+        // Merge createRoot and hydrateRoot into ReactDOM
+        window.ReactDOM = { ...ReactDOM, createRoot, hydrateRoot };
       }
     } catch (e) {
       // react-dom/client not available, which is fine for React 17 or CDN

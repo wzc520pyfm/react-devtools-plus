@@ -250,7 +250,7 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
         wrapPrintUrls(server)
       },
 
-      async resolveId(id) {
+      async resolveId(id, importer) {
         if (id === DEVTOOLS_OPTIONS_ID) {
           return RESOLVED_OPTIONS_ID
         }

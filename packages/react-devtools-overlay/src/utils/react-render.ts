@@ -4,14 +4,17 @@
  * Provides unified rendering API that works with both:
  * - React 17 and below (legacy ReactDOM.render)
  * - React 18+ (createRoot)
+ *
+ * NOTE: This module uses window globals (React, ReactDOM) which are set up
+ * by the react-devtools-globals script. This ensures compatibility with
+ * the host application's React version.
  */
-
-import { version as reactVersion } from 'react'
-import ReactDOM from 'react-dom'
 
 /**
  * Root reference that abstracts React 17/18 differences
  */
+import { createRoot } from 'react-dom/client'
+
 export interface ReactRootRef {
   /** Unmount the root */
   unmount: () => void
@@ -22,10 +25,26 @@ export interface ReactRootRef {
 }
 
 /**
+ * Get React from window globals
+ */
+function getReact(): any {
+  return typeof window !== 'undefined' ? (window as any).React : undefined
+}
+
+/**
+ * Get ReactDOM from window globals
+ */
+function getReactDOM(): any {
+  return typeof window !== 'undefined' ? (window as any).ReactDOM : undefined
+}
+
+/**
  * Check if React 18+ createRoot is available
  */
 export function isReact18OrNewer(): boolean {
-  const majorVersion = Number((reactVersion || '0').split('.')[0])
+  const React = getReact()
+  const version = React?.version || '0'
+  const majorVersion = Number(version.split('.')[0])
   return majorVersion >= 18
 }
 
@@ -33,21 +52,24 @@ export function isReact18OrNewer(): boolean {
  * Check if createRoot function is available on ReactDOM
  */
 function hasCreateRoot(): boolean {
-  return typeof (ReactDOM as any).createRoot === 'function'
+  const ReactDOM = getReactDOM()
+  return typeof ReactDOM?.createRoot === 'function'
 }
 
 /**
  * Check if legacy render function is available
  */
 function hasLegacyRender(): boolean {
-  return typeof ReactDOM.render === 'function'
+  const ReactDOM = getReactDOM()
+  return typeof ReactDOM?.render === 'function'
 }
 
 /**
  * Render using React 18+ createRoot
  */
 function renderWithCreateRoot(element: React.ReactElement, container: HTMLElement): ReactRootRef {
-  const root = (ReactDOM as any).createRoot(container)
+  const ReactDOM = getReactDOM()
+  const root = ReactDOM.createRoot(container)
   root.render(element)
   return {
     unmount: () => root.unmount(),
@@ -60,11 +82,12 @@ function renderWithCreateRoot(element: React.ReactElement, container: HTMLElemen
  * Render using legacy ReactDOM.render (React 17 and below)
  */
 function renderWithLegacyRender(element: React.ReactElement, container: HTMLElement): ReactRootRef {
-  ;(ReactDOM as any).render(element, container)
+  const ReactDOM = getReactDOM()
+  createRoot(container).render(element)
   return {
     unmount: () => {
-      if (typeof (ReactDOM as any).unmountComponentAtNode === 'function') {
-        (ReactDOM as any).unmountComponentAtNode(container)
+      if (typeof ReactDOM.unmountComponentAtNode === 'function') {
+        ReactDOM.unmountComponentAtNode(container)
       }
     },
     type: 'legacy',
@@ -104,7 +127,7 @@ export function renderToContainer(
   }
 
   // Failed to render
-  console.warn('[React DevTools] No suitable React render method found:', element)
+  console.warn('[React DevTools] No suitable React render method found')
   return null
 }
 

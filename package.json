@@ -60,6 +60,7 @@
     "prepare": "simple-git-hooks",
     "test": "vitest --environment jsdom",
     "play": "turbo dev --filter=./packages/playground/react",
+    "play:react19": "turbo dev --filter=./packages/playground/react19",
     "play:webpack": "turbo dev --filter=./packages/playground/react-webpack",
     "play:my-devtools": "turbo dev --filter=./packages/playground/my-devtools-play"
   },

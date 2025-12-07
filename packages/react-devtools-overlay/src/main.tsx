@@ -6,15 +6,24 @@
  * - Components tree hook (on-demand)
  * - Keyboard shortcuts
  * - HMR support (Vite only)
+ *
+ * NOTE: We use window.React to access createElement/StrictMode at runtime
+ * to ensure compatibility with the host app's React version (16-19).
  */
 
 import type { ReactRootRef } from './utils/react-render'
 import { globalPluginManager } from '@react-devtools-plus/core'
 import { installReactHook } from '@react-devtools-plus/kit'
 import { createScanPlugin } from '@react-devtools-plus/scan'
-import { createElement, StrictMode } from 'react'
 import { App } from './App'
 import { renderToContainer, unmountRoot } from './utils/react-render'
+
+/**
+ * Get React from window globals
+ */
+function getReact(): any {
+  return typeof window !== 'undefined' ? (window as any).React : undefined
+}
 
 // Module state
 let rootRef: ReactRootRef | null = null
@@ -102,7 +111,12 @@ async function init() {
 
     // Create and mount overlay
     const container = createOverlayContainer()
-    const element = createElement(StrictMode, null, createElement(App))
+    const React = getReact()
+    if (!React) {
+      console.warn('[React DevTools] React not found on window')
+      return
+    }
+    const element = React.createElement(React.StrictMode, null, React.createElement(App))
 
     // Render using the appropriate method based on React version
     rootRef = renderToContainer(element, container)

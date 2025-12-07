@@ -1,0 +1,23 @@
+{
+  "name": "@react-devtools-plus/playground-react19",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "NODE_ENV=test vite build --mode test",
+    "preview": "NODE_ENV=test vite preview --mode test"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.2",
+    "react-devtools-plus": "workspace:*",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.10"
+  }
+}
