@@ -1,7 +1,8 @@
-import { Menu, X, Zap } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from './ui/Button'
+import { Logo } from './ui/Logo'
 
 export const Navbar: React.FC = () => {
   const { t, i18n } = useTranslation()
@@ -34,10 +35,8 @@ export const Navbar: React.FC = () => {
       }`}
     >
       <div className="container mx-auto flex items-center justify-between px-6">
-        <div className="group flex cursor-pointer items-center gap-2">
-          <div className="from-brand-400 to-accent-600 group-hover:shadow-brand-500/50 relative h-8 w-8 flex items-center justify-center rounded-lg bg-gradient-to-br shadow-lg transition-all duration-300">
-            <Zap className="h-5 w-5 fill-white text-white" />
-          </div>
+        <div className="group flex cursor-pointer items-center gap-2.5">
+          <Logo size={36} className="transition-transform duration-300 group-hover:scale-105" />
           <span className="from-white to-slate-400 bg-gradient-to-r bg-clip-text text-xl text-transparent font-bold">
             DevTools
             <sup className="text-brand-400 relative text-sm -top-3">+</sup>
