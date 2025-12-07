@@ -133,6 +133,7 @@ export const TabbedCodeBlock: React.FC<TabbedCodeBlockProps> = ({
               const iconType = tab.icon || getDefaultIcon(tab.name)
               return (
                 <button
+                  type="button"
                   key={tab.name}
                   onClick={() => setActiveTab(idx)}
                   className={`flex items-center gap-2 border-r border-white/5 px-4 py-3 text-xs font-medium transition-colors ${
@@ -152,32 +153,40 @@ export const TabbedCodeBlock: React.FC<TabbedCodeBlockProps> = ({
 
       {/* Code Area */}
       <div className="min-h-[320px] overflow-x-auto bg-[#0F111A] p-6">
-        {isLoading ? (
-          <div className="h-[280px] flex items-center justify-center">
-            <div className="h-6 w-6 animate-spin border-2 border-slate-600 border-t-slate-300 rounded-full" />
-          </div>
-        ) : (
-          <div className="tabbed-code-content flex text-sm leading-6 font-mono">
-            {/* Line Numbers */}
-            <div className="shrink-0 select-none pr-4 text-right text-slate-700">
-              {lines.map((_, idx) => (
-                <div key={idx}>{idx + 1}</div>
-              ))}
-            </div>
-            {/* Highlighted Code */}
-            <div
-              className="shiki-inline flex-1 overflow-x-auto"
-              dangerouslySetInnerHTML={{ __html: highlightedCodes[activeTab] || '' }}
-            />
-          </div>
-        )}
+        {isLoading
+          ? (
+              <div className="h-[280px] flex items-center justify-center">
+                <div className="h-6 w-6 animate-spin border-2 border-slate-600 border-t-slate-300 rounded-full" />
+              </div>
+            )
+          : (
+              <div className="tabbed-code-content flex text-sm leading-6 font-mono">
+                {/* Line Numbers */}
+                <div className="shrink-0 select-none pr-4 text-right text-slate-700">
+                  {lines.map((_, idx) => (
+                    <div key={`line-${idx}`}>{idx + 1}</div>
+                  ))}
+                </div>
+                {/* Highlighted Code */}
+                <div
+                  className="shiki-inline flex-1 overflow-x-auto"
+                  dangerouslySetInnerHTML={{ __html: highlightedCodes[activeTab] || '' }}
+                />
+              </div>
+            )}
       </div>
 
       {/* Bottom Status Bar */}
       <div className="flex items-center justify-between border-t border-white/5 bg-white/5 px-4 py-1.5 text-[10px] text-slate-500 font-mono">
         <div className="flex gap-3">
           <span>UTF-8</span>
-          <span>{currentTab?.language === 'tsx' ? 'TypeScript JSX' : currentTab?.language === 'ts' ? 'TypeScript' : currentTab?.language?.toUpperCase() || 'Text'}</span>
+          <span>
+            {currentTab?.language === 'tsx'
+              ? 'TypeScript JSX'
+              : currentTab?.language === 'ts'
+                ? 'TypeScript'
+                : currentTab?.language?.toUpperCase() || 'Text'}
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <div className="bg-brand-500 h-1.5 w-1.5 animate-pulse rounded-full"></div>
