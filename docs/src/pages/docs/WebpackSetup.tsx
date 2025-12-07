@@ -1,54 +1,15 @@
-import { ArrowRight, Check, Copy, Info } from 'lucide-react'
-import React, { useState } from 'react'
+import { ArrowRight, Check, Info } from 'lucide-react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-
-const CodeBlock: React.FC<{ code: string, language?: string, title?: string }> = ({ code, language = 'javascript', title }) => {
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(code)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  return (
-    <div className="not-prose my-4 overflow-hidden border border-white/10 rounded-xl bg-slate-900">
-      {title && (
-        <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-2">
-          <span className="text-sm text-slate-400">{title}</span>
-          <button
-            onClick={handleCopy}
-            className="flex items-center gap-1.5 text-xs text-slate-400 transition-colors hover:text-white"
-          >
-            {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-            {copied ? 'Copied!' : 'Copy'}
-          </button>
-        </div>
-      )}
-      <div className="relative">
-        <pre className="overflow-x-auto p-4">
-          <code className={`language-${language} text-sm text-slate-300`}>{code}</code>
-        </pre>
-        {!title && (
-          <button
-            onClick={handleCopy}
-            className="absolute right-3 top-3 border border-white/10 rounded-lg bg-white/5 p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
-          >
-            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-          </button>
-        )}
-      </div>
-    </div>
-  )
-}
+import { CodeBlock } from '../../components/ui/CodeBlock'
 
 export const WebpackSetup: React.FC = () => {
   const { t } = useTranslation()
 
   const basicConfig = `const path = require('node:path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const ReactDevToolsPlugin = require('react-devtools-plus/webpack')
+const { ReactDevToolsWebpackPlugin } = require('react-devtools-plus/webpack')
 
 module.exports = {
   mode: 'development',
@@ -61,7 +22,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './public/index.html',
     }),
-    ReactDevToolsPlugin({
+    new ReactDevToolsWebpackPlugin({
       enabledEnvironments: ['development'],
     }),
   ],
@@ -73,7 +34,7 @@ module.exports = {
 
   const advancedConfig = `const path = require('node:path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const ReactDevToolsPlugin = require('react-devtools-plus/webpack')
+const { ReactDevToolsWebpackPlugin } = require('react-devtools-plus/webpack')
 
 module.exports = {
   mode: 'development',
@@ -86,12 +47,15 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './public/index.html',
     }),
-    ReactDevToolsPlugin({
+    new ReactDevToolsWebpackPlugin({
       // Enable in development and test environments
       enabledEnvironments: ['development', 'test'],
       
       // Enable source code location injection
       injectSource: true,
+      
+      // Configure which editor to open
+      launchEditor: 'cursor',
       
       // Configure assets panel
       assets: {
@@ -106,13 +70,13 @@ module.exports = {
 }`
 
   const esmConfig = `// For ESM projects, use dynamic import
-module.exports = async () => {
-  const { webpack: ReactDevToolsPlugin } = await import('react-devtools-plus/webpack')
+export default async () => {
+  const { ReactDevToolsWebpackPlugin } = await import('react-devtools-plus/webpack')
   
   return {
     // ... other config
     plugins: [
-      ReactDevToolsPlugin({
+      new ReactDevToolsWebpackPlugin({
         enabledEnvironments: ['development'],
       }),
     ],
@@ -139,26 +103,15 @@ module.exports = async () => {
 
       <h2 className="mb-4 mt-8 text-2xl text-white font-bold">{t('docs.webpackSetup.basic.title')}</h2>
       <p className="text-slate-300">{t('docs.webpackSetup.basic.description')}</p>
-      <CodeBlock code={basicConfig} title="webpack.config.js" />
-
-      {/* Placeholder for screenshot */}
-      <div className="not-prose my-8 h-64 flex items-center justify-center border border-white/20 rounded-2xl border-dashed bg-white/5">
-        <div className="text-center">
-          <div className="mx-auto mb-3 h-12 w-12 flex items-center justify-center rounded-full bg-white/10">
-            <Info className="h-6 w-6 text-slate-400" />
-          </div>
-          <p className="text-sm text-slate-400">{t('docs.common.screenshotPlaceholder')}</p>
-          <p className="mt-1 text-xs text-slate-500">Webpack Plugin Configuration Preview</p>
-        </div>
-      </div>
+      <CodeBlock code={basicConfig} language="javascript" title="webpack.config.js" />
 
       <h2 className="mb-4 mt-8 text-2xl text-white font-bold">{t('docs.webpackSetup.advanced.title')}</h2>
       <p className="text-slate-300">{t('docs.webpackSetup.advanced.description')}</p>
-      <CodeBlock code={advancedConfig} title="webpack.config.js" />
+      <CodeBlock code={advancedConfig} language="javascript" title="webpack.config.js" />
 
       <h2 className="mb-4 mt-8 text-2xl text-white font-bold">{t('docs.webpackSetup.esm.title')}</h2>
       <p className="text-slate-300">{t('docs.webpackSetup.esm.description')}</p>
-      <CodeBlock code={esmConfig} title="webpack.config.js (ESM)" />
+      <CodeBlock code={esmConfig} language="javascript" title="webpack.config.mjs (ESM)" />
 
       <h2 className="mb-4 mt-8 text-2xl text-white font-bold">{t('docs.webpackSetup.features.title')}</h2>
       <ul className="my-4 text-slate-300 space-y-2">

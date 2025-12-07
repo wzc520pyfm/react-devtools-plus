@@ -1,47 +1,8 @@
-import { ArrowRight, Check, Copy, Terminal } from 'lucide-react'
-import React, { useState } from 'react'
+import { ArrowRight, Terminal } from 'lucide-react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-
-const CodeBlock: React.FC<{ code: string, language?: string, title?: string }> = ({ code, language = 'bash', title }) => {
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(code)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  return (
-    <div className="not-prose my-4 overflow-hidden border border-white/10 rounded-xl bg-slate-900">
-      {title && (
-        <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-2">
-          <span className="text-sm text-slate-400">{title}</span>
-          <button
-            onClick={handleCopy}
-            className="flex items-center gap-1.5 text-xs text-slate-400 transition-colors hover:text-white"
-          >
-            {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-            {copied ? 'Copied!' : 'Copy'}
-          </button>
-        </div>
-      )}
-      <div className="relative">
-        <pre className="overflow-x-auto p-4">
-          <code className={`language-${language} text-sm text-slate-300`}>{code}</code>
-        </pre>
-        {!title && (
-          <button
-            onClick={handleCopy}
-            className="absolute right-3 top-3 border border-white/10 rounded-lg bg-white/5 p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
-          >
-            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-          </button>
-        )}
-      </div>
-    </div>
-  )
-}
+import { CodeBlock } from '../../components/ui/CodeBlock'
 
 export const Installation: React.FC = () => {
   const { t } = useTranslation()
@@ -76,7 +37,7 @@ export const Installation: React.FC = () => {
             <span className="text-sm text-slate-300 font-medium">pnpm</span>
             <span className="bg-brand-500/20 text-brand-400 rounded px-2 py-0.5 text-xs">{t('docs.installation.recommended')}</span>
           </div>
-          <CodeBlock code="pnpm add -D react-devtools-plus" />
+          <CodeBlock code="pnpm add -D react-devtools-plus" language="bash" showLineNumbers={false} />
         </div>
 
         <div className="border border-white/10 rounded-xl bg-white/5 p-4">
@@ -84,7 +45,7 @@ export const Installation: React.FC = () => {
             <Terminal className="h-4 w-4 text-slate-400" />
             <span className="text-sm text-slate-300 font-medium">npm</span>
           </div>
-          <CodeBlock code="npm install -D react-devtools-plus" />
+          <CodeBlock code="npm install -D react-devtools-plus" language="bash" showLineNumbers={false} />
         </div>
 
         <div className="border border-white/10 rounded-xl bg-white/5 p-4">
@@ -92,7 +53,7 @@ export const Installation: React.FC = () => {
             <Terminal className="h-4 w-4 text-slate-400" />
             <span className="text-sm text-slate-300 font-medium">yarn</span>
           </div>
-          <CodeBlock code="yarn add -D react-devtools-plus" />
+          <CodeBlock code="yarn add -D react-devtools-plus" language="bash" showLineNumbers={false} />
         </div>
       </div>
 
