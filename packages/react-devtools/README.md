@@ -24,9 +24,10 @@ export default defineConfig({
 })
 ```
 
-### Keyboard shortcut
+### Keyboard shortcuts
 
-Press `Alt + Shift + R` (`Option + Shift + R` on macOS) inside the running app to toggle the floating overlay if it was closed.
+- Press `Alt + Shift + D` (`Option + Shift + D` on macOS) to toggle the DevTools panel open/close
+- Press `Alt + Shift + R` (`Option + Shift + R` on macOS) to toggle the overlay visibility (show/hide)
 
 ## What’s included
 

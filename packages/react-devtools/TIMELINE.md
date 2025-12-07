@@ -28,7 +28,7 @@ Each layer can be individually enabled or disabled to reduce performance overhea
 ### 1. Access Timeline
 
 1. Open your React app with React DevTools enabled
-2. Press `Alt/Option + Shift + R` to toggle the DevTools overlay
+2. Press `Alt/Option + Shift + D` to toggle the DevTools overlay
 3. Click the **Timeline** icon (📊) in the sidebar
 
 ### 2. Start Recording

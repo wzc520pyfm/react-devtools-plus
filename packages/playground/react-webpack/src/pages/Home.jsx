@@ -67,7 +67,7 @@ export default function Home() {
           This mini dashboard provides a handful of components to explore the preview React DevTools overlay. Toggle the
           tasks, inspect the tree, and try the
           {' '}
-          <strong>Alt/Option + Shift + R</strong>
+          <strong>Alt/Option + Shift + D</strong>
           {' '}
           shortcut.
         </p>

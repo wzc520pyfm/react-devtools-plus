@@ -37,7 +37,7 @@ The React DevTools overlay provides an inspector mode that allows you to select 
 **To activate the inspector:**
 
 1. Open your app with React DevTools enabled
-2. Press `Alt/Option + Shift + R` to toggle the overlay
+2. Press `Alt/Option + Shift + D` to toggle the overlay
 3. Click the "inspector" icon in the overlay
 4. Click on any element in your app
 

@@ -67,13 +67,14 @@ type Compiler = any
  * 打印 DevTools URL到控制台
  */
 function printDevToolsUrls(urls: string[]) {
-  const shortcut = process.platform === 'darwin' ? 'Option(⌥)+Shift(⇧)+R' : 'Alt(⌥)+Shift(⇧)+R'
+  const panelShortcut = process.platform === 'darwin' ? 'Option(⌥)+Shift(⇧)+D' : 'Alt(⌥)+Shift(⇧)+D'
+  const visibilityShortcut = process.platform === 'darwin' ? 'Option(⌥)+Shift(⇧)+R' : 'Alt(⌥)+Shift(⇧)+R'
   const colorUrl = (value: string) => cyan(value.replace(/:(\d+)\//, (_, port) => `:${bold(port)}/`))
 
   for (const url of urls) {
     const devtoolsUrl = url.endsWith('/') ? `${url}__react_devtools__/` : `${url}/__react_devtools__/`
     console.log(`  ${green('➜')}  ${bold('React DevTools')}: Open ${colorUrl(devtoolsUrl)} to view component tree`)
-    console.log(`  ${green('➜')}  ${bold('React DevTools')}: Press ${cyan(shortcut)} in the app to toggle the overlay`)
+    console.log(`  ${green('➜')}  ${bold('React DevTools')}: Press ${cyan(panelShortcut)} to toggle panel, ${cyan(visibilityShortcut)} to show/hide overlay`)
   }
 }
 

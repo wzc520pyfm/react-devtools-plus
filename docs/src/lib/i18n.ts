@@ -45,7 +45,7 @@ const resources = {
           },
           {
             title: 'Keyboard-native',
-            description: 'Option/Alt + Shift + R toggles instantly—no browser extension needed.',
+            description: 'Option/Alt + Shift + D toggles instantly—no browser extension needed.',
           },
           {
             title: 'Open roadmap',
@@ -69,7 +69,7 @@ const resources = {
           },
           keyboard: {
             title: 'Keyboard-first overlay',
-            description: 'Toggle instantly with Option/Alt + Shift + R. No browser extension required.',
+            description: 'Toggle instantly with Option/Alt + Shift + D. No browser extension required.',
           },
           safe: {
             title: 'Safe by default',
@@ -101,7 +101,7 @@ const resources = {
           {
             badge: 'Step 3',
             title: 'See everything',
-            description: 'Open /__react_devtools__/ or press Option/Alt + Shift + R to toggle the overlay.',
+            description: 'Open /__react_devtools__/ or press Option/Alt + Shift + D to toggle the overlay.',
           },
         ],
         primaryCta: 'Install the plugin',
@@ -358,7 +358,7 @@ const resources = {
             benefits: [
               'Dev-only overlay that never touches production bundles',
               'Zero configuration required—just add the plugin',
-              'Keyboard shortcut to toggle (Alt+Shift+R)',
+              'Keyboard shortcuts: Alt+Shift+D (toggle), Alt+Shift+R (hide)',
               'Works with both Vite and Webpack',
               'Open source with MIT license',
             ],
@@ -422,7 +422,7 @@ const resources = {
           step4: {
             title: 'Step 4: Open DevTools',
             description: 'Toggle the overlay using the keyboard shortcut:',
-            hint: 'Option + Shift + R on macOS',
+            hint: 'Option + Shift + D on macOS',
             alternative: 'Or navigate directly to the DevTools page:',
           },
           learnMore: {
@@ -551,7 +551,7 @@ const resources = {
           howTo: {
             title: 'How to Use',
             steps: [
-              'Open DevTools with Alt+Shift+R',
+              'Open DevTools with Alt+Shift+D',
               'Click the "Components" tab in the sidebar',
               'Browse the component tree or use search',
               'Click a component to view its details',
@@ -656,7 +656,7 @@ const resources = {
             title: 'Using the Inspector',
             description: 'To select an element and open its source:',
             steps: [
-              'Open DevTools with Alt+Shift+R',
+              'Open DevTools with Alt+Shift+D',
               'Click the inspector icon in the toolbar',
               'Click any element in your app',
               'The source file opens in your editor',
@@ -722,7 +722,7 @@ const resources = {
           howTo: {
             title: 'Using React Scan',
             steps: [
-              'Open DevTools with Alt+Shift+R',
+              'Open DevTools with Alt+Shift+D',
               'Navigate to the Scan panel',
               'Enable scanning to start monitoring',
               'Interact with your app to trigger renders',
@@ -765,7 +765,7 @@ const resources = {
           howTo: {
             title: 'Using Module Graph',
             steps: [
-              'Open DevTools with Alt+Shift+R',
+              'Open DevTools with Alt+Shift+D',
               'Navigate to the Graph panel',
               'The module graph loads automatically',
               'Click and drag to navigate the graph',
@@ -883,7 +883,7 @@ const resources = {
             checks: [
               'Make sure you\'re in development mode',
               'Check that the plugin is properly configured',
-              'Try pressing Alt+Shift+R to toggle',
+              'Try pressing Alt+Shift+D to toggle',
               'Check browser console for errors',
               'Verify the plugin isn\'t disabled by environment',
             ],
@@ -954,7 +954,7 @@ const resources = {
           },
           {
             title: '键盘原生',
-            description: 'Option/Alt + Shift + R 即刻唤起，无需浏览器扩展。',
+            description: 'Option/Alt + Shift + D 即刻唤起，无需浏览器扩展。',
           },
           {
             title: '公开路线图',
@@ -977,7 +977,7 @@ const resources = {
           },
           keyboard: {
             title: '键盘优先覆盖层',
-            description: 'Option/Alt + Shift + R 即刻切换，无需浏览器扩展。',
+            description: 'Option/Alt + Shift + D 即刻切换，无需浏览器扩展。',
           },
           safe: {
             title: '默认安全',
@@ -1008,7 +1008,7 @@ const resources = {
           {
             badge: '步骤 3',
             title: '一目了然',
-            description: '打开 /__react_devtools__/ 或按 Option/Alt + Shift + R 切换覆盖层。',
+            description: '打开 /__react_devtools__/ 或按 Option/Alt + Shift + D 切换覆盖层。',
           },
         ],
         primaryCta: '安装插件',
@@ -1265,7 +1265,7 @@ const resources = {
             benefits: [
               '仅开发环境的覆盖层，永不触及生产包',
               '零配置要求——只需添加插件',
-              '键盘快捷键切换（Alt+Shift+R）',
+              '键盘快捷键：Alt+Shift+D（切换），Alt+Shift+R（隐藏）',
               '同时支持 Vite 和 Webpack',
               'MIT 许可证开源',
             ],
@@ -1329,7 +1329,7 @@ const resources = {
           step4: {
             title: '步骤 4：打开 DevTools',
             description: '使用键盘快捷键切换覆盖层：',
-            hint: 'macOS 上为 Option + Shift + R',
+            hint: 'macOS 上为 Option + Shift + D',
             alternative: '或直接导航到 DevTools 页面：',
           },
           learnMore: {
@@ -1458,7 +1458,7 @@ const resources = {
           howTo: {
             title: '如何使用',
             steps: [
-              '使用 Alt+Shift+R 打开 DevTools',
+              '使用 Alt+Shift+D 打开 DevTools',
               '点击侧边栏中的"组件"标签',
               '浏览组件树或使用搜索',
               '点击组件查看其详情',
@@ -1563,7 +1563,7 @@ const resources = {
             title: '使用检查器',
             description: '选择元素并打开其源代码：',
             steps: [
-              '使用 Alt+Shift+R 打开 DevTools',
+              '使用 Alt+Shift+D 打开 DevTools',
               '点击工具栏中的检查器图标',
               '点击应用中的任意元素',
               '源文件在你的编辑器中打开',
@@ -1629,7 +1629,7 @@ const resources = {
           howTo: {
             title: '使用 React Scan',
             steps: [
-              '使用 Alt+Shift+R 打开 DevTools',
+              '使用 Alt+Shift+D 打开 DevTools',
               '导航到 Scan 面板',
               '启用扫描开始监控',
               '与应用交互触发渲染',
@@ -1672,7 +1672,7 @@ const resources = {
           howTo: {
             title: '使用模块关系图',
             steps: [
-              '使用 Alt+Shift+R 打开 DevTools',
+              '使用 Alt+Shift+D 打开 DevTools',
               '导航到 Graph 面板',
               '模块关系图自动加载',
               '点击并拖动以导航图形',
@@ -1790,7 +1790,7 @@ const resources = {
             checks: [
               '确保你处于开发模式',
               '检查插件是否正确配置',
-              '尝试按 Alt+Shift+R 切换',
+              '尝试按 Alt+Shift+D 切换',
               '检查浏览器控制台是否有错误',
               '验证插件没有被环境禁用',
             ],

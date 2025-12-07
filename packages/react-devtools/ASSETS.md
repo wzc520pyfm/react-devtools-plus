@@ -48,7 +48,7 @@ When you click on an asset, a details panel shows:
 ### 1. Access Assets Page
 
 1. Open your React app with React DevTools enabled
-2. Press `Alt/Option + Shift + R` to toggle the DevTools overlay
+2. Press `Alt/Option + Shift + D` to toggle the DevTools overlay
 3. Click the **Assets** icon (🖼️) in the sidebar
 
 ### 2. Browse Files

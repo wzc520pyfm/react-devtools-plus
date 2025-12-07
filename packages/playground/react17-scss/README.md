@@ -56,8 +56,8 @@ The playground will be available at `http://localhost:5173` (or another port if 
 
 Use the keyboard shortcut to open React DevTools overlay:
 
-- **macOS**: `Option + Shift + R`
-- **Windows/Linux**: `Alt + Shift + R`
+- **macOS**: `Option + Shift + D`
+- **Windows/Linux**: `Alt + Shift + D`
 
 ## SCSS Features Demonstrated
 

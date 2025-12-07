@@ -50,7 +50,7 @@ export default defineConfig({
               {' + '}
               <kbd className="border border-white/20 rounded bg-white/10 px-2 py-1 text-sm">Shift</kbd>
               {' + '}
-              <kbd className="border border-white/20 rounded bg-white/10 px-2 py-1 text-sm">R</kbd>
+              <kbd className="border border-white/20 rounded bg-white/10 px-2 py-1 text-sm">D</kbd>
             </p>
             <p className="mt-1 text-sm text-slate-400">{t('docs.quickStart.step4.hint')}</p>
           </div>

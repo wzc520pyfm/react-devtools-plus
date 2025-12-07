@@ -112,14 +112,25 @@ export function App() {
     height: Math.min(window.innerHeight * 0.6, 800),
   })
 
-  const handleToggle = () => {
+  const handleToggle = useCallback(() => {
     const newVisible = !panelVisible
     togglePanel()
     if (newVisible) {
       // Bring up button when opening panel
       bringUp()
     }
-  }
+  }, [panelVisible, togglePanel, bringUp])
+
+  // Listen for keyboard shortcut event (Alt + Shift + D)
+  useEffect(() => {
+    const handleToggleEvent = () => {
+      handleToggle()
+    }
+    window.addEventListener('react-devtools:toggle-panel', handleToggleEvent)
+    return () => {
+      window.removeEventListener('react-devtools:toggle-panel', handleToggleEvent)
+    }
+  }, [handleToggle])
 
   const handleInspectorClick = (e: MouseEvent) => {
     toggleInspector(true, { mode: 'open-in-editor' })

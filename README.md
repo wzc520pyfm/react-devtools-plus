@@ -32,7 +32,7 @@
 
 - 🚀 **Drop-in Plugin** - Works with Vite and Webpack out of the box
 - 🔍 **Fiber Mirror** - Automatic instrumentation of React Fiber roots to mirror component trees
-- ⌨️ **Keyboard-first** - Toggle with `Option/Alt + Shift + R`, no browser extension needed
+- ⌨️ **Keyboard-first** - Toggle with `Option/Alt + Shift + D`, no browser extension needed
 - 📦 **Dev-only** - Zero impact on production bundles, no telemetry
 - 🎯 **React 16-19** - Supports React 16.8+, 17, 18, and 19
 - 🛠️ **Timeline Profiling** - Track component renders and performance
@@ -88,7 +88,7 @@ module.exports = {
 Once configured, you can access the DevTools in two ways:
 
 1. **Navigate to** `http://localhost:5173/__react_devtools__/`
-2. **Press** `Option/Alt + Shift + R` to toggle the floating overlay
+2. **Press** `Option/Alt + Shift + D` to toggle the floating overlay
 
 ## ⚙️ Configuration
 
@@ -123,10 +123,11 @@ For comprehensive documentation, visit our [documentation site](./docs).
 
 ### Keyboard Shortcuts
 
-| Shortcut                 | Action                    |
-| ------------------------ | ------------------------- |
-| `Option/Alt + Shift + R` | Toggle overlay visibility |
-| `Escape`                 | Close overlay             |
+| Shortcut                 | Action                           |
+| ------------------------ | -------------------------------- |
+| `Option/Alt + Shift + D` | Toggle DevTools panel open/close |
+| `Option/Alt + Shift + R` | Toggle overlay visibility        |
+| `Escape`                 | Close overlay                    |
 
 ## 🏗️ Project Structure
 

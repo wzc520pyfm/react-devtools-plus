@@ -151,7 +151,7 @@ localStorage.setItem('react_devtools_editor', 'cursor')
 
 1. 启动 dev 服务器：`pnpm dev` (在 packages/playground/react 目录)
 2. 打开浏览器访问 `http://localhost:5173`
-3. 按 `Alt/Option + Shift + R` 打开 React DevTools overlay
+3. 按 `Alt/Option + Shift + D` 打开 React DevTools overlay
 4. 点击 inspector 图标（眼睛图标）
 5. 点击页面上的任意元素
 6. 编辑器应该自动打开，并定位到对应的源代码位置
@@ -160,7 +160,7 @@ localStorage.setItem('react_devtools_editor', 'cursor')
 
 1. 启动 dev 服务器：`pnpm dev` (在 packages/playground/react-webpack 目录)
 2. 打开浏览器访问 `http://localhost:3004`
-3. 按 `Alt/Option + Shift + R` 打开 React DevTools overlay
+3. 按 `Alt/Option + Shift + D` 打开 React DevTools overlay
 4. 点击 inspector 图标（眼睛图标）
 5. 点击页面上的任意元素
 6. 编辑器应该自动打开，并定位到对应的源代码位置

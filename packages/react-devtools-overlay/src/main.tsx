@@ -124,12 +124,19 @@ function handleKeydown(event: KeyboardEvent) {
     if (event.defaultPrevented)
       return
     const key = event.key.toLowerCase()
+    const container = document.getElementById('react-devtools-overlay')
 
-    // Alt + Shift + R to toggle overlay visibility
+    // Alt + Shift + D to toggle DevTools panel open/close
     // About key codes: https://developer.mozilla.org/zh-CN/docs/Web/API/KeyboardEvent/keyCode
+    if (event.altKey && event.shiftKey && (key === 'd' || event.code === 'KeyD' || event.keyCode === 68)) {
+      event.preventDefault()
+      // Dispatch custom event for the DevTools UI to handle panel toggle
+      window.dispatchEvent(new CustomEvent('react-devtools:toggle-panel'))
+    }
+
+    // Alt + Shift + R to toggle overlay visibility (display: none/block)
     if (event.altKey && event.shiftKey && (key === 'r' || event.code === 'KeyR' || event.keyCode === 82)) {
       event.preventDefault()
-      const container = document.getElementById('react-devtools-overlay')
       if (container) {
         container.style.display = container.style.display === 'none' ? 'block' : 'none'
       }

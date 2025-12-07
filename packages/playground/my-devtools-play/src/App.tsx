@@ -15,7 +15,7 @@ function App() {
         <p>
           Press
           {' '}
-          <code>Option+Shift+R</code>
+          <code>Option+Shift+D</code>
           {' '}
           to open DevTools.
         </p>

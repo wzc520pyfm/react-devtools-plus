@@ -111,7 +111,7 @@ export default function Home() {
         <p style={{ marginTop: '1rem' }}>
           Try toggling tasks below and use
           {' '}
-          <strong>Alt/Option + Shift + R</strong>
+          <strong>Alt/Option + Shift + D</strong>
           {' '}
           to open React DevTools overlay.
         </p>
