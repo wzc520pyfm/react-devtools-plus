@@ -1,7 +1,7 @@
 {
   "name": "@react-devtools-plus/core",
   "type": "module",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Core functionality for React DevTools including RPC, client management, and plugin system",
   "author": "wzc520pyfm",
   "license": "MIT",
