@@ -1,36 +1,7 @@
-import { Check, Copy, GitFork, Heart } from 'lucide-react'
-import React, { useState } from 'react'
+import { Check, GitFork, Heart } from 'lucide-react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
-
-const CodeBlock: React.FC<{ code: string, language?: string, title?: string }> = ({ code, language = 'bash', title }) => {
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(code)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  return (
-    <div className="not-prose my-4 overflow-hidden border border-white/10 rounded-xl bg-slate-900">
-      {title && (
-        <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-2">
-          <span className="text-sm text-slate-400">{title}</span>
-          <button
-            onClick={handleCopy}
-            className="flex items-center gap-1.5 text-xs text-slate-400 transition-colors hover:text-white"
-          >
-            {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-            {copied ? 'Copied!' : 'Copy'}
-          </button>
-        </div>
-      )}
-      <pre className="overflow-x-auto p-4">
-        <code className={`language-${language} text-sm text-slate-300`}>{code}</code>
-      </pre>
-    </div>
-  )
-}
+import { CodeBlock } from '../../components/ui/CodeBlock'
 
 export const Contributing: React.FC = () => {
   const { t } = useTranslation()
@@ -83,7 +54,7 @@ git push origin feat/your-feature-name
       <h2 className="mb-4 mt-8 text-2xl text-white font-bold">{t('docs.contributing.ways.title')}</h2>
       <ul className="my-4 text-slate-300 space-y-3">
         {(t('docs.contributing.ways.items', { returnObjects: true }) as string[]).map((item, idx) => (
-          <li key={idx} className="flex items-start gap-3">
+          <li key={`way-${idx}`} className="flex items-start gap-3">
             <Check className="text-brand-400 mt-0.5 h-5 w-5 flex-shrink-0" />
             {item}
           </li>
@@ -93,19 +64,19 @@ git push origin feat/your-feature-name
       <h2 className="mb-4 mt-8 text-2xl text-white font-bold">{t('docs.contributing.setup.title')}</h2>
 
       <h3 className="mb-3 mt-6 text-xl text-white font-semibold">{t('docs.contributing.setup.clone.title')}</h3>
-      <CodeBlock code={cloneCode} title="Terminal" />
+      <CodeBlock code={cloneCode} language="bash" title="Terminal" />
 
       <h3 className="mb-3 mt-6 text-xl text-white font-semibold">{t('docs.contributing.setup.install.title')}</h3>
-      <CodeBlock code={installCode} title="Terminal" />
+      <CodeBlock code={installCode} language="bash" title="Terminal" />
 
       <h2 className="mb-4 mt-8 text-2xl text-white font-bold">{t('docs.contributing.pr.title')}</h2>
       <p className="text-slate-300">{t('docs.contributing.pr.description')}</p>
-      <CodeBlock code={prCode} title="Terminal" />
+      <CodeBlock code={prCode} language="bash" title="Terminal" />
 
       <h2 className="mb-4 mt-8 text-2xl text-white font-bold">{t('docs.contributing.guidelines.title')}</h2>
       <ul className="my-4 text-slate-300 space-y-3">
         {(t('docs.contributing.guidelines.items', { returnObjects: true }) as string[]).map((item, idx) => (
-          <li key={idx} className="flex items-start gap-3">
+          <li key={`guideline-${idx}`} className="flex items-start gap-3">
             <span className="bg-brand-400 mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full" />
             {item}
           </li>

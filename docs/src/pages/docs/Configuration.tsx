@@ -1,46 +1,7 @@
-import { Check, Copy, Info } from 'lucide-react'
-import React, { useState } from 'react'
+import { Info } from 'lucide-react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
-
-const CodeBlock: React.FC<{ code: string, language?: string, title?: string }> = ({ code, language = 'typescript', title }) => {
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(code)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  return (
-    <div className="not-prose my-4 overflow-hidden border border-white/10 rounded-xl bg-slate-900">
-      {title && (
-        <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-2">
-          <span className="text-sm text-slate-400">{title}</span>
-          <button
-            onClick={handleCopy}
-            className="flex items-center gap-1.5 text-xs text-slate-400 transition-colors hover:text-white"
-          >
-            {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-            {copied ? 'Copied!' : 'Copy'}
-          </button>
-        </div>
-      )}
-      <div className="relative">
-        <pre className="overflow-x-auto p-4">
-          <code className={`language-${language} text-sm text-slate-300`}>{code}</code>
-        </pre>
-        {!title && (
-          <button
-            onClick={handleCopy}
-            className="absolute right-3 top-3 border border-white/10 rounded-lg bg-white/5 p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
-          >
-            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-          </button>
-        )}
-      </div>
-    </div>
-  )
-}
+import { CodeBlock } from '../../components/ui/CodeBlock'
 
 export const Configuration: React.FC = () => {
   const { t } = useTranslation()
@@ -69,6 +30,12 @@ export const Configuration: React.FC = () => {
   injectSource?: boolean
 
   /**
+   * Configure which editor to open
+   * Options: 'vscode' | 'cursor' | 'webstorm' | 'sublime'
+   */
+  launchEditor?: string
+
+  /**
    * Configure the Assets panel
    */
   assets?: {
@@ -88,7 +55,7 @@ export const Configuration: React.FC = () => {
 VITE_REACT_DEVTOOLS_ENABLED=true  // Highest priority
 
 // vite.config.ts
-ReactDevTools({
+reactDevToolsPlus({
   enabledEnvironments: ['development', 'test'],  // Second priority
 })`
 
@@ -119,7 +86,7 @@ localStorage.setItem('react_devtools_editor', 'cursor')
 
       <h2 className="mb-4 mt-8 text-2xl text-white font-bold">{t('docs.configuration.interface.title')}</h2>
       <p className="text-slate-300">{t('docs.configuration.interface.description')}</p>
-      <CodeBlock code={optionsInterface} title="Plugin Options Interface" />
+      <CodeBlock code={optionsInterface} language="typescript" title="Plugin Options Interface" />
 
       <h2 className="mb-4 mt-8 text-2xl text-white font-bold">{t('docs.configuration.options.title')}</h2>
 
@@ -178,11 +145,11 @@ localStorage.setItem('react_devtools_editor', 'cursor')
 
       <h2 className="mb-4 mt-8 text-2xl text-white font-bold">{t('docs.configuration.priority.title')}</h2>
       <p className="text-slate-300">{t('docs.configuration.priority.description')}</p>
-      <CodeBlock code={priorityExample} title="Configuration Priority" language="bash" />
+      <CodeBlock code={priorityExample} language="typescript" title="Configuration Priority" />
 
       <h2 className="mb-4 mt-8 text-2xl text-white font-bold">{t('docs.configuration.editor.title')}</h2>
       <p className="text-slate-300">{t('docs.configuration.editor.description')}</p>
-      <CodeBlock code={editorConfig} title="Editor Configuration" language="bash" />
+      <CodeBlock code={editorConfig} language="bash" title="Editor Configuration" />
 
       <div className="not-prose border-brand-500/30 bg-brand-500/10 my-6 border rounded-xl p-4">
         <div className="flex items-start gap-3">

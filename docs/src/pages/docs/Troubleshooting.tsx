@@ -1,36 +1,7 @@
-import { AlertTriangle, Check, Copy, Info } from 'lucide-react'
-import React, { useState } from 'react'
+import { AlertTriangle, Info } from 'lucide-react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
-
-const CodeBlock: React.FC<{ code: string, language?: string, title?: string }> = ({ code, language = 'bash', title }) => {
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(code)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  return (
-    <div className="not-prose my-4 overflow-hidden border border-white/10 rounded-xl bg-slate-900">
-      {title && (
-        <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-2">
-          <span className="text-sm text-slate-400">{title}</span>
-          <button
-            onClick={handleCopy}
-            className="flex items-center gap-1.5 text-xs text-slate-400 transition-colors hover:text-white"
-          >
-            {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-            {copied ? 'Copied!' : 'Copy'}
-          </button>
-        </div>
-      )}
-      <pre className="overflow-x-auto p-4">
-        <code className={`language-${language} text-sm text-slate-300`}>{code}</code>
-      </pre>
-    </div>
-  )
-}
+import { CodeBlock } from '../../components/ui/CodeBlock'
 
 export const Troubleshooting: React.FC = () => {
   const { t } = useTranslation()
@@ -63,7 +34,7 @@ localStorage.setItem('react_devtools_editor', 'code')
 
       <h2 className="mb-4 mt-8 text-2xl text-white font-bold">{t('docs.troubleshooting.pluginNotLoading.title')}</h2>
       <p className="text-slate-300">{t('docs.troubleshooting.pluginNotLoading.description')}</p>
-      <CodeBlock code={buildFix} title="Terminal" />
+      <CodeBlock code={buildFix} language="bash" title="Terminal" />
 
       <h2 className="mb-4 mt-8 text-2xl text-white font-bold">{t('docs.troubleshooting.editorNotOpening.title')}</h2>
 
@@ -78,16 +49,16 @@ localStorage.setItem('react_devtools_editor', 'code')
       </div>
 
       <h3 className="mb-3 mt-6 text-xl text-white font-semibold">{t('docs.troubleshooting.editorNotOpening.solution.title')}</h3>
-      <CodeBlock code={cliInstall} title="Install CLI Tool" />
+      <CodeBlock code={cliInstall} language="bash" title="Install CLI Tool" />
 
       <h3 className="mb-3 mt-6 text-xl text-white font-semibold">{t('docs.troubleshooting.editorNotOpening.fallback.title')}</h3>
-      <CodeBlock code={editorFallback} title="Browser Console" />
+      <CodeBlock code={editorFallback} language="javascript" title="Browser Console" />
 
       <h2 className="mb-4 mt-8 text-2xl text-white font-bold">{t('docs.troubleshooting.overlayNotShowing.title')}</h2>
       <p className="text-slate-300">{t('docs.troubleshooting.overlayNotShowing.description')}</p>
       <ul className="my-4 text-slate-300 space-y-2">
         {(t('docs.troubleshooting.overlayNotShowing.checks', { returnObjects: true }) as string[]).map((check, idx) => (
-          <li key={idx} className="flex items-start gap-3">
+          <li key={`check-${idx}`} className="flex items-start gap-3">
             <span className="bg-brand-400 mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full" />
             {check}
           </li>
@@ -101,7 +72,7 @@ localStorage.setItem('react_devtools_editor', 'code')
       <p className="text-slate-300">{t('docs.troubleshooting.sourceLocations.description')}</p>
       <ul className="my-4 text-slate-300 space-y-2">
         {(t('docs.troubleshooting.sourceLocations.checks', { returnObjects: true }) as string[]).map((check, idx) => (
-          <li key={idx} className="flex items-start gap-3">
+          <li key={`source-${idx}`} className="flex items-start gap-3">
             <span className="bg-brand-400 mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full" />
             {check}
           </li>

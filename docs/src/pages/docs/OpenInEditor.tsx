@@ -1,36 +1,7 @@
-import { Check, Copy, Info, Keyboard } from 'lucide-react'
-import React, { useState } from 'react'
+import { Check, Info, Keyboard } from 'lucide-react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
-
-const CodeBlock: React.FC<{ code: string, language?: string, title?: string }> = ({ code, language = 'typescript', title }) => {
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(code)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  return (
-    <div className="not-prose my-4 overflow-hidden border border-white/10 rounded-xl bg-slate-900">
-      {title && (
-        <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-2">
-          <span className="text-sm text-slate-400">{title}</span>
-          <button
-            onClick={handleCopy}
-            className="flex items-center gap-1.5 text-xs text-slate-400 transition-colors hover:text-white"
-          >
-            {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-            {copied ? 'Copied!' : 'Copy'}
-          </button>
-        </div>
-      )}
-      <pre className="overflow-x-auto p-4">
-        <code className={`language-${language} text-sm text-slate-300`}>{code}</code>
-      </pre>
-    </div>
-  )
-}
+import { CodeBlock } from '../../components/ui/CodeBlock'
 
 export const OpenInEditor: React.FC = () => {
   const { t } = useTranslation()
@@ -82,7 +53,7 @@ localStorage.setItem('react_devtools_editor', 'cursor')
 
       <ol className="my-4 text-slate-300 space-y-4">
         {(t('docs.openInEditor.howItWorks.steps', { returnObjects: true }) as string[]).map((step, idx) => (
-          <li key={idx} className="flex gap-4">
+          <li key={`step-${idx}`} className="flex gap-4">
             <span className="bg-brand-500/20 text-brand-400 h-7 w-7 flex flex-shrink-0 items-center justify-center rounded-full text-sm font-medium">
               {idx + 1}
             </span>
@@ -96,7 +67,7 @@ localStorage.setItem('react_devtools_editor', 'cursor')
 
       <ol className="my-4 text-slate-300 space-y-2">
         {(t('docs.openInEditor.inspector.steps', { returnObjects: true }) as string[]).map((step, idx) => (
-          <li key={idx} className="flex gap-3">
+          <li key={`inspector-${idx}`} className="flex gap-3">
             <span className="text-brand-400 font-medium">
               {idx + 1}
               .
@@ -127,7 +98,7 @@ localStorage.setItem('react_devtools_editor', 'cursor')
       <CodeBlock code={packageJsonExample} language="json" title="package.json" />
 
       <h3 className="mb-3 mt-6 text-xl text-white font-semibold">{t('docs.openInEditor.editorConfig.fallback.title')}</h3>
-      <CodeBlock code={localStorageExample} title="Browser Console" />
+      <CodeBlock code={localStorageExample} language="javascript" title="Browser Console" />
 
       <h2 className="mb-4 mt-8 text-2xl text-white font-bold">{t('docs.openInEditor.support.title')}</h2>
       <div className="not-prose my-6 overflow-x-auto">

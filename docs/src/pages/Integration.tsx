@@ -1,84 +1,48 @@
-import { ArrowRight, Check, Copy, Settings, Zap } from 'lucide-react'
-import React, { useState } from 'react'
+import { ArrowRight, Settings, Zap } from 'lucide-react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Footer } from '../components/Footer'
+import { CodeBlock } from '../components/ui/CodeBlock'
 import { Logo } from '../components/ui/Logo'
-
-const CodeBlock: React.FC<{ code: string, language?: string, title?: string }> = ({ code, language = 'typescript', title }) => {
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(code)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  return (
-    <div className="overflow-hidden border border-white/10 rounded-xl bg-slate-900">
-      {title && (
-        <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-2">
-          <span className="text-sm text-slate-400">{title}</span>
-          <button
-            onClick={handleCopy}
-            className="flex items-center gap-1.5 text-xs text-slate-400 transition-colors hover:text-white"
-          >
-            {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-            {copied ? 'Copied!' : 'Copy'}
-          </button>
-        </div>
-      )}
-      <div className="relative">
-        <pre className="overflow-x-auto p-4">
-          <code className={`language-${language} text-sm text-slate-300`}>{code}</code>
-        </pre>
-        {!title && (
-          <button
-            onClick={handleCopy}
-            className="absolute right-3 top-3 border border-white/10 rounded-lg bg-white/5 p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
-          >
-            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-          </button>
-        )}
-      </div>
-    </div>
-  )
-}
 
 export const Integration: React.FC = () => {
   const { t, i18n } = useTranslation()
 
   const viteConfig = `import react from '@vitejs/plugin-react'
-import ReactDevTools from 'react-devtools-plus'
+import { reactDevToolsPlus } from 'react-devtools-plus/vite'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
     react(),
-    ReactDevTools(),
+    reactDevToolsPlus(),
   ],
 })`
 
   const webpackConfig = `const HtmlWebpackPlugin = require('html-webpack-plugin')
-const ReactDevToolsPlugin = require('react-devtools-plus/webpack')
+const { ReactDevToolsWebpackPlugin } = require('react-devtools-plus/webpack')
 
 module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: './public/index.html',
     }),
-    ReactDevToolsPlugin({
+    new ReactDevToolsWebpackPlugin({
       enabledEnvironments: ['development'],
     }),
   ],
 }`
 
-  const advancedConfig = `ReactDevTools({
+  const advancedConfig = `reactDevToolsPlus({
   // Enable in specific environments
   enabledEnvironments: ['development', 'test'],
   
   // Enable source location injection
   injectSource: true,
+  
+  // Configure which editor to open
+  launchEditor: 'cursor',
   
   // Configure assets panel
   assets: {
@@ -132,6 +96,7 @@ module.exports = {
           </div>
           <div className="flex items-center gap-3">
             <button
+              type="button"
               onClick={toggleLanguage}
               className="rounded-lg px-3 py-2 text-sm text-slate-400 font-medium transition-colors hover:bg-white/5 hover:text-white"
             >
@@ -174,7 +139,7 @@ module.exports = {
         <div className="container mx-auto px-6">
           <div className="mx-auto max-w-4xl">
             <h2 className="mb-6 text-2xl text-white font-bold">{t('integrationPage.install.title')}</h2>
-            <CodeBlock code="pnpm add -D react-devtools-plus" language="bash" title="Terminal" />
+            <CodeBlock code="pnpm add -D react-devtools-plus" language="bash" title="Terminal" showLineNumbers={false} />
           </div>
         </div>
       </section>
@@ -193,7 +158,7 @@ module.exports = {
                   <h3 className="text-xl text-white font-bold">{t('integrationPage.vite.title')}</h3>
                 </div>
                 <p className="text-slate-400">{t('integrationPage.vite.description')}</p>
-                <CodeBlock code={viteConfig} title="vite.config.ts" />
+                <CodeBlock code={viteConfig} language="ts" title="vite.config.ts" />
                 <Link
                   to="/docs/integration/vite"
                   className="text-brand-400 hover:text-brand-300 inline-flex items-center gap-2 text-sm font-medium"
@@ -213,7 +178,7 @@ module.exports = {
                   <h3 className="text-xl text-white font-bold">{t('integrationPage.webpack.title')}</h3>
                 </div>
                 <p className="text-slate-400">{t('integrationPage.webpack.description')}</p>
-                <CodeBlock code={webpackConfig} title="webpack.config.js" language="javascript" />
+                <CodeBlock code={webpackConfig} language="javascript" title="webpack.config.js" />
                 <Link
                   to="/docs/integration/webpack"
                   className="text-brand-400 hover:text-brand-300 inline-flex items-center gap-2 text-sm font-medium"
@@ -234,7 +199,7 @@ module.exports = {
           <div className="mx-auto max-w-4xl">
             <h2 className="mb-6 text-2xl text-white font-bold">{t('integrationPage.config.title')}</h2>
             <p className="mb-6 text-slate-400">{t('integrationPage.config.description')}</p>
-            <CodeBlock code={advancedConfig} title="Advanced Configuration" />
+            <CodeBlock code={advancedConfig} language="ts" title="Advanced Configuration" />
 
             <h3 className="mb-4 mt-8 text-xl text-white font-semibold">{t('integrationPage.config.options.title')}</h3>
             <div className="overflow-x-auto">
@@ -259,6 +224,12 @@ module.exports = {
                     <td className="py-3 pr-4 text-slate-400">boolean</td>
                     <td className="py-3 pr-4 text-slate-400">true</td>
                     <td className="py-3 text-slate-300">{t('integrationPage.config.options.injectSource')}</td>
+                  </tr>
+                  <tr>
+                    <td className="text-brand-400 py-3 pr-4 font-mono">launchEditor</td>
+                    <td className="py-3 pr-4 text-slate-400">string</td>
+                    <td className="py-3 pr-4 text-slate-400">'code'</td>
+                    <td className="py-3 text-slate-300">Configure which editor to open</td>
                   </tr>
                   <tr>
                     <td className="text-brand-400 py-3 pr-4 font-mono">appendTo</td>
