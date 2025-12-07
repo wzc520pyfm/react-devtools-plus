@@ -3,7 +3,9 @@ import {
   ChevronDown,
   ChevronRight,
   Code2,
+  Eye,
   FileCode,
+  GitBranch,
   GitFork,
   HelpCircle,
   Home,
@@ -62,6 +64,8 @@ export const DocsLayout: React.FC = () => {
         { title: t('docs.nav.timeline'), href: '/docs/features/timeline', icon: Timer },
         { title: t('docs.nav.assets'), href: '/docs/features/assets', icon: FileCode },
         { title: t('docs.nav.openInEditor'), href: '/docs/features/open-in-editor', icon: Keyboard },
+        { title: t('docs.nav.scan'), href: '/docs/features/scan', icon: Eye },
+        { title: t('docs.nav.moduleGraph'), href: '/docs/features/module-graph', icon: GitBranch },
       ],
     },
     {

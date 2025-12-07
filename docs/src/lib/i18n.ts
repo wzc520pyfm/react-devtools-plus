@@ -202,9 +202,9 @@ const resources = {
             title: 'React Scan',
             description: 'Detect unnecessary re-renders and performance bottlenecks with visual highlighting.',
           },
-          envControl: {
-            title: 'Environment Control',
-            description: 'Fine-grained control over which environments enable DevTools. Keep production clean.',
+          moduleGraph: {
+            title: 'Module Graph',
+            description: 'Visualize your project\'s module dependencies. Understand relationships between components and modules at a glance.',
           },
         },
         cta: {
@@ -329,6 +329,8 @@ const resources = {
           timeline: 'Timeline',
           assets: 'Assets',
           openInEditor: 'Open in Editor',
+          scan: 'React Scan',
+          moduleGraph: 'Module Graph',
           integration: 'Integration',
           viteSetup: 'Vite Setup',
           webpackSetup: 'Webpack Setup',
@@ -678,6 +680,98 @@ const resources = {
             content: 'Make sure your editor\'s CLI is installed in PATH. For Cursor or VS Code, use the Command Palette to install the shell command.',
           },
         },
+        scan: {
+          title: 'React Scan',
+          description: 'Detect unnecessary re-renders and performance bottlenecks with visual highlighting directly in your application.',
+          howItWorks: {
+            title: 'How It Works',
+            description: 'React Scan monitors your component renders and provides visual feedback:',
+            steps: [
+              'Components are instrumented during development',
+              'Re-renders are detected in real-time',
+              'Visual overlays highlight components that re-rendered',
+              'Color intensity indicates render frequency',
+            ],
+          },
+          features: {
+            title: 'Key Features',
+            items: [
+              {
+                title: 'Visual Highlighting',
+                description: 'See exactly which components re-rendered with colored overlays',
+              },
+              {
+                title: 'Render Counting',
+                description: 'Track how many times each component has rendered',
+              },
+              {
+                title: 'Performance Insights',
+                description: 'Identify unnecessary re-renders and optimization opportunities',
+              },
+              {
+                title: 'Real-time Updates',
+                description: 'Watch renders happen as you interact with your app',
+              },
+            ],
+          },
+          howTo: {
+            title: 'Using React Scan',
+            steps: [
+              'Open DevTools with Alt+Shift+R',
+              'Navigate to the Scan panel',
+              'Enable scanning to start monitoring',
+              'Interact with your app to trigger renders',
+              'Observe highlighted components',
+            ],
+          },
+          tip: {
+            title: 'Performance Tip',
+            content: 'Look for components that re-render frequently without visible changes. These are good candidates for React.memo() or useMemo() optimization.',
+          },
+        },
+        moduleGraph: {
+          title: 'Module Graph',
+          description: 'Visualize your project\'s module dependencies and understand the relationships between components and modules at a glance.',
+          whatIs: {
+            title: 'What is Module Graph?',
+            description: 'Module Graph provides a visual representation of how your project\'s modules are connected. It shows import/export relationships, helping you understand code architecture and identify potential issues like circular dependencies.',
+          },
+          features: {
+            title: 'Key Features',
+            items: [
+              {
+                title: 'Dependency Visualization',
+                description: 'See how modules depend on each other with an interactive graph',
+              },
+              {
+                title: 'Circular Detection',
+                description: 'Automatically detect and highlight circular dependencies',
+              },
+              {
+                title: 'Module Details',
+                description: 'Click on any module to see its imports and exports',
+              },
+              {
+                title: 'Search & Filter',
+                description: 'Quickly find specific modules in large projects',
+              },
+            ],
+          },
+          howTo: {
+            title: 'Using Module Graph',
+            steps: [
+              'Open DevTools with Alt+Shift+R',
+              'Navigate to the Graph panel',
+              'The module graph loads automatically',
+              'Click and drag to navigate the graph',
+              'Click on nodes to see module details',
+            ],
+          },
+          tip: {
+            title: 'Architecture Tip',
+            content: 'Use the module graph to identify tightly coupled modules. Consider refactoring if you see too many connections between unrelated parts of your codebase.',
+          },
+        },
         contributing: {
           title: 'Contributing',
           description: 'We welcome contributions from everyone! Here\'s how you can help improve React DevTools Plus.',
@@ -1010,9 +1104,9 @@ const resources = {
             title: 'React 扫描',
             description: '通过可视化高亮检测不必要的重渲染和性能瓶颈。',
           },
-          envControl: {
-            title: '环境控制',
-            description: '精细控制哪些环境启用 DevTools。保持生产环境干净。',
+          moduleGraph: {
+            title: '模块关系图',
+            description: '可视化项目的模块依赖关系。一目了然地理解组件和模块之间的关联。',
           },
         },
         cta: {
@@ -1137,6 +1231,8 @@ const resources = {
           timeline: '时间线',
           assets: '资源',
           openInEditor: '在编辑器中打开',
+          scan: 'React 扫描',
+          moduleGraph: '模块关系图',
           integration: '集成',
           viteSetup: 'Vite 设置',
           webpackSetup: 'Webpack 设置',
@@ -1484,6 +1580,98 @@ const resources = {
           tip: {
             title: '需要 CLI 安装',
             content: '确保你的编辑器 CLI 已安装在 PATH 中。对于 Cursor 或 VS Code，使用命令面板安装 shell 命令。',
+          },
+        },
+        scan: {
+          title: 'React 扫描',
+          description: '通过可视化高亮直接在应用中检测不必要的重渲染和性能瓶颈。',
+          howItWorks: {
+            title: '工作原理',
+            description: 'React Scan 监控组件渲染并提供可视化反馈：',
+            steps: [
+              '组件在开发期间被监控',
+              '实时检测重渲染',
+              '可视化覆盖层高亮显示重渲染的组件',
+              '颜色强度表示渲染频率',
+            ],
+          },
+          features: {
+            title: '核心功能',
+            items: [
+              {
+                title: '可视化高亮',
+                description: '通过彩色覆盖层准确查看哪些组件重渲染了',
+              },
+              {
+                title: '渲染计数',
+                description: '跟踪每个组件渲染了多少次',
+              },
+              {
+                title: '性能洞察',
+                description: '识别不必要的重渲染和优化机会',
+              },
+              {
+                title: '实时更新',
+                description: '在与应用交互时观察渲染发生',
+              },
+            ],
+          },
+          howTo: {
+            title: '使用 React Scan',
+            steps: [
+              '使用 Alt+Shift+R 打开 DevTools',
+              '导航到 Scan 面板',
+              '启用扫描开始监控',
+              '与应用交互触发渲染',
+              '观察高亮显示的组件',
+            ],
+          },
+          tip: {
+            title: '性能提示',
+            content: '寻找频繁重渲染但没有可见变化的组件。这些是 React.memo() 或 useMemo() 优化的好候选。',
+          },
+        },
+        moduleGraph: {
+          title: '模块关系图',
+          description: '可视化项目的模块依赖关系，一目了然地理解组件和模块之间的关联。',
+          whatIs: {
+            title: '什么是模块关系图？',
+            description: '模块关系图提供了项目模块之间连接的可视化表示。它展示了导入/导出关系，帮助你理解代码架构并识别潜在问题（如循环依赖）。',
+          },
+          features: {
+            title: '核心功能',
+            items: [
+              {
+                title: '依赖可视化',
+                description: '通过交互式图形查看模块之间的依赖关系',
+              },
+              {
+                title: '循环检测',
+                description: '自动检测并高亮显示循环依赖',
+              },
+              {
+                title: '模块详情',
+                description: '点击任意模块查看其导入和导出',
+              },
+              {
+                title: '搜索与过滤',
+                description: '在大型项目中快速找到特定模块',
+              },
+            ],
+          },
+          howTo: {
+            title: '使用模块关系图',
+            steps: [
+              '使用 Alt+Shift+R 打开 DevTools',
+              '导航到 Graph 面板',
+              '模块关系图自动加载',
+              '点击并拖动以导航图形',
+              '点击节点查看模块详情',
+            ],
+          },
+          tip: {
+            title: '架构提示',
+            content: '使用模块关系图识别紧密耦合的模块。如果看到代码库中不相关部分之间存在过多连接，请考虑重构。',
           },
         },
         contributing: {

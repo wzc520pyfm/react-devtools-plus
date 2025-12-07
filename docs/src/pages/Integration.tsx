@@ -21,7 +21,8 @@ export default defineConfig({
 })`
 
   const webpackConfig = `const HtmlWebpackPlugin = require('html-webpack-plugin')
-const { ReactDevToolsWebpackPlugin } = require('react-devtools-plus/webpack')
+const { ReactDevToolsWebpackPlugin } =
+  require('react-devtools-plus/webpack')
 
 module.exports = {
   plugins: [
@@ -37,13 +38,13 @@ module.exports = {
   const advancedConfig = `reactDevToolsPlus({
   // Enable in specific environments
   enabledEnvironments: ['development', 'test'],
-  
+
   // Enable source location injection
   injectSource: true,
-  
+
   // Configure which editor to open
   launchEditor: 'cursor',
-  
+
   // Configure assets panel
   assets: {
     files: ['png', 'jpg', 'svg', 'gif', 'webp']

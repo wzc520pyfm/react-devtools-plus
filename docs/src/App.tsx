@@ -20,8 +20,10 @@ import {
   Installation,
   Integration,
   Introduction,
+  ModuleGraph,
   OpenInEditor,
   QuickStart,
+  Scan,
   Timeline,
   Troubleshooting,
   ViteSetup,
@@ -70,6 +72,8 @@ function App() {
           <Route path="features/timeline" element={<Timeline />} />
           <Route path="features/assets" element={<Assets />} />
           <Route path="features/open-in-editor" element={<OpenInEditor />} />
+          <Route path="features/scan" element={<Scan />} />
+          <Route path="features/module-graph" element={<ModuleGraph />} />
 
           {/* Integration */}
           <Route path="integration/vite" element={<ViteSetup />} />

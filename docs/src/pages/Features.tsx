@@ -17,6 +17,7 @@ import { Logo } from '../components/ui/Logo'
 
 interface FeatureCardProps {
   icon: React.ComponentType<{ className?: string }>
+  preview?: string
   title: string
   description: string
   href: string
@@ -24,7 +25,7 @@ interface FeatureCardProps {
   gradient: string
 }
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, title, description, href, badge, gradient }) => (
+const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, preview, title, description, href, badge, gradient }) => (
   <Link
     to={href}
     className="group hover:border-brand-500/30 relative overflow-hidden border border-white/10 rounded-2xl bg-white/[0.02] p-6 transition-all hover:bg-white/[0.04]"
@@ -46,7 +47,15 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, title, descriptio
 
       {/* Placeholder for screenshot */}
       <div className="mb-4 h-40 flex items-center justify-center border border-white/10 rounded-xl border-dashed bg-white/5">
-        <span className="text-xs text-slate-500">Screenshot Placeholder</span>
+        {preview
+          ? (
+              <img
+                src={preview}
+                alt="Assets Panel Overview"
+                className="h-full w-auto rounded-2xl"
+              />
+            )
+          : <span className="text-xs text-slate-500">Screenshot Placeholder</span>}
       </div>
 
       <span className="text-brand-400 group-hover:text-brand-300 inline-flex items-center gap-1 text-sm font-medium transition-colors">
@@ -64,6 +73,7 @@ export const Features: React.FC = () => {
   const features: FeatureCardProps[] = [
     {
       icon: Layers,
+      preview: '/screenshots/component-tree.png',
       title: t('featuresPage.items.componentTree.title'),
       description: t('featuresPage.items.componentTree.description'),
       href: '/docs/features/component-tree',
@@ -72,6 +82,7 @@ export const Features: React.FC = () => {
     },
     {
       icon: Timer,
+      preview: '/screenshots/timeline-detail.png',
       title: t('featuresPage.items.timeline.title'),
       description: t('featuresPage.items.timeline.description'),
       href: '/docs/features/timeline',
@@ -80,13 +91,16 @@ export const Features: React.FC = () => {
     },
     {
       icon: FileCode,
+      preview: '/screenshots/assets.png',
       title: t('featuresPage.items.assets.title'),
       description: t('featuresPage.items.assets.description'),
       href: '/docs/features/assets',
+      badge: 'DX',
       gradient: 'from-cyan-500/10 to-transparent',
     },
     {
       icon: Keyboard,
+      preview: '/screenshots/inspector.png',
       title: t('featuresPage.items.openInEditor.title'),
       description: t('featuresPage.items.openInEditor.description'),
       href: '/docs/features/open-in-editor',
@@ -95,17 +109,20 @@ export const Features: React.FC = () => {
     },
     {
       icon: Eye,
+      preview: '/screenshots/scan-detail.png',
       title: t('featuresPage.items.scan.title'),
       description: t('featuresPage.items.scan.description'),
-      href: '/docs/features/component-tree',
+      href: '/docs/features/scan',
       badge: 'Performance',
       gradient: 'from-orange-500/10 to-transparent',
     },
     {
       icon: Settings,
-      title: t('featuresPage.items.envControl.title'),
-      description: t('featuresPage.items.envControl.description'),
-      href: '/docs/integration/configuration',
+      preview: '/screenshots/modules.png',
+      title: t('featuresPage.items.moduleGraph.title'),
+      description: t('featuresPage.items.moduleGraph.description'),
+      href: '/docs/features/module-graph',
+      badge: 'DX',
       gradient: 'from-blue-500/10 to-transparent',
     },
   ]
