@@ -1,4 +1,4 @@
-# react-devtools
+# react-devtools-plus
 
 > Experimental in-app component tree inspector for React projects powered by Unplugin to support Vite and Webpack.
 
