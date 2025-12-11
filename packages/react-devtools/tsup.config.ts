@@ -61,6 +61,13 @@ const webpackEntryCommon = {
   ...commonConfig,
 }
 
+// Common config for umi entry
+const umiEntryCommon = {
+  entry: { umi: 'src/umi.ts' },
+  dts: true,
+  ...commonConfig,
+}
+
 export default defineConfig([
   // Main plugin entry - ESM with __dirname polyfill
   {
@@ -111,6 +118,24 @@ export default defineConfig([
   // Webpack entry - CJS (native __dirname)
   {
     ...webpackEntryCommon,
+    format: ['cjs'],
+    shims: false,
+    clean: false,
+    dts: false,
+  },
+  // Umi entry - ESM with __dirname polyfill
+  {
+    ...umiEntryCommon,
+    format: ['esm'],
+    shims: false,
+    clean: false,
+    banner: {
+      js: esmDirnameBanner,
+    },
+  },
+  // Umi entry - CJS (native __dirname)
+  {
+    ...umiEntryCommon,
     format: ['cjs'],
     shims: false,
     clean: false,

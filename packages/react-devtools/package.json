@@ -45,6 +45,11 @@
       "import": "./dist/scan.js",
       "require": "./dist/scan.cjs"
     },
+    "./umi": {
+      "types": "./dist/umi.d.ts",
+      "import": "./dist/umi.js",
+      "require": "./dist/umi.cjs"
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",
