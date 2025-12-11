@@ -1,0 +1,301 @@
+.container {
+  min-height: 100vh;
+  padding: 0 20px;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
+  transition: all 0.3s ease;
+
+  &.light {
+    background: #fafafa;
+    color: #333;
+  }
+
+  &.dark,
+  &.auto {
+    background: #1a1a2e;
+    color: #fff;
+
+    .themeCard {
+      background: #252542;
+      border-color: #3a3a5a;
+
+      &.selected {
+        border-color: #818cf8;
+        background: #2a2a4a;
+      }
+
+      h3 {
+        color: #fff;
+      }
+
+      p {
+        color: #a0a0a0;
+      }
+    }
+
+    .colorPalette {
+      h2 {
+        color: #fff;
+      }
+
+      p {
+        color: #a0a0a0;
+      }
+    }
+
+    .swatch {
+      background: #252542;
+
+      .name {
+        color: #fff;
+      }
+
+      .value {
+        color: #a0a0a0;
+      }
+    }
+
+    .preview {
+      h2 {
+        color: #fff;
+      }
+    }
+
+    .previewBox {
+      background: #252542;
+    }
+
+    .previewCard {
+      background: #2a2a4a;
+
+      h3 {
+        color: #fff;
+      }
+
+      p {
+        color: #a0a0a0;
+      }
+    }
+
+    .secondaryBtn {
+      background: #3a3a5a;
+      color: #fff;
+    }
+  }
+}
+
+.header {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 0;
+
+  h1 {
+    font-size: 2rem;
+    margin: 0 0 12px;
+  }
+
+  .subtitle {
+    font-size: 1.1rem;
+    margin: 0;
+    opacity: 0.7;
+  }
+
+  .backLink {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding-bottom: 60px;
+}
+
+.themeSelector {
+  margin-bottom: 40px;
+
+  h2 {
+    font-size: 1.4rem;
+    margin: 0 0 20px;
+  }
+}
+
+.themeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.themeCard {
+  padding: 24px;
+  background: white;
+  border: 2px solid #eee;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+
+  &:hover {
+    border-color: #667eea;
+  }
+
+  &.selected {
+    border-color: #667eea;
+    background: #f8f9ff;
+  }
+
+  .icon {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  h3 {
+    margin: 0 0 8px;
+    font-size: 1.1rem;
+    color: #333;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+  }
+}
+
+.colorPalette {
+  margin-bottom: 40px;
+
+  h2 {
+    font-size: 1.4rem;
+    margin: 0 0 8px;
+  }
+
+  > p {
+    color: #666;
+    margin: 0 0 20px;
+  }
+}
+
+.swatchGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.swatch {
+  padding: 16px;
+  background: white;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .color {
+    width: 100%;
+    height: 60px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+
+  .name {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+  }
+
+  .value {
+    font-size: 0.85rem;
+    color: #666;
+    font-family: monospace;
+  }
+}
+
+.preview {
+  h2 {
+    font-size: 1.4rem;
+    margin: 0 0 20px;
+  }
+}
+
+.previewBox {
+  background: #f5f5f5;
+  padding: 30px;
+  border-radius: 12px;
+}
+
+.previewCard {
+  background: white;
+  padding: 24px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  h3 {
+    margin: 0 0 12px;
+    font-size: 1.2rem;
+  }
+
+  p {
+    margin: 0 0 20px;
+    color: #666;
+  }
+}
+
+.previewActions {
+  display: flex;
+  gap: 12px;
+}
+
+.primaryBtn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+}
+
+.secondaryBtn {
+  background: #f0f0f0;
+  color: #333;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #e0e0e0;
+  }
+}
