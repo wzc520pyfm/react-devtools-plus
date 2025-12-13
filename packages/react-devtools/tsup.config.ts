@@ -68,6 +68,25 @@ const umiEntryCommon = {
   ...commonConfig,
 }
 
+// Common config for next entry
+const nextEntryCommon = {
+  entry: { next: 'src/next.ts' },
+  dts: true,
+  ...commonConfig,
+  external: [
+    'vite',
+    'webpack',
+    'react',
+    'react-dom',
+    'react-dom/client',
+    'next',
+  ],
+  // Enable JSX transformation for React components
+  esbuildOptions(options: any) {
+    options.jsx = 'automatic'
+  },
+}
+
 export default defineConfig([
   // Main plugin entry - ESM with __dirname polyfill
   {
@@ -136,6 +155,24 @@ export default defineConfig([
   // Umi entry - CJS (native __dirname)
   {
     ...umiEntryCommon,
+    format: ['cjs'],
+    shims: false,
+    clean: false,
+    dts: false,
+  },
+  // Next entry - ESM with __dirname polyfill
+  {
+    ...nextEntryCommon,
+    format: ['esm'],
+    shims: false,
+    clean: false,
+    banner: {
+      js: esmDirnameBanner,
+    },
+  },
+  // Next entry - CJS (native __dirname)
+  {
+    ...nextEntryCommon,
     format: ['cjs'],
     shims: false,
     clean: false,
