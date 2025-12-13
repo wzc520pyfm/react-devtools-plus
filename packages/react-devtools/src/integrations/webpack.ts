@@ -105,8 +105,9 @@ export function getWebpackModeAndCommand(compiler: Compiler): {
 } {
   const mode = compiler.options.mode || 'development'
   // Webpack doesn't have a clear "serve" vs "build" distinction like Vite
-  // We'll infer it from the presence of devServer config
-  const command = compiler.options.devServer ? 'serve' : 'build'
+  // We'll infer it from the presence of devServer config OR development mode
+  // This is needed for frameworks like Umi that have their own dev server
+  const command = (compiler.options.devServer || mode === 'development') ? 'serve' : 'build'
 
   return { mode, command }
 }

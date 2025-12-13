@@ -1,0 +1,23 @@
+{
+  "name": "@react-devtools-plus/playground-umi",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "umi dev",
+    "build": "umi build",
+    "setup": "umi setup",
+    "start": "npm run dev"
+  },
+  "dependencies": {
+    "@react-devtools-plus/ui": "workspace:*",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "umi": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.72",
+    "@types/react-dom": "^18.2.23",
+    "react-devtools-plus": "workspace:*",
+    "typescript": "^5.9.3"
+  }
+}

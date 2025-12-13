@@ -1,0 +1,100 @@
+.container {
+  min-height: 100vh;
+  padding: 0 20px;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
+}
+
+.header {
+  text-align: center;
+  padding: 40px 0;
+
+  h1 {
+    font-size: 2.5rem;
+    margin: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    color: #666;
+    font-size: 1.1rem;
+    margin-top: 8px;
+  }
+}
+
+.main {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 40px;
+
+  h2 {
+    font-size: 1.8rem;
+    margin-bottom: 16px;
+    color: #333;
+  }
+
+  p {
+    color: #666;
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto 24px;
+    line-height: 1.6;
+  }
+}
+
+.button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  padding: 20px 0;
+}
+
+.card {
+  display: block;
+  padding: 24px;
+  background: white;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: 1px solid #eee;
+
+  h3 {
+    font-size: 1.2rem;
+    color: #333;
+    margin: 0 0 12px;
+  }
+
+  p {
+    color: #666;
+    margin: 0;
+    line-height: 1.5;
+  }
+}
