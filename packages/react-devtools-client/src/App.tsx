@@ -40,7 +40,15 @@ export function App() {
   useEffect(() => {
     async function loadPlugins() {
       try {
-        const response = await fetch('/__react_devtools__/plugins-manifest.json')
+        // Check if running in Next.js environment (custom path like /devtools)
+        const pathname = window.location.pathname.replace(/#.*$/, '').replace(/\/$/, '')
+        const isNextJs = pathname !== '' && pathname !== '/__react_devtools__'
+
+        const manifestUrl = isNextJs
+          ? `${pathname}/plugins-manifest.json`
+          : '/__react_devtools__/plugins-manifest.json'
+
+        const response = await fetch(manifestUrl)
         if (!response.ok)
           return
         const pluginManifests: UserPlugin[] = await response.json()

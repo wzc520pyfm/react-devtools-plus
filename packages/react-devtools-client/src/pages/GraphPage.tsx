@@ -65,12 +65,35 @@ export function GraphPage() {
   const fetchGraph = useCallback(async () => {
     try {
       setError(null)
-      // Use parent window's origin since we're in an iframe
       const origin = window.parent?.location?.origin || window.location.origin
-      const response = await fetch(`${origin}/__react_devtools_api__/graph`)
+      const pathname = window.location.pathname.replace(/#.*$/, '').replace(/\/$/, '')
+
+      // Check if running in Next.js environment (custom path like /devtools)
+      const isNextJs = pathname !== '' && pathname !== '/__react_devtools__'
+
+      let response: Response
+
+      if (isNextJs) {
+        // In Next.js, use the custom basePath directly to avoid 404 logs
+        response = await fetch(`${window.location.origin}${pathname}/api/graph`)
+        if (!response.ok) {
+          // Fallback to standard path
+          response = await fetch(`${origin}/__react_devtools_api__/graph`)
+        }
+      }
+      else {
+        // Standard Vite/Webpack environment
+        response = await fetch(`${origin}/__react_devtools_api__/graph`)
+        if (!response.ok) {
+          // Fallback to basePath
+          response = await fetch(`${window.location.origin}${pathname}/api/graph`)
+        }
+      }
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
+
       const data: { modules: ModuleInfo[], root: string } = await response.json()
       parseGraphRawData(data.modules, data.root)
     }
