@@ -126,10 +126,15 @@ interface NextConfig {
   turbopack?: {
     rules?: Record<string, any>
   }
+  compiler?: {
+    reactRemoveProperties?: boolean
+    [key: string]: any
+  }
   experimental?: {
     turbo?: {
       rules?: Record<string, any>
     }
+    swcPlugins?: any[]
     [key: string]: any
   }
   [key: string]: any
@@ -168,32 +173,49 @@ export function withReactDevTools<T extends NextConfig>(
   // Create modified config
   const modifiedConfig = { ...nextConfig }
 
-  // Add Turbopack rules if using Turbopack
-  if (usesTurbopack || (nextVersion && nextVersion >= 15)) {
-    const turbopackRules = createTurbopackRules(pluginConfig, projectRoot)
+  // Enable React development transforms in SWC compiler
+  // This enables _debugSource and _debugSelf in development mode
+  if (isDev) {
+    modifiedConfig.compiler = {
+      ...(modifiedConfig.compiler || {}),
+      // Enable React development mode for _debugSource
+      reactRemoveProperties: false,
+    }
 
-    if (nextVersion && nextVersion >= 15) {
-      // Next.js 15+: turbopack config is at root level
-      modifiedConfig.turbopack = {
-        ...(modifiedConfig.turbopack || {}),
+    // Force SWC to include source location info
+    // By setting development: true in the React transform
+    modifiedConfig.experimental = {
+      ...(modifiedConfig.experimental || {}),
+      // Enable SWC's development mode for React
+      swcPlugins: modifiedConfig.experimental?.swcPlugins || [],
+    }
+  }
+
+  // Add Turbopack rules for when user uses --turbopack flag
+  // This is harmless if webpack is used instead
+  const turbopackRules = createTurbopackRules(pluginConfig, projectRoot, false)
+
+  if (nextVersion && nextVersion >= 15) {
+    // Next.js 15+: turbopack config is at root level
+    modifiedConfig.turbopack = {
+      ...(modifiedConfig.turbopack || {}),
+      rules: {
+        ...(modifiedConfig.turbopack?.rules || {}),
+        ...turbopackRules,
+      },
+    }
+  }
+  else if (usesTurbopack) {
+    // Next.js 14: turbo is under experimental
+    modifiedConfig.experimental = {
+      ...(modifiedConfig.experimental || {}),
+      turbo: {
+        ...(modifiedConfig.experimental?.turbo || {}),
         rules: {
-          ...(modifiedConfig.turbopack?.rules || {}),
+          ...(modifiedConfig.experimental?.turbo?.rules || {}),
           ...turbopackRules,
         },
-      }
-    }
-    else {
-      // Next.js 14: turbo is under experimental
-      modifiedConfig.experimental = {
-        ...(modifiedConfig.experimental || {}),
-        turbo: {
-          ...(modifiedConfig.experimental?.turbo || {}),
-          rules: {
-            ...(modifiedConfig.experimental?.turbo?.rules || {}),
-            ...turbopackRules,
-          },
-        },
-      }
+      },
     }
   }
 
@@ -205,8 +227,8 @@ export function withReactDevTools<T extends NextConfig>(
       config = originalWebpack(config, context)
     }
 
-    // Only apply to client-side builds in development
-    if (!context.isServer && context.dev) {
+    // Apply webpack config in development
+    if (context.dev) {
       applyWebpackConfig(config, context, pluginConfig, projectRoot, clientPath)
     }
 
@@ -245,6 +267,21 @@ function applyWebpackConfig(
   projectRoot: string,
   clientPath: string,
 ) {
+  // Inject Babel plugin for source path attributes
+  // This needs to run on BOTH server and client to ensure SSR/hydration consistency
+  if (pluginConfig.injectSource) {
+    const babelPlugin = createSourceAttributePlugin(
+      pluginConfig.projectRoot,
+      pluginConfig.sourcePathMode,
+    )
+    injectBabelPluginToNextConfig(config, babelPlugin, projectRoot)
+  }
+
+  // The rest only applies to client-side builds
+  if (context.isServer) {
+    return
+  }
+
   const cacheDir = ensureCacheDir(projectRoot)
   const filesToInject: string[] = []
 
@@ -308,23 +345,16 @@ function applyWebpackConfig(
     clientPath,
   )
   config.plugins.push(new DevToolsPlugin())
-
-  // Inject Babel plugin for source path attributes
-  if (pluginConfig.injectSource) {
-    const babelPlugin = createSourceAttributePlugin(
-      pluginConfig.projectRoot,
-      pluginConfig.sourcePathMode,
-    )
-    injectBabelPluginToNextConfig(config, babelPlugin)
-  }
 }
 
 /**
  * Create Turbopack rules for React DevTools Plus
+ * @param verbose - Whether to log that Turbopack is being used
  */
 function createTurbopackRules(
   pluginConfig: ResolvedPluginConfig,
   projectRoot: string,
+  verbose: boolean = true,
 ): Record<string, any> {
   // Create cache directory and initialization files
   const cacheDir = ensureCacheDir(projectRoot)
@@ -360,7 +390,9 @@ function createTurbopackRules(
 
   // Return empty rules for now - Turbopack integration is more complex
   // and requires a custom approach
-  console.log('[React DevTools Plus] Turbopack detected - using client component injection')
+  if (verbose) {
+    console.log('[React DevTools Plus] Turbopack rules prepared - will be used if --turbopack flag is set')
+  }
 
   return {}
 }
@@ -409,12 +441,21 @@ function createNextDevToolsPlugin(
 
 /**
  * Inject Babel plugin into Next.js webpack config
+ * Next.js 15+ uses SWC by default, so we need to add our own babel-loader
  */
-function injectBabelPluginToNextConfig(config: NextWebpackConfig, plugin: any) {
+function injectBabelPluginToNextConfig(
+  config: NextWebpackConfig,
+  plugin: any,
+  projectRoot: string,
+) {
   if (!config.module?.rules)
-    return
+    config.module = { rules: [] }
+  if (!config.module.rules)
+    config.module.rules = []
 
-  // Find babel-loader rules and inject our plugin
+  let foundBabelLoader = false
+
+  // First, try to find existing babel-loader rules
   for (const rule of config.module.rules) {
     if (!rule)
       continue
@@ -422,23 +463,65 @@ function injectBabelPluginToNextConfig(config: NextWebpackConfig, plugin: any) {
     // Handle oneOf rules (Next.js uses this structure)
     if (rule.oneOf) {
       for (const oneOfRule of rule.oneOf) {
-        injectPluginToRule(oneOfRule, plugin)
+        if (injectPluginToRule(oneOfRule, plugin)) {
+          foundBabelLoader = true
+        }
       }
     }
     else {
-      injectPluginToRule(rule, plugin)
+      if (injectPluginToRule(rule, plugin)) {
+        foundBabelLoader = true
+      }
     }
+  }
+
+  // If no babel-loader found (Next.js 15+ with SWC), add our own babel-loader
+  // This runs BEFORE SWC compilation to inject data-source-path attributes
+  if (!foundBabelLoader) {
+    // Add a custom babel-loader rule with 'pre' enforcement
+    // This runs before SWC to inject source attributes into the JSX
+    const sourceInjectionRule = {
+      test: /\.(jsx|tsx)$/,
+      exclude: /node_modules/,
+      enforce: 'pre' as const, // Run BEFORE other loaders (including SWC)
+      use: [
+        {
+          loader: 'babel-loader',
+          options: {
+            // Only use our plugin - don't transform the code
+            presets: [
+              ['@babel/preset-react', { runtime: 'automatic' }],
+              '@babel/preset-typescript',
+            ],
+            plugins: [plugin],
+            // Don't use external babel config
+            configFile: false,
+            babelrc: false,
+            // Cache for performance
+            cacheDirectory: true,
+            cacheCompression: false,
+            // Output source maps for accurate source locations
+            sourceMaps: true,
+          },
+        },
+      ],
+    }
+
+    config.module.rules.push(sourceInjectionRule)
+    console.log('[React DevTools Plus] Added babel-loader for source path injection (pre-SWC)')
   }
 }
 
 /**
  * Inject plugin to a specific webpack rule
+ * Returns true if babel-loader was found and plugin was injected
  */
-function injectPluginToRule(rule: any, plugin: any) {
+function injectPluginToRule(rule: any, plugin: any): boolean {
   if (!rule?.use)
-    return
+    return false
 
   const uses = Array.isArray(rule.use) ? rule.use : [rule.use]
+  let found = false
 
   for (const use of uses) {
     if (!use)
@@ -454,9 +537,12 @@ function injectPluginToRule(rule: any, plugin: any) {
         if (!use.options.plugins)
           use.options.plugins = []
         use.options.plugins.push(plugin)
+        found = true
       }
     }
   }
+
+  return found
 }
 
 /**

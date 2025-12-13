@@ -303,6 +303,33 @@ export async function GET(
     const fullPath = url.pathname
     const basePath = requestPath ? fullPath.replace(`/${requestPath}`, '') : fullPath.replace(/\/$/, '')
 
+    // Handle open-in-editor request
+    // This opens the specified file in the user's editor (Cursor by default)
+    if (requestPath === 'api/open-in-editor' || requestPath.startsWith('__open-in-editor')) {
+      const projectRoot = process.cwd()
+      const url = new URL(request.url)
+      const file = url.searchParams.get('file')
+
+      if (!file) {
+        return new NextResponse('Missing file parameter', { status: 400 })
+      }
+
+      try {
+        const { openFileInEditor } = await import('./middleware/open-in-editor')
+        await openFileInEditor(file, projectRoot, 'relative')
+        return new NextResponse('OK', {
+          headers: {
+            'Content-Type': 'text/plain',
+            'Access-Control-Allow-Origin': '*',
+          },
+        })
+      }
+      catch (error: any) {
+        console.error('[React DevTools] Failed to open editor:', error.message)
+        return new NextResponse('Failed to open editor', { status: 500 })
+      }
+    }
+
     // Handle plugins manifest request
     // Return empty array for now - plugins are not yet supported in Next.js
     if (requestPath === 'plugins-manifest.json') {
