@@ -148,8 +148,30 @@ export function useGraph() {
 
   const checkReferenceIsValid = useCallback((modId: string, root?: string): boolean => {
     const refer = moduleReferencesRef.current.get(modId)
-    return refer ? refer.some(ref => checkIsValidModule(ref.mod, root)) : true
-  }, [checkIsValidModule])
+    if (!refer || refer.length === 0) {
+      return true
+    }
+    // When checking references, we should be more lenient:
+    // - If a module is referenced by a virtual module (like Next.js loaders), that's still valid
+    // - We only filter out if ALL references are from filtered modules (node_modules/lib)
+    const effectiveRoot = root ?? projectRoot
+    return refer.some((ref) => {
+      const isNodeModule = ref.mod.id.includes('node_modules')
+      // Virtual modules referencing user code is valid
+      if (ref.mod.virtual) {
+        return true
+      }
+      // Node modules references
+      if (!graphSettings.node_modules && isNodeModule) {
+        return false
+      }
+      // Lib modules (outside project root)
+      if (!graphSettings.lib && !ref.mod.id.includes(effectiveRoot) && !ref.mod.virtual) {
+        return false
+      }
+      return true
+    })
+  }, [graphSettings, projectRoot])
 
   const getEdge = useCallback((modId: string, dep: string): Edge => {
     return {
