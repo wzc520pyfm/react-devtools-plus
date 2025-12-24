@@ -247,8 +247,8 @@ export function mergeClientRects(rects: DOMRect[]): DOMRect | null {
   return new DOMRect(left, top, Math.max(0, right - left), Math.max(0, bottom - top))
 }
 
-function isInOverlay(node: Node | null): boolean {
-  if (!node)
+function isInOverlay(node: unknown): boolean {
+  if (!node || !(node instanceof Node))
     return false
   const overlayContainer = document.getElementById('react-devtools-overlay')
   return overlayContainer?.contains(node) ?? false

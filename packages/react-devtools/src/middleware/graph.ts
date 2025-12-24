@@ -4,6 +4,8 @@
  */
 
 import type { Connect } from 'vite'
+import fs from 'node:fs'
+import path from 'node:path'
 
 interface ModuleInfo {
   id: string
@@ -53,115 +55,247 @@ export function createGraphMiddleware(
 let webpackModuleGraph: { modules: ModuleInfo[], root: string } = { modules: [], root: '' }
 
 /**
+ * Process webpack modules and add them to the modules array
+ */
+function processModules(
+  statsModules: any[],
+  modules: ModuleInfo[],
+  fileExtPattern: RegExp,
+): void {
+  const moduleMap = new Map<string, { id: string, deps: string[], virtual: boolean }>()
+
+  statsModules.forEach((mod: any) => {
+    const id = mod.name || mod.identifier || ''
+    if (!id)
+      return
+
+    if (!fileExtPattern.test(id))
+      return
+
+    if (id.startsWith('webpack/') || id.startsWith('(webpack)'))
+      return
+
+    const normalizedId = normalizeWebpackModulePath(id)
+    if (!normalizedId)
+      return
+
+    const isVirtual = !mod.resource || id.includes('\0') || id.includes('virtual:')
+
+    if (!moduleMap.has(normalizedId)) {
+      moduleMap.set(normalizedId, {
+        id: normalizedId,
+        deps: [],
+        virtual: isVirtual,
+      })
+    }
+
+    if (mod.reasons && Array.isArray(mod.reasons)) {
+      mod.reasons.forEach((reason: any) => {
+        const depId = reason.moduleName || reason.moduleIdentifier || ''
+        if (!depId)
+          return
+        if (!fileExtPattern.test(depId))
+          return
+        if (depId.startsWith('webpack/') || depId.startsWith('(webpack)'))
+          return
+
+        const normalizedDepId = normalizeWebpackModulePath(depId)
+        if (normalizedDepId && normalizedDepId !== normalizedId) {
+          if (!moduleMap.has(normalizedDepId)) {
+            moduleMap.set(normalizedDepId, {
+              id: normalizedDepId,
+              deps: [],
+              virtual: false,
+            })
+          }
+          const depModule = moduleMap.get(normalizedDepId)!
+          if (!depModule.deps.includes(normalizedId)) {
+            depModule.deps.push(normalizedId)
+          }
+        }
+      })
+    }
+
+    if (mod.issuer) {
+      const issuerId = normalizeWebpackModulePath(mod.issuer)
+      if (issuerId && issuerId !== normalizedId && fileExtPattern.test(mod.issuer)) {
+        if (!moduleMap.has(issuerId)) {
+          moduleMap.set(issuerId, {
+            id: issuerId,
+            deps: [],
+            virtual: false,
+          })
+        }
+        const issuerModule = moduleMap.get(issuerId)!
+        if (!issuerModule.deps.includes(normalizedId)) {
+          issuerModule.deps.push(normalizedId)
+        }
+      }
+    }
+  })
+
+  // Merge into modules array
+  moduleMap.forEach((mod) => {
+    const existing = modules.find(m => m.id === mod.id)
+    if (existing) {
+      mod.deps.forEach((dep) => {
+        if (!existing.deps.includes(dep)) {
+          existing.deps.push(dep)
+        }
+      })
+    }
+    else {
+      modules.push(mod)
+    }
+  })
+}
+
+/**
  * Setup Webpack compiler hooks to collect module graph
  * 设置 Webpack 编译器钩子来收集模块依赖图
  */
 export function setupWebpackModuleGraph(compiler: any, root: string): void {
-  compiler.hooks.done.tap('react-devtools-graph', (stats: any) => {
-    try {
-      const modules: ModuleInfo[] = []
-      const fileExtPattern = /\.(?:tsx?|jsx?|vue|json|css|scss|less|html)(?:$|\?)/
-      const statsData = stats.toJson({
-        modules: true,
-        reasons: true,
-        source: false,
-        chunks: false,
-        assets: false,
-        cached: false,
-        entrypoints: false,
-      })
+  const fileExtPattern = /\.(?:tsx?|jsx?|vue|json|css|scss|less|html)(?:$|\?)/
 
-      if (!statsData.modules) {
-        return
-      }
+  // Use compilation hook to directly access modules (works better with Next.js)
+  compiler.hooks.compilation.tap('react-devtools-graph', (compilation: any) => {
+    // Use afterOptimizeModules hook to get the final module list
+    compilation.hooks.afterOptimizeModules?.tap('react-devtools-graph', (compilationModules: any) => {
+      try {
+        const modules: ModuleInfo[] = []
+        const moduleMap = new Map<string, ModuleInfo>()
 
-      // Create a map for quick lookup of module by identifier
-      const moduleMap = new Map<string, { id: string, deps: string[], virtual: boolean }>()
+        // Iterate through all modules in the compilation
+        for (const mod of compilationModules) {
+          // Get the resource path (actual file path)
+          const resource = mod.resource || mod.userRequest || ''
+          if (!resource)
+            continue
 
-      statsData.modules.forEach((mod: any) => {
-        // Get the module identifier (resource path)
-        const id = mod.name || mod.identifier || ''
-        if (!id)
-          return
+          // Filter to only include relevant file types
+          if (!fileExtPattern.test(resource))
+            continue
 
-        // Filter to only include relevant file types
-        if (!fileExtPattern.test(id))
-          return
+          // Skip node_modules by default for performance
+          const normalizedPath = resource.replace(/\\/g, '/')
 
-        // Skip webpack internal modules
-        if (id.startsWith('webpack/') || id.startsWith('(webpack)'))
-          return
+          // Get module identifier
+          const id = normalizedPath
 
-        // Normalize the path (remove loader prefixes)
-        const normalizedId = normalizeWebpackModulePath(id)
-        if (!normalizedId)
-          return
+          if (!moduleMap.has(id)) {
+            moduleMap.set(id, {
+              id,
+              deps: [],
+              virtual: !mod.resource,
+            })
+          }
 
-        // Check if virtual module
-        const isVirtual = !mod.resource || id.includes('\0') || id.includes('virtual:')
-
-        if (!moduleMap.has(normalizedId)) {
-          moduleMap.set(normalizedId, {
-            id: normalizedId,
-            deps: [],
-            virtual: isVirtual,
-          })
-        }
-
-        // Collect dependencies from reasons
-        if (mod.reasons && Array.isArray(mod.reasons)) {
-          mod.reasons.forEach((reason: any) => {
-            const depId = reason.moduleName || reason.moduleIdentifier || ''
-            if (!depId)
-              return
-            if (!fileExtPattern.test(depId))
-              return
-            if (depId.startsWith('webpack/') || depId.startsWith('(webpack)'))
-              return
-
-            const normalizedDepId = normalizeWebpackModulePath(depId)
-            if (normalizedDepId && normalizedDepId !== normalizedId) {
-              // Add this module as a dependency of the reason module
-              if (!moduleMap.has(normalizedDepId)) {
-                moduleMap.set(normalizedDepId, {
-                  id: normalizedDepId,
-                  deps: [],
-                  virtual: false,
-                })
+          // Collect dependencies
+          if (mod.dependencies) {
+            for (const dep of mod.dependencies) {
+              const depModule = compilation.moduleGraph?.getModule?.(dep)
+              if (depModule) {
+                const depResource = depModule.resource || depModule.userRequest || ''
+                if (depResource && fileExtPattern.test(depResource)) {
+                  const depId = depResource.replace(/\\/g, '/')
+                  const currentModule = moduleMap.get(id)!
+                  if (!currentModule.deps.includes(depId)) {
+                    currentModule.deps.push(depId)
+                  }
+                }
               }
-              const depModule = moduleMap.get(normalizedDepId)!
-              if (!depModule.deps.includes(normalizedId)) {
-                depModule.deps.push(normalizedId)
-              }
-            }
-          })
-        }
-
-        // Also collect from issuer (direct import relationship)
-        if (mod.issuer) {
-          const issuerId = normalizeWebpackModulePath(mod.issuer)
-          if (issuerId && issuerId !== normalizedId && fileExtPattern.test(mod.issuer)) {
-            if (!moduleMap.has(issuerId)) {
-              moduleMap.set(issuerId, {
-                id: issuerId,
-                deps: [],
-                virtual: false,
-              })
-            }
-            const issuerModule = moduleMap.get(issuerId)!
-            if (!issuerModule.deps.includes(normalizedId)) {
-              issuerModule.deps.push(normalizedId)
             }
           }
         }
-      })
 
-      // Convert map to array
-      moduleMap.forEach((mod) => {
-        modules.push(mod)
-      })
+        // Convert map to array
+        moduleMap.forEach((mod) => {
+          modules.push(mod)
+        })
 
-      webpackModuleGraph = { modules, root }
+        if (modules.length > 0) {
+          webpackModuleGraph = { modules, root }
+
+          // Write to file for Next.js API routes
+          try {
+            const graphDir = path.join(root, '.next', 'cache', 'react-devtools')
+            if (!fs.existsSync(graphDir)) {
+              fs.mkdirSync(graphDir, { recursive: true })
+            }
+            const graphPath = path.join(graphDir, 'module-graph.json')
+            fs.writeFileSync(graphPath, JSON.stringify(webpackModuleGraph, null, 2))
+          }
+          catch {
+            // Silently ignore write errors
+          }
+        }
+      }
+      catch (error) {
+        console.error('[React DevTools] Failed to collect module graph from compilation:', error)
+      }
+    })
+  })
+
+  // Also use done hook as fallback for stats-based collection
+  compiler.hooks.done.tap('react-devtools-graph', (stats: any) => {
+    // Skip if we already have modules from compilation hook
+    if (webpackModuleGraph.modules.length > 0) {
+      return
+    }
+
+    try {
+      const modules: ModuleInfo[] = []
+
+      // Handle multi-compiler stats (Next.js uses multiple compilers)
+      const statsArray = stats.stats || [stats]
+
+      for (const singleStats of statsArray) {
+        // Check if toJson is available
+        if (typeof singleStats.toJson !== 'function') {
+          continue
+        }
+
+        // Request all module information including nested modules
+        const statsData = singleStats.toJson({
+          all: false,
+          modules: true,
+          reasons: true,
+          children: true,
+          nestedModules: true,
+          dependentModules: true,
+        })
+
+        // Check children first (Next.js puts modules in children for client/server splits)
+        if (statsData.children && Array.isArray(statsData.children) && statsData.children.length > 0) {
+          for (const child of statsData.children) {
+            if (child.modules && child.modules.length > 0) {
+              processModules(child.modules, modules, fileExtPattern)
+            }
+          }
+        }
+
+        // Also check top-level modules
+        if (statsData.modules && statsData.modules.length > 0) {
+          processModules(statsData.modules, modules, fileExtPattern)
+        }
+      }
+
+      if (modules.length > 0) {
+        webpackModuleGraph = { modules, root }
+
+        // Write module graph to file for Next.js API routes to read
+        try {
+          const graphDir = path.join(root, '.next', 'cache', 'react-devtools')
+          if (!fs.existsSync(graphDir)) {
+            fs.mkdirSync(graphDir, { recursive: true })
+          }
+          const graphPath = path.join(graphDir, 'module-graph.json')
+          fs.writeFileSync(graphPath, JSON.stringify(webpackModuleGraph, null, 2))
+        }
+        catch {
+          // Silently ignore write errors
+        }
+      }
     }
     catch (error) {
       console.error('[React DevTools] Failed to collect module graph:', error)

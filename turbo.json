@@ -48,13 +48,16 @@
         "@react-devtools-plus/kit#stub"
       ]
     },
-    "react-devtools#build": {
+    "react-devtools-plus#build": {
       "dependsOn": [
+        "@react-devtools-plus/client#build",
         "^build"
       ],
       "outputs": [
-        "dist/**"
-      ]
+        "dist/**",
+        "client/**"
+      ],
+      "cache": false
     },
     "build": {
       "dependsOn": [

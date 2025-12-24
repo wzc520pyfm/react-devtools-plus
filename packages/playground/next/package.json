@@ -1,0 +1,25 @@
+{
+  "name": "@react-devtools-plus/playground-next",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "dev:turbo": "next dev --turbopack",
+    "dev:webpack": "NEXT_DISABLE_TURBOPACK=1 next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "react-devtools-plus": "workspace:*",
+    "typescript": "^5"
+  }
+}

@@ -1,6 +1,53 @@
 import { Badge, Checkbox, Input } from '@react-devtools-plus/ui'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+// Helper to get API base path (works for both Vite/Webpack and Next.js)
+function getApiBasePath(): string {
+  // For Next.js: use the DevTools client URL as base
+  const pathname = window.location.pathname.replace(/#.*$/, '').replace(/\/$/, '')
+  return pathname || '/__react_devtools__'
+}
+
+// Check if running in Next.js environment (iframe loaded from custom path like /devtools)
+function isNextJsEnvironment(): boolean {
+  const pathname = window.location.pathname.replace(/#.*$/, '').replace(/\/$/, '')
+  // If the pathname is not /__react_devtools__, we're likely in Next.js with a custom route
+  return pathname !== '' && pathname !== '/__react_devtools__'
+}
+
+// Fetch API with smart path detection
+async function fetchApi(endpoint: string): Promise<Response> {
+  const basePath = getApiBasePath()
+
+  // In Next.js, use the custom basePath directly to avoid 404 logs
+  if (isNextJsEnvironment()) {
+    const response = await fetch(`${basePath}${endpoint}`)
+    if (response.ok) {
+      return response
+    }
+    // Fallback to standard path if custom path fails
+    const fallbackResponse = await fetch(`/__react_devtools__${endpoint}`)
+    if (fallbackResponse.ok) {
+      return fallbackResponse
+    }
+    throw new Error('Failed to fetch from all API endpoints')
+  }
+
+  // Standard Vite/Webpack environment
+  const response = await fetch(`/__react_devtools__${endpoint}`)
+  if (response.ok) {
+    return response
+  }
+
+  // Fallback to basePath
+  const fallbackResponse = await fetch(`${basePath}${endpoint}`)
+  if (fallbackResponse.ok) {
+    return fallbackResponse
+  }
+
+  throw new Error('Failed to fetch from all API endpoints')
+}
+
 // Asset types
 type AssetType = 'image' | 'font' | 'video' | 'audio' | 'text' | 'json' | 'wasm' | 'other'
 
@@ -199,7 +246,7 @@ function AssetDetails({ asset, onClose }: { asset: AssetInfo, onClose: () => voi
   useEffect(() => {
     // Fetch image meta for images
     if (asset.type === 'image') {
-      fetch(`/__react_devtools__/api/assets/image-meta?path=${encodeURIComponent(asset.filePath)}`)
+      fetchApi(`/api/assets/image-meta?path=${encodeURIComponent(asset.filePath)}`)
         .then(res => res.json())
         .then(data => setImageMeta(data))
         .catch(() => setImageMeta(null))
@@ -207,7 +254,7 @@ function AssetDetails({ asset, onClose }: { asset: AssetInfo, onClose: () => voi
 
     // Fetch text content for text files
     if (asset.type === 'text') {
-      fetch(`/__react_devtools__/api/assets/text-content?path=${encodeURIComponent(asset.filePath)}&limit=2000`)
+      fetchApi(`/api/assets/text-content?path=${encodeURIComponent(asset.filePath)}&limit=2000`)
         .then(res => res.json())
         .then(data => setTextContent(data.content || ''))
         .catch(() => setTextContent(''))
@@ -415,7 +462,7 @@ export function AssetsPage() {
   const fetchAssets = useCallback(async () => {
     try {
       setLoading(true)
-      const response = await fetch('/__react_devtools__/api/assets')
+      const response = await fetchApi('/api/assets')
       if (response.ok) {
         const data = await response.json()
         setAssets(data)
@@ -503,7 +550,7 @@ export function AssetsPage() {
   const handleRefresh = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/__react_devtools__/api/assets/refresh')
+      const response = await fetchApi('/api/assets/refresh')
       if (response.ok) {
         const data = await response.json()
         setAssets(data)

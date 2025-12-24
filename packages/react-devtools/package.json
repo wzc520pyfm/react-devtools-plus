@@ -50,6 +50,21 @@
       "import": "./dist/umi.js",
       "require": "./dist/umi.cjs"
     },
+    "./next": {
+      "types": "./dist/next.d.ts",
+      "import": "./dist/next.js",
+      "require": "./dist/next.cjs"
+    },
+    "./next/api": {
+      "types": "./dist/next-api-handler.d.ts",
+      "import": "./dist/next-api-handler.js",
+      "require": "./dist/next-api-handler.cjs"
+    },
+    "./next/client": {
+      "types": "./dist/next-client.d.ts",
+      "import": "./dist/next-client.js",
+      "require": "./dist/next-client.cjs"
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",
@@ -62,12 +77,16 @@
     "stub": "tsup --watch --dts-only"
   },
   "peerDependencies": {
+    "next": "^13.0.0 || ^14.0.0 || ^15.0.0",
     "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
     "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
     "vite": "^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0",
     "webpack": "^4.0.0 || ^5.0.0"
   },
   "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    },
     "vite": {
       "optional": true
     },
