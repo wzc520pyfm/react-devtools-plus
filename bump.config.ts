@@ -10,6 +10,8 @@ export default defineConfig({
   }),
   // 自动 push commit 和 tag 到远程
   push: true,
+  // commit时提交所有文件
+  all: true,
   // tag 格式
   tag: true,
   // commit 消息格式
