@@ -1,6 +1,20 @@
 # Changelog
 
 
+## v0.5.0...main
+
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.5.0...main)
+
+### 🏡 Chore
+
+- Add CHANGELOG.md for version 0.4.0 and update script reference in index.html ([e257e58](https://github.com/wzc520pyfm/react-devtools-plus/commit/e257e58))
+- Update package.json to reflect new repository and homepage URLs for React DevTools Plus ([edbcae6](https://github.com/wzc520pyfm/react-devtools-plus/commit/edbcae6))
+- **bump.config:** Add option to commit all files during push ([334458b](https://github.com/wzc520pyfm/react-devtools-plus/commit/334458b))
+
+### ❤️ Contributors
+
+- Wzc520pyfm ([@wzc520pyfm](https://github.com/wzc520pyfm))
+
 ## v0.4.0...main
 
 [compare changes](https://github.com/vuejs/devtools/compare/v0.4.0...main)
