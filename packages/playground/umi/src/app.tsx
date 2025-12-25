@@ -1,15 +1,8 @@
 /**
  * Umi runtime configuration
- * This file is used to expose React to window for react-devtools-plus overlay
+ *
+ * Note: React/ReactDOM are automatically exposed to window by react-devtools-plus
  */
-import React from 'react'
-import ReactDOM from 'react-dom'
 
-// Expose React and ReactDOM to window for react-devtools-plus overlay
-if (typeof window !== 'undefined') {
-  ;(window as any).React = React
-  ;(window as any).ReactDOM = ReactDOM
-}
-
-// Export empty object for umi runtime config
+// Export empty object for umi runtime config (can be used for runtime customization)
 export {}

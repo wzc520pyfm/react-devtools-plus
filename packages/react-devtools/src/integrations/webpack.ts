@@ -187,11 +187,6 @@ export function injectDevToolsEntries(
   const originalEntry = compiler.options.entry
   const useWebpack4Format = isWebpack4(compiler)
 
-  console.log('[React DevTools] Original entry:', JSON.stringify(originalEntry))
-  console.log('[React DevTools] Original entry type:', typeof originalEntry)
-  console.log('[React DevTools] Is Webpack 4:', useWebpack4Format)
-  console.log('[React DevTools] Files to inject:', filesToInject)
-
   if (useWebpack4Format) {
     // Webpack 4: Don't use async function, resolve entry synchronously or use callback
     if (typeof originalEntry === 'function') {
@@ -201,21 +196,15 @@ export function injectDevToolsEntries(
         // Handle both sync and Promise results
         if (result && typeof result.then === 'function') {
           return result.then((entries: any) => {
-            const transformed = transformEntries(entries, filesToInject, true)
-            console.log('[React DevTools] Transformed entry (from promise):', JSON.stringify(transformed))
-            return transformed
+            return transformEntries(entries, filesToInject, true)
           })
         }
-        const transformed = transformEntries(result, filesToInject, true)
-        console.log('[React DevTools] Transformed entry (sync):', JSON.stringify(transformed))
-        return transformed
+        return transformEntries(result, filesToInject, true)
       }
     }
     else {
       // If original entry is not a function, transform it directly
-      const transformed = transformEntries(originalEntry, filesToInject, true)
-      console.log('[React DevTools] Transformed entry (direct):', JSON.stringify(transformed))
-      compiler.options.entry = transformed
+      compiler.options.entry = transformEntries(originalEntry, filesToInject, true)
     }
   }
   else {

@@ -156,6 +156,46 @@ export function createUmiPlugin(options: ReactDevToolsPluginOptions = {}) {
       return memo
     })
 
+    // Automatically expose React and ReactDOM to window
+    // This eliminates the need for users to manually write app.tsx
+    api.addEntryCodeAhead(() => {
+      return [
+        `
+// React DevTools Plus: Auto-expose React and ReactDOM to window
+// This allows the overlay to render without manual user configuration
+if (typeof window !== 'undefined') {
+  try {
+    if (!window.React) {
+      window.React = require('react');
+    }
+  } catch (e) {
+    // React not available via require, may be loaded via CDN
+  }
+
+  try {
+    if (!window.ReactDOM) {
+      var ReactDOM = require('react-dom');
+      // Try to add createRoot support for React 18+
+      try {
+        var ReactDOMClient = require('react-dom/client');
+        if (ReactDOMClient && ReactDOMClient.createRoot) {
+          window.ReactDOM = Object.assign({}, ReactDOM, ReactDOMClient);
+        } else {
+          window.ReactDOM = ReactDOM;
+        }
+      } catch (e) {
+        // react-dom/client not available (React 17 or earlier)
+        window.ReactDOM = ReactDOM;
+      }
+    }
+  } catch (e) {
+    // ReactDOM not available via require, may be loaded via CDN
+  }
+}
+`,
+      ]
+    })
+
     // Add DevTools initialization script to HTML head
     api.addHTMLHeadScripts(() => {
       const scripts: any[] = []
@@ -212,12 +252,12 @@ export function createUmiPlugin(options: ReactDevToolsPluginOptions = {}) {
 (function() {
   var maxAttempts = 100;
   var attempts = 0;
-  
+
   function loadOverlay() {
     if (typeof window === 'undefined') return;
-    
+
     attempts++;
-    
+
     // Wait for React to be on window (exposed via webpack ProvidePlugin)
     if (!window.React || !window.ReactDOM) {
       if (attempts < maxAttempts) {
@@ -227,7 +267,7 @@ export function createUmiPlugin(options: ReactDevToolsPluginOptions = {}) {
       }
       return;
     }
-    
+
     // Dynamically import the overlay module
     var script = document.createElement('script');
     script.type = 'module';
@@ -237,7 +277,7 @@ export function createUmiPlugin(options: ReactDevToolsPluginOptions = {}) {
     };
     document.body.appendChild(script);
   }
-  
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', loadOverlay);
   } else {
