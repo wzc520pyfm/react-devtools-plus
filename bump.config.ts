@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process'
 import { defineConfig } from 'bumpp'
 import fg from 'fast-glob'
 
@@ -16,4 +17,8 @@ export default defineConfig({
   tag: true,
   // commit 消息格式
   commit: 'release: v%s',
+  // 在提交commit前执行`pnpm build`
+  execute: () => {
+    execSync('pnpm build')
+  },
 })
