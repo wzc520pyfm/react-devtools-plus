@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.5.1...main
+
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.5.1...main)
+
+### 🏡 Chore
+
+- **bump:** Add pre-commit build execution and update release scripts ([a44f23b](https://github.com/wzc520pyfm/react-devtools-plus/commit/a44f23b))
+
+### ❤️ Contributors
+
+- Wzc520pyfm ([@wzc520pyfm](https://github.com/wzc520pyfm))
+
 ## v0.5.0...main
 
 [compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.5.0...main)
