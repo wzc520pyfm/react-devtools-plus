@@ -412,7 +412,7 @@ const resources = {
               {
                 name: 'React + Webpack',
                 description: 'Classic Webpack 5 bundler setup',
-                url: '#',
+                url: 'https://stackblitz.com/~/github.com/wzc520pyfm/react-devtools-plus-webpack-example',
                 tags: ['React 18', 'Webpack 5'],
               },
               {
@@ -1368,7 +1368,7 @@ const resources = {
               {
                 name: 'React + Webpack',
                 description: '经典 Webpack 5 构建工具配置',
-                url: '#',
+                url: 'https://stackblitz.com/~/github.com/wzc520pyfm/react-devtools-plus-webpack-example',
                 tags: ['React 18', 'Webpack 5'],
               },
               {
