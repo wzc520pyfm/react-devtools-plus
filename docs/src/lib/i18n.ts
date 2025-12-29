@@ -418,7 +418,7 @@ const resources = {
               {
                 name: 'Next.js',
                 description: 'Full-stack React framework integration',
-                url: '#',
+                url: 'https://stackblitz.com/edit/stackblitz-starters-rnqks2z7?file=next.config.cjs',
                 tags: ['Next.js', 'React 18'],
               },
               {
@@ -1374,7 +1374,7 @@ const resources = {
               {
                 name: 'Next.js',
                 description: '全栈 React 框架集成',
-                url: '#',
+                url: 'https://stackblitz.com/edit/stackblitz-starters-rnqks2z7?file=next.config.cjs',
                 tags: ['Next.js', 'React 18'],
               },
               {
