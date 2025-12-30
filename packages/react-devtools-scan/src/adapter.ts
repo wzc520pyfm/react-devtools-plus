@@ -197,7 +197,7 @@ function getFocusedFiberInfo(): { fiber: any, fiberId: string } | null {
       const fiber = Store.inspectState.value.fiber
       if (fiber) {
         // Use bippy's getFiberId to get the correct fiber ID that matches react-scan's internal usage
-        const fiberId = getFiberId(fiber)
+        const fiberId = String(getFiberId(fiber))
         return { fiber, fiberId }
       }
     }

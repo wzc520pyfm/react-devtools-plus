@@ -2,19 +2,21 @@
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
     "@react-devtools-plus/shared#stub": {
-      "cache": false
+      "cache": false,
+      "persistent": true,
+      "dependsOn": []
     },
     "@react-devtools-plus/kit#stub": {
       "cache": false,
+      "persistent": true,
       "dependsOn": [
-        "@react-devtools-plus/shared#stub",
         "@react-devtools-plus/shared#prepare:type"
       ]
     },
     "@react-devtools-plus/core#stub": {
       "cache": false,
+      "persistent": true,
       "dependsOn": [
-        "@react-devtools-plus/shared#stub",
         "@react-devtools-plus/shared#prepare:type"
       ]
     },
@@ -29,8 +31,9 @@
     },
     "@react-devtools-plus/client#stub": {
       "cache": false,
+      "persistent": true,
       "dependsOn": [
-        "@react-devtools-plus/kit#stub"
+        "@react-devtools-plus/kit#prepare:type"
       ]
     },
     "@react-devtools-plus/overlay#build": {
@@ -44,8 +47,9 @@
     },
     "@react-devtools-plus/overlay#stub": {
       "cache": false,
+      "persistent": true,
       "dependsOn": [
-        "@react-devtools-plus/kit#stub"
+        "@react-devtools-plus/kit#prepare:type"
       ]
     },
     "react-devtools-plus#build": {
@@ -58,6 +62,22 @@
         "client/**"
       ],
       "cache": false
+    },
+    "react-devtools-plus#stub": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": [
+        "@react-devtools-plus/scan#prepare:type",
+        "@react-devtools-plus/overlay#build",
+        "@react-devtools-plus/client#build"
+      ]
+    },
+    "@react-devtools-plus/scan#stub": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": [
+        "@react-devtools-plus/core#prepare:type"
+      ]
     },
     "build": {
       "dependsOn": [
@@ -82,6 +102,7 @@
     },
     "stub": {
       "cache": false,
+      "persistent": true,
       "dependsOn": [
         "^prepare:type"
       ]

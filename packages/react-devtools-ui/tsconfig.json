@@ -15,8 +15,11 @@
       "@/*": ["./src/*"]
     },
     "resolveJsonModule": true,
-    "allowImportingTsExtensions": true,
 
+    /* Types - explicitly specify to avoid loading deprecated @types/minimatch */
+    "types": ["react", "react-dom"],
+
+    "allowImportingTsExtensions": true,
     /* Linting */
     "strict": true,
     "noFallthroughCasesInSwitch": true,

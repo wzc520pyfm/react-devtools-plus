@@ -74,7 +74,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "prepare:type": "tsup --dts-only",
-    "stub": "tsup --watch --dts-only"
+    "stub": "tsup --watch"
   },
   "peerDependencies": {
     "next": "^13.0.0 || ^14.0.0 || ^15.0.0",
