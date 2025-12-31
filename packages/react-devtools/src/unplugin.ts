@@ -392,6 +392,7 @@ export const hydrateRoot = undefined;
           rootSelector: pluginConfig.rootSelector,
           theme: pluginConfig.theme,
           assets: pluginConfig.assets,
+          launchEditor: pluginConfig.launchEditor,
         })
         if (configTag) {
           tags.push(configTag)
@@ -504,6 +505,7 @@ export const hydrateRoot = undefined;
           pluginConfig.rootSelector,
           pluginConfig.theme,
           pluginConfig.assets,
+          pluginConfig.launchEditor,
         )
 
         // Inject Babel plugin (for data-source-path)

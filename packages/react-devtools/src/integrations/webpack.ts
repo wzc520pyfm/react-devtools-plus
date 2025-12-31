@@ -158,12 +158,13 @@ export function injectDevToolsEntries(
   rootSelector?: string,
   theme?: { mode?: 'auto' | 'light' | 'dark', primaryColor?: string },
   assets?: { files?: string[] },
+  launchEditor?: string,
 ) {
   const cacheDir = ensureCacheDir(projectRoot)
   const filesToInject: string[] = []
 
   // 1. Config injection (for singleSpa/micro-frontend scenarios)
-  const configCode = generateConfigInjectionCode({ clientUrl, rootSelector, theme, assets })
+  const configCode = generateConfigInjectionCode({ clientUrl, rootSelector, theme, assets, launchEditor })
   if (configCode) {
     const configPath = writeInitFile(cacheDir, 'devtools-config.js', configCode)
     filesToInject.push(configPath)

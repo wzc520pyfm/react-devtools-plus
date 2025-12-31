@@ -20,13 +20,15 @@ export interface DevToolsRuntimeConfig {
   assets?: {
     files?: string[]
   }
+  /** Editor to launch when clicking on source locations */
+  launchEditor?: string
 }
 
 /**
  * Generate code to inject DevTools runtime configuration
  */
 export function generateConfigInjectionCode(config: DevToolsRuntimeConfig): string {
-  if (!config.clientUrl && !config.rootSelector && !config.theme && !config.assets) {
+  if (!config.clientUrl && !config.rootSelector && !config.theme && !config.assets && !config.launchEditor) {
     return ''
   }
 
@@ -42,6 +44,9 @@ export function generateConfigInjectionCode(config: DevToolsRuntimeConfig): stri
   }
   if (config.assets) {
     configParts.push(`window.__REACT_DEVTOOLS_CONFIG__.assets = ${JSON.stringify(config.assets)};`)
+  }
+  if (config.launchEditor) {
+    configParts.push(`window.__REACT_DEVTOOLS_CONFIG__.launchEditor = ${JSON.stringify(config.launchEditor)};`)
   }
 
   return `

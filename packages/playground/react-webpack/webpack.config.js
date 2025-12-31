@@ -51,6 +51,7 @@ module.exports = {
       React: 'react',
     }),
     reactDevToolsPlus({
+      launchEditor: 'cursor',
       enabledEnvironments: ['development', 'test'],
       plugins: [
         {

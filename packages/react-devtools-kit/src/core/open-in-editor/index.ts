@@ -32,12 +32,32 @@ function buildEditorUrl(editor: string, fileName: string, line: number, column: 
 }
 
 /**
+ * Get the configured editor
+ * Priority: plugin config > localStorage > default 'vscode'
+ */
+function getConfiguredEditor(): string {
+  // 1. Check plugin config (set via launchEditor option)
+  const config = (window as any).__REACT_DEVTOOLS_CONFIG__
+  if (config?.launchEditor) {
+    return config.launchEditor
+  }
+
+  // 2. Check localStorage (user preference from UI)
+  const localStorageEditor = localStorage.getItem('react_devtools_editor')
+  if (localStorageEditor) {
+    return localStorageEditor
+  }
+
+  // 3. Default to vscode
+  return 'vscode'
+}
+
+/**
  * Try to open a file in the editor using URL protocol (fallback)
  */
 function tryOpenWithProtocol(fileName: string, line: number, column: number): boolean {
   try {
-    // Try to get editor from localStorage (user preference)
-    const editor = localStorage.getItem('react_devtools_editor') || 'vscode'
+    const editor = getConfiguredEditor()
 
     // Build URL based on editor type
     const protocolUrl = buildEditorUrl(editor, fileName, line, column)

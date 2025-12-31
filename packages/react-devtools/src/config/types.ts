@@ -247,6 +247,26 @@ export interface ReactDevToolsPluginOptions {
      */
     files?: string[]
   }
+
+  /**
+   * Configure which editor to open when clicking on source locations.
+   * 配置点击源码位置时打开的编辑器
+   *
+   * @default 'vscode'
+   *
+   * @example
+   * // Use VS Code (default)
+   * ReactDevTools({ launchEditor: 'vscode' })
+   *
+   * // Use Cursor
+   * ReactDevTools({ launchEditor: 'cursor' })
+   *
+   * // Use WebStorm
+   * ReactDevTools({ launchEditor: 'webstorm' })
+   *
+   * // Other supported editors: 'sublime', 'atom', 'phpstorm', 'idea', 'pycharm', etc.
+   */
+  launchEditor?: string
 }
 
 /**
@@ -273,6 +293,7 @@ export interface ResolvedPluginConfig {
   assets?: {
     files?: string[]
   }
+  launchEditor?: string
 }
 
 /**

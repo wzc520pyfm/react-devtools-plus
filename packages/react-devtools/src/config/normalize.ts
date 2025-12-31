@@ -159,6 +159,7 @@ export function resolvePluginConfig(
     rootSelector: options.rootSelector,
     theme: options.theme,
     assets: options.assets,
+    launchEditor: options.launchEditor,
   }
 }
 
