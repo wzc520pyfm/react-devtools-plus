@@ -1,4 +1,37 @@
 /**
+ * JetBrains IDEs that use the `open?file=` URL format
+ */
+const JETBRAINS_EDITORS = [
+  'webstorm',
+  'phpstorm',
+  'idea',
+  'intellij',
+  'pycharm',
+  'rubymine',
+  'goland',
+  'clion',
+  'rider',
+  'appcode',
+  'datagrip',
+  'dataspell',
+]
+
+/**
+ * Build URL protocol for opening file in editor
+ */
+function buildEditorUrl(editor: string, fileName: string, line: number, column: number): string {
+  const editorLower = editor.toLowerCase()
+
+  // JetBrains IDEs use: webstorm://open?file=path&line=line&column=column
+  if (JETBRAINS_EDITORS.some(ide => editorLower.includes(ide))) {
+    return `${editor}://open?file=${encodeURIComponent(fileName)}&line=${line}&column=${column}`
+  }
+
+  // VSCode and others use: vscode://file/path:line:column
+  return `${editor}://file/${fileName}:${line}:${column}`
+}
+
+/**
  * Try to open a file in the editor using URL protocol (fallback)
  */
 function tryOpenWithProtocol(fileName: string, line: number, column: number): boolean {
@@ -6,9 +39,8 @@ function tryOpenWithProtocol(fileName: string, line: number, column: number): bo
     // Try to get editor from localStorage (user preference)
     const editor = localStorage.getItem('react_devtools_editor') || 'vscode'
 
-    // Use URL protocol as fallback
-    // Format: vscode://file/path/to/file:line:column
-    const protocolUrl = `${editor}://file/${fileName}:${line}:${column}`
+    // Build URL based on editor type
+    const protocolUrl = buildEditorUrl(editor, fileName, line, column)
 
     const link = document.createElement('a')
     link.href = protocolUrl
@@ -52,7 +84,28 @@ function getDevToolsBasePath(): string {
   return '/__react_devtools__'
 }
 
-export function openInEditor(fileName: string, line: number, column: number) {
+/**
+ * Check if response is a valid API response (not HTML fallback from SPA)
+ * SPA frameworks often return 200 + HTML for unknown routes due to fallback behavior
+ */
+function isValidApiResponse(response: Response): boolean {
+  if (!response.ok) {
+    return false
+  }
+
+  // Check Content-Type header to detect HTML fallback
+  const contentType = response.headers.get('content-type') || ''
+
+  // If Content-Type is HTML, it's likely a SPA fallback, not a real API response
+  if (contentType.includes('text/html')) {
+    return false
+  }
+
+  // Valid API responses typically have JSON, text/plain, or no content
+  return true
+}
+
+export async function openInEditor(fileName: string, line: number, column: number) {
   const fileParam = encodeURIComponent(`${fileName}:${line}:${column}`)
 
   // Build list of endpoints to try
@@ -63,31 +116,20 @@ export function openInEditor(fileName: string, line: number, column: number) {
   ]
 
   // Try each endpoint in order
-  async function tryEndpoints(index: number): Promise<void> {
-    if (index >= endpoints.length) {
-      // All endpoints failed, try URL protocol as fallback
-      console.warn('[React DevTools] All server endpoints failed, trying URL protocol fallback')
-      tryOpenWithProtocol(fileName, line, column)
-      return
-    }
-
-    const url = endpoints[index]
+  for (const url of endpoints) {
     try {
       const response = await fetch(url)
-      if (response.ok) {
+      if (isValidApiResponse(response)) {
         return // Success!
       }
-      // Try next endpoint
-      await tryEndpoints(index + 1)
+      // 404, non-ok status, or HTML fallback - try next endpoint
     }
     catch {
-      // Try next endpoint
-      await tryEndpoints(index + 1)
+      // Network error, try next endpoint
     }
   }
 
-  tryEndpoints(0).catch((e) => {
-    console.error('[React DevTools] Failed to open in editor:', e)
-    tryOpenWithProtocol(fileName, line, column)
-  })
+  // All endpoints failed, try URL protocol as fallback
+  console.warn('[React DevTools] All server endpoints failed, trying URL protocol fallback')
+  tryOpenWithProtocol(fileName, line, column)
 }
