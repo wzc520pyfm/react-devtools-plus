@@ -152,7 +152,8 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
     // ============================================================
     vite: {
       apply(config, env) {
-        const mode = env.mode || (config as any).mode || 'development'
+        // Consider both Vite mode and NODE_ENV for environment detection
+        const mode = env.mode || (config as any).mode || process.env.NODE_ENV || 'development'
         const command = env.command
         const tempConfig = resolvePluginConfig(options, process.cwd(), mode, command)
         return tempConfig.isEnabled
@@ -183,7 +184,8 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           return {}
         }
 
-        const mode = env.mode || (config as any).mode || 'development'
+        // Consider both Vite mode and NODE_ENV for environment detection
+        const mode = env.mode || (config as any).mode || process.env.NODE_ENV || 'development'
         const command = env.command
         const tempConfig = resolvePluginConfig(options, config.root || process.cwd(), mode, command)
 

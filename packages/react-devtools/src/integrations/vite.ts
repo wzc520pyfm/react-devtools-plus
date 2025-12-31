@@ -153,13 +153,19 @@ export function setupPreviewServerMiddlewares(
 /**
  * Get Vite mode and command from config
  * 从配置中获取 Vite 模式和命令
+ *
+ * Priority for mode detection:
+ * 1. Vite config.mode (explicit configuration)
+ * 2. NODE_ENV environment variable (commonly used in Node.js ecosystem)
+ * 3. Default to 'development'
  */
 export function getViteModeAndCommand(viteConfig: ResolvedConfig): {
   mode: string
   command: 'build' | 'serve'
 } {
   return {
-    mode: viteConfig.mode,
+    // Consider both Vite mode and NODE_ENV for environment detection
+    mode: viteConfig.mode || process.env.NODE_ENV || 'development',
     command: viteConfig.command,
   }
 }
