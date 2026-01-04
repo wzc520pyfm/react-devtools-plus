@@ -1,6 +1,29 @@
 # Changelog
 
 
+## v0.5.3...main
+
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.5.3...main)
+
+### 🚀 Features
+
+- **playground:** Add online playground section with integration examples in multiple languages ([d070c45](https://github.com/wzc520pyfm/react-devtools-plus/commit/d070c45))
+- Support launch editor ([#11](https://github.com/wzc520pyfm/react-devtools-plus/pull/11))
+- Improve environment detection for Vite and Webpack integrations by considering NODE_ENV ([#10](https://github.com/wzc520pyfm/react-devtools-plus/pull/10))
+
+### 🐛 Bug Fixes
+
+- **i18n:** Update resource URLs for React + Webpack examples ([102ed30](https://github.com/wzc520pyfm/react-devtools-plus/commit/102ed30))
+- **i18n:** Update Next.js resource URLs to point to StackBlitz examples ([aac0393](https://github.com/wzc520pyfm/react-devtools-plus/commit/aac0393))
+
+### 🏡 Chore
+
+- Enhance cleaning scripts and update Turbo task configurations ([#9](https://github.com/wzc520pyfm/react-devtools-plus/pull/9))
+
+### ❤️ Contributors
+
+- Wzc520pyfm ([@wzc520pyfm](https://github.com/wzc520pyfm))
+
 ## v0.5.2...main
 
 [compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.5.2...main)
