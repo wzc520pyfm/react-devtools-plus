@@ -1,7 +1,7 @@
 {
   "name": "@react-devtools-plus/ui-story",
   "type": "module",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "private": true,
   "description": "Storybook for React DevTools UI components",
   "scripts": {

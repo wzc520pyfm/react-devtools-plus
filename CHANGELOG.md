@@ -7,6 +7,22 @@
 
 ### 🚀 Features
 
+- Enhance open-in-editor functionality by integrating launchEditor option ([#12](https://github.com/wzc520pyfm/react-devtools-plus/pull/12))
+
+### 🏡 Chore
+
+- Update changelog for v0.6.0 release ([3bd0af3](https://github.com/wzc520pyfm/react-devtools-plus/commit/3bd0af3))
+
+### ❤️ Contributors
+
+- Wzc520pyfm ([@wzc520pyfm](https://github.com/wzc520pyfm))
+
+## v0.6.0...main
+
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.6.0...main)
+
+### 🚀 Features
+
 - **playground:** Add online playground section with integration examples in multiple languages ([d070c45](https://github.com/wzc520pyfm/react-devtools-plus/commit/d070c45))
 - Support launch editor ([#11](https://github.com/wzc520pyfm/react-devtools-plus/pull/11))
 - Improve environment detection for Vite and Webpack integrations by considering NODE_ENV ([#10](https://github.com/wzc520pyfm/react-devtools-plus/pull/10))
