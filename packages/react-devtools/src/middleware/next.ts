@@ -36,7 +36,7 @@ export function createDevToolsApiHandler(
     }),
     createPluginFileMiddleware(),
     createGraphMiddleware(getWebpackModuleGraph(), '/'),
-    createOpenInEditorMiddleware(config.projectRoot, config.sourcePathMode),
+    createOpenInEditorMiddleware(config.projectRoot, config.sourcePathMode, config.launchEditor),
     createAssetsMiddleware({
       root: config.projectRoot,
       publicDir: 'public',

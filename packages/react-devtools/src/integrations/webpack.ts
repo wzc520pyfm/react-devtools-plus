@@ -69,10 +69,11 @@ export function setupWebpackDevServerMiddlewares(
     },
     {
       name: 'react-devtools-open-in-editor',
-      path: '/__react_devtools__/open-in-editor',
+      // Mount globally so middleware handles path matching for /__open-in-editor
       middleware: createOpenInEditorMiddleware(
         config.projectRoot,
         config.sourcePathMode,
+        config.launchEditor,
       ),
     },
     {

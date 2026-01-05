@@ -111,6 +111,7 @@ export function setupDevServerMiddlewares(
   server.middlewares.use(createOpenInEditorMiddleware(
     config.projectRoot,
     config.sourcePathMode,
+    config.launchEditor,
   ))
 
   // Graph middleware for module dependency visualization (must be before client serving)
@@ -143,6 +144,7 @@ export function setupPreviewServerMiddlewares(
   server.middlewares.use(createOpenInEditorMiddleware(
     config.projectRoot,
     config.sourcePathMode,
+    config.launchEditor,
   ))
 
   // Client serving middleware

@@ -106,6 +106,7 @@ export function createUmiPlugin(options: ReactDevToolsPluginOptions = {}) {
         createOpenInEditorMiddleware(
           pluginConfig.projectRoot,
           pluginConfig.sourcePathMode,
+          pluginConfig.launchEditor,
         ),
       )
 

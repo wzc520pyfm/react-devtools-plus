@@ -12,4 +12,5 @@ export default createUmiPlugin({
     showToolbar: false,
     animationSpeed: 'fast',
   },
+  launchEditor: 'cursor',
 })

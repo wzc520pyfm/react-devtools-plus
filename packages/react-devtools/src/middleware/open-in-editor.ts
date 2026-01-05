@@ -10,11 +10,17 @@ import { convertToEditorPath, parseEditorPath, resolveRelativeToAbsolute } from 
 /**
  * Open file in editor
  * 在编辑器中打开文件
+ *
+ * @param filePath - File path in format "path:line:column"
+ * @param projectRoot - Project root directory
+ * @param sourcePathMode - Path mode (absolute or relative)
+ * @param launchEditor - Editor command to use (e.g., 'vscode', 'cursor', 'webstorm')
  */
 export async function openFileInEditor(
   filePath: string,
   projectRoot: string,
   sourcePathMode: SourcePathMode,
+  launchEditor?: string,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     // Parse file:line:column
@@ -26,8 +32,8 @@ export async function openFileInEditor(
     // Build editor path
     const editorPath = convertToEditorPath(absolutePath, line, column)
 
-    // Get editor command from environment
-    const editorCmd = process.env.EDITOR || 'cursor'
+    // Get editor command: launchEditor config > EDITOR env > default 'code'
+    const editorCmd = launchEditor || process.env.EDITOR || 'code'
     const cmd = `${editorCmd} -g "${editorPath}"`
 
     exec(cmd, (error) => {
@@ -45,10 +51,15 @@ export async function openFileInEditor(
 /**
  * Create Express/Connect middleware for handling open-in-editor requests
  * 创建用于处理"在编辑器中打开"请求的中间件
+ *
+ * @param projectRoot - Project root directory
+ * @param sourcePathMode - Path mode (absolute or relative)
+ * @param launchEditor - Editor command to use (e.g., 'vscode', 'cursor', 'webstorm')
  */
 export function createOpenInEditorMiddleware(
   projectRoot: string,
   sourcePathMode: SourcePathMode,
+  launchEditor?: string,
 ) {
   return async (req: any, res: any, next?: () => void) => {
     // Check if this is an open-in-editor request
@@ -63,18 +74,21 @@ export function createOpenInEditorMiddleware(
 
     if (!file) {
       res.statusCode = 400
+      res.setHeader('Content-Type', 'text/plain')
       res.end('Missing file parameter')
       return
     }
 
     try {
-      await openFileInEditor(file, projectRoot, sourcePathMode)
+      await openFileInEditor(file, projectRoot, sourcePathMode, launchEditor)
       res.statusCode = 200
+      res.setHeader('Content-Type', 'text/plain')
       res.end('OK')
     }
     catch (error: any) {
       console.error('[React DevTools] Failed to execute editor command:', error.message)
       res.statusCode = 500
+      res.setHeader('Content-Type', 'text/plain')
       res.end('Failed to open editor')
     }
   }
