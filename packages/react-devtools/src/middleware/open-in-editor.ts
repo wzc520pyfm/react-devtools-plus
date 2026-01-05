@@ -79,8 +79,14 @@ export function createOpenInEditorMiddleware(
       return
     }
 
+    // Get editor from query parameter (passed from client, includes localStorage preference)
+    const editorFromClient = url.searchParams.get('editor')
+
+    // Priority: launchEditor config > client editor param > EDITOR env > default 'code'
+    const effectiveEditor = launchEditor || editorFromClient || undefined
+
     try {
-      await openFileInEditor(file, projectRoot, sourcePathMode, launchEditor)
+      await openFileInEditor(file, projectRoot, sourcePathMode, effectiveEditor)
       res.statusCode = 200
       res.setHeader('Content-Type', 'text/plain')
       res.end('OK')

@@ -128,11 +128,15 @@ function isValidApiResponse(response: Response): boolean {
 export async function openInEditor(fileName: string, line: number, column: number) {
   const fileParam = encodeURIComponent(`${fileName}:${line}:${column}`)
 
+  // Get configured editor to pass to server (allows localStorage preference to work server-side)
+  const editor = getConfiguredEditor()
+  const editorParam = encodeURIComponent(editor)
+
   // Build list of endpoints to try
   const basePath = getDevToolsBasePath()
   const endpoints = [
-    `/__open-in-editor?file=${fileParam}`, // Standard Vite/Webpack path
-    `${basePath}/api/open-in-editor?file=${fileParam}`, // Next.js DevTools API path
+    `/__open-in-editor?file=${fileParam}&editor=${editorParam}`, // Standard Vite/Webpack path
+    `${basePath}/api/open-in-editor?file=${fileParam}&editor=${editorParam}`, // Next.js DevTools API path
   ]
 
   // Try each endpoint in order
