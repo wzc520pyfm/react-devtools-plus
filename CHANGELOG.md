@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.6.2...main
+
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.6.1...main)
+
+### 🐛 Bug Fixes
+
+- Use openInEditor in useIframe ([#13](https://github.com/wzc520pyfm/react-devtools-plus/pull/13))
+
+### 🏡 Chore
+
+- Update changelog for v0.6.1 release ([79b189b](https://github.com/wzc520pyfm/react-devtools-plus/commit/79b189b))
+
+### ❤️ Contributors
+
+- Wzc520pyfm ([@wzc520pyfm](https://github.com/wzc520pyfm))
+
 ## v0.6.1...main
 
 [compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.6.0...main)
