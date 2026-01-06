@@ -491,7 +491,7 @@ function injectBabelPluginToNextConfig(
             // Only use our plugin - don't transform the code
             presets: [
               ['@babel/preset-react', { runtime: 'automatic' }],
-              '@babel/preset-typescript',
+              ['@babel/preset-typescript', { allowDeclareFields: true }],
             ],
             plugins: [plugin],
             // Don't use external babel config

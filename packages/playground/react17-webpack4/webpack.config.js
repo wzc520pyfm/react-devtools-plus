@@ -23,7 +23,7 @@ module.exports = {
                 runtime: 'classic',
                 development: true,
               }],
-              ['@babel/preset-typescript', { isTSX: true, allExtensions: true }],
+              ['@babel/preset-typescript', { isTSX: true, allExtensions: true, allowDeclareFields: true }],
             ],
           },
         },

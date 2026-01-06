@@ -70,7 +70,7 @@ export function transformSourceCode(
       filename: id,
       presets: [
         ['@babel/preset-react', { runtime: 'automatic' }],
-        '@babel/preset-typescript',
+        ['@babel/preset-typescript', { allowDeclareFields: true }],
       ],
       plugins: [createSourceAttributePlugin(projectRoot, sourcePathMode)],
       ast: true,

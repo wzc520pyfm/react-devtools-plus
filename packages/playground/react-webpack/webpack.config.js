@@ -26,7 +26,7 @@ module.exports = {
                     // development 开启时，React Fiber 下存在_debugSource，可用于定位源码位置
                     development: true,
                   }],
-                  ['@babel/preset-typescript', { isTSX: true, allExtensions: true }],
+                  ['@babel/preset-typescript', { isTSX: true, allExtensions: true, allowDeclareFields: true }],
                 ],
               },
             },

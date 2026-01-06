@@ -46,7 +46,7 @@ export function createPluginFileMiddleware() {
               runtime: 'classic', // Switch to classic runtime to avoid jsx-dev-runtime imports
               development: true,
             }],
-            ['@babel/preset-typescript', { isTSX: isJsx, allExtensions: true }],
+            ['@babel/preset-typescript', { isTSX: isJsx, allExtensions: true, allowDeclareFields: true }],
           ],
           plugins: [
             // Simple plugin to rewrite "import React from 'react'" to "const React = window.React"
