@@ -99,13 +99,10 @@ export function useIframe(
     })
 
     const disposeOpenInEditor = onOpenInEditor((fileName, line, column) => {
-      // Also execute openInEditor directly in the overlay context (main page)
+      // Execute openInEditor in the overlay context (main page)
+      // Note: Don't broadcast to panel via RPC, as it would cause duplicate requests
+      // The panel can call openInEditor via RPC when needed (from component details, etc.)
       openInEditor(fileName, line, column)
-
-      const rpcServer = getRpcServer()
-      if (rpcServer && (rpcServer as any).broadcast && rpcServerReadyRef.current) {
-        (rpcServer as any).broadcast.openInEditor({ fileName, line, column }).catch(() => {})
-      }
     })
 
     // Install timeline event listeners
