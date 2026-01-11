@@ -1,0 +1,134 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem;
+}
+
+.header {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+
+  h1 {
+    color: white;
+    font-size: 2rem;
+    margin-top: 1rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.backLink {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  font-size: 0.95rem;
+
+  &:hover {
+    color: white;
+    text-decoration: underline;
+  }
+}
+
+.main {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+
+  h2 {
+    color: #1a1a2e;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 0.5rem;
+  }
+}
+
+.infoGrid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.infoItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.label {
+  color: #666;
+  font-weight: 500;
+}
+
+.value {
+  color: #1a1a2e;
+
+  code {
+    background: #e8f4ff;
+    color: #0066cc;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-family: 'Monaco', monospace;
+    font-size: 0.85em;
+  }
+}
+
+.toggleBtn {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #5a6fd6;
+  }
+}
+
+.code {
+  background: #1a1a2e;
+  color: #a5d6ff;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  margin-top: 1rem;
+}
+
+.steps {
+  padding-left: 1.5rem;
+
+  li {
+    margin-bottom: 1rem;
+
+    strong {
+      color: #667eea;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    p {
+      color: #666;
+      margin: 0;
+      line-height: 1.5;
+
+      code {
+        background: #f0f0f0;
+        padding: 0.15rem 0.4rem;
+        border-radius: 3px;
+        font-family: 'Monaco', monospace;
+        font-size: 0.85em;
+      }
+    }
+  }
+}
