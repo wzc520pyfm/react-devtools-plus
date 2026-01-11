@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.7.0...main
+
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.7.0...main)
+
+### 🚀 Features
+
+- Improve micro support ([#16](https://github.com/wzc520pyfm/react-devtools-plus/pull/16))
+
+### ❤️ Contributors
+
+- Wzc520pyfm ([@wzc520pyfm](https://github.com/wzc520pyfm))
+
 ## v0.6.4...main
 
 [compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.6.4...main)
