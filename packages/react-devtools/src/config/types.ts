@@ -277,6 +277,11 @@ export interface ResolvedPluginConfig {
   plugins: UserPlugin[]
   appendTo: string | RegExp | undefined
   enabledEnvironments: EnabledEnvironments
+  /**
+   * Detected environment from mode and NODE_ENV
+   * 从 mode 和 NODE_ENV 探测到的环境
+   */
+  detectedEnvironment: string
   injectSource: boolean
   sourcePathMode: SourcePathMode
   projectRoot: string

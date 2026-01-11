@@ -104,6 +104,10 @@ export function setupWebpackDevServerMiddlewares(
  * 1. Webpack compiler.options.mode (explicit configuration)
  * 2. NODE_ENV environment variable (commonly used in Node.js ecosystem)
  * 3. Default to 'development'
+ *
+ * Command detection:
+ * - WEBPACK_SERVE env var is set by webpack-dev-server when running
+ * - This is the most reliable way to detect serve mode
  */
 export function getWebpackModeAndCommand(compiler: Compiler): {
   mode: string
@@ -111,10 +115,15 @@ export function getWebpackModeAndCommand(compiler: Compiler): {
 } {
   // Consider both webpack mode and NODE_ENV for environment detection
   const mode = compiler.options.mode || process.env.NODE_ENV || 'development'
-  // Webpack doesn't have a clear "serve" vs "build" distinction like Vite
-  // We'll infer it from the presence of devServer config OR development mode
-  // This is needed for frameworks like Umi that have their own dev server
-  const command = (compiler.options.devServer || mode === 'development') ? 'serve' : 'build'
+
+  // Detect serve mode:
+  // 1. WEBPACK_SERVE is set by webpack-dev-server when running `webpack serve`
+  // 2. Fallback: check if devServer config exists AND mode is development
+  //    (for frameworks like Umi that have their own dev server)
+  const isServeMode = process.env.WEBPACK_SERVE === 'true'
+    || (compiler.options.devServer && mode === 'development')
+
+  const command = isServeMode ? 'serve' : 'build'
 
   return { mode, command }
 }

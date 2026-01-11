@@ -9,7 +9,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 export default defineConfig({
   plugins: [
     reactDevToolsPlus({
-      enabledEnvironments: ['development', 'test'],
+      // enabledEnvironments: ['development', 'test'],
       plugins: [
         {
           name: 'my-plugin',
