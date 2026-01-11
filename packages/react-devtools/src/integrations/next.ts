@@ -289,6 +289,7 @@ function applyWebpackConfig(
   const configCode = generateConfigInjectionCode({
     clientUrl: pluginConfig.clientUrl,
     rootSelector: pluginConfig.rootSelector,
+    microFrontend: pluginConfig.microFrontend,
     theme: pluginConfig.theme,
     assets: pluginConfig.assets,
   })
@@ -363,6 +364,7 @@ function createTurbopackRules(
   const configCode = generateConfigInjectionCode({
     clientUrl: pluginConfig.clientUrl,
     rootSelector: pluginConfig.rootSelector,
+    microFrontend: pluginConfig.microFrontend,
     theme: pluginConfig.theme,
     assets: pluginConfig.assets,
   })

@@ -35,6 +35,15 @@ export default defineConfig({
 - Automatic instrumentation of React Fiber roots to mirror the component tree.
 - Standalone preview page at `/__react_devtools__/` with project status.
 
+## Documentation
+
+- [Environment Control](./ENVIRONMENT_CONTROL.md) - Control DevTools availability in different environments
+- [Open in Editor](./OPEN_IN_EDITOR.md) - Configure click-to-source-code functionality
+- [Micro-Frontend Integration](./MICRO_FRONTEND.md) - Guide for qiankun, single-spa, micro-app integration
+- [Webpack Support](./WEBPACK_SUPPORT.md) - Using with Webpack 4/5 and CRA
+- [Timeline](./TIMELINE.md) - React render timeline tracking
+- [Assets](./ASSETS.md) - Static assets panel configuration
+
 ## Limitations
 
 - This plugin only targets the development server. Production builds are unaffected.

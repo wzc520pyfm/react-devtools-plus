@@ -432,6 +432,7 @@ export const hydrateRoot = undefined;
         const configTag = generateConfigScriptTag({
           clientUrl: pluginConfig.clientUrl,
           rootSelector: pluginConfig.rootSelector,
+          microFrontend: pluginConfig.microFrontend,
           theme: pluginConfig.theme,
           assets: pluginConfig.assets,
           launchEditor: pluginConfig.launchEditor,
@@ -553,6 +554,7 @@ export const hydrateRoot = undefined;
           scanInitCode,
           pluginConfig.clientUrl,
           pluginConfig.rootSelector,
+          pluginConfig.microFrontend,
           pluginConfig.theme,
           pluginConfig.assets,
           pluginConfig.launchEditor,

@@ -11,6 +11,14 @@ export interface DevToolsRuntimeConfig {
   clientUrl?: string
   /** CSS selector for the root container of the React app to inspect */
   rootSelector?: string
+  /**
+   * Micro-frontend mode
+   * - 'auto': Automatically detect if DevTools is already initialized
+   * - 'host': This is the host app, always initialize
+   * - 'child': This is a child app, skip if DevTools exists
+   * - 'standalone': Always initialize regardless of other instances
+   */
+  microFrontend?: 'auto' | 'host' | 'child' | 'standalone'
   /** Theme configuration */
   theme?: {
     mode?: 'auto' | 'light' | 'dark'
@@ -28,7 +36,7 @@ export interface DevToolsRuntimeConfig {
  * Generate code to inject DevTools runtime configuration
  */
 export function generateConfigInjectionCode(config: DevToolsRuntimeConfig): string {
-  if (!config.clientUrl && !config.rootSelector && !config.theme && !config.assets && !config.launchEditor) {
+  if (!config.clientUrl && !config.rootSelector && !config.microFrontend && !config.theme && !config.assets && !config.launchEditor) {
     return ''
   }
 
@@ -38,6 +46,9 @@ export function generateConfigInjectionCode(config: DevToolsRuntimeConfig): stri
   }
   if (config.rootSelector) {
     configParts.push(`window.__REACT_DEVTOOLS_CONFIG__.rootSelector = ${JSON.stringify(config.rootSelector)};`)
+  }
+  if (config.microFrontend) {
+    configParts.push(`window.__REACT_DEVTOOLS_CONFIG__.microFrontend = ${JSON.stringify(config.microFrontend)};`)
   }
   if (config.theme) {
     configParts.push(`window.__REACT_DEVTOOLS_CONFIG__.theme = ${JSON.stringify(config.theme)};`)

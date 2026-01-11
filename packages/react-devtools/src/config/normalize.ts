@@ -207,6 +207,7 @@ export function resolvePluginConfig(
     scan,
     clientUrl: options.clientUrl,
     rootSelector: options.rootSelector,
+    microFrontend: options.microFrontend,
     theme: options.theme,
     assets: options.assets,
     launchEditor: options.launchEditor,
@@ -244,5 +245,13 @@ export function validatePluginOptions(options: ReactDevToolsPluginOptions): void
   // Validate scan configuration
   if (options.scan !== undefined && typeof options.scan !== 'boolean' && typeof options.scan !== 'object') {
     throw new TypeError('[React DevTools] scan must be a boolean or an object.')
+  }
+
+  // Validate microFrontend configuration
+  if (options.microFrontend !== undefined) {
+    const validModes = ['auto', 'host', 'child', 'standalone']
+    if (!validModes.includes(options.microFrontend)) {
+      throw new TypeError(`[React DevTools] microFrontend must be one of: ${validModes.join(', ')}. Got: ${options.microFrontend}`)
+    }
   }
 }

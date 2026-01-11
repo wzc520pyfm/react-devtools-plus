@@ -1,0 +1,16 @@
+# umi
+.umi
+.umi-production
+.umi-test
+dist
+
+# dependencies
+node_modules
+
+# misc
+.DS_Store
+*.log
+
+# IDE
+.idea
+.vscode

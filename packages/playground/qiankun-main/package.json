@@ -1,0 +1,22 @@
+{
+  "name": "@react-devtools-plus/playground-qiankun-main",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "PORT=8000 max dev",
+    "build": "max build",
+    "setup": "max setup",
+    "start": "npm run dev"
+  },
+  "dependencies": {
+    "@umijs/max": "^4.6.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.72",
+    "@types/react-dom": "^18.2.23",
+    "react-devtools-plus": "workspace:*",
+    "typescript": "^5.9.3"
+  }
+}

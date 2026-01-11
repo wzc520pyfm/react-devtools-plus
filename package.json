@@ -43,7 +43,7 @@
     "dev": "NODE_OPTIONS=\"--max-old-space-size=8192\" nr prepare:type && nr build:ui && nr build:client && turbo stub --concurrency 20",
     "dev:ui-story": "turbo dev --filter=./packages/ui-story",
     "dev:docs": "pnpm -C docs dev",
-    "build": "turbo build --filter='!./packages/playground/react17-scss' --filter='!./packages/playground/react17-webpack4' --filter='!./packages/playground/next' --filter='!./packages/playground/umi' --filter='!./docs'",
+    "build": "turbo build --filter='!./packages/playground/*' --filter='!./docs'",
     "clean": "pnpm clean:cache && pnpm clean:dist",
     "clean:cache": "rm -rf .turbo node_modules/.cache; find packages -maxdepth 3 -type d -name '.cache' -exec rm -rf {} + 2>/dev/null; true",
     "clean:dist": "find packages -maxdepth 2 -type d -name 'dist' -exec rm -rf {} + 2>/dev/null; find packages -maxdepth 2 -type d -name 'storybook-static' -exec rm -rf {} + 2>/dev/null; true",
