@@ -204,12 +204,39 @@ export interface ReactDevToolsPluginOptions {
    *
    * @example
    * // Only inspect the React app mounted to #my-app-root
-   * ReactDevTools({ rootSelector: '#m-app-root' })
+   * ReactDevTools({ rootSelector: '#my-app-root' })
    *
    * // Or use a class selector
    * ReactDevTools({ rootSelector: '.my-app-container' })
    */
   rootSelector?: string
+
+  /**
+   * Micro-frontend mode configuration.
+   * Controls how DevTools behaves in micro-frontend architectures.
+   *
+   * - 'auto' (default): Automatically detect if DevTools is already initialized.
+   *   If another instance exists, skip initialization.
+   * - 'host': This app is the host/parent app. Always initialize DevTools.
+   *   Use this in the main shell application.
+   * - 'child': This app is a child/sub app. Only initialize if no DevTools exists.
+   *   Use this in micro-frontend sub-applications.
+   * - 'standalone': Always initialize DevTools regardless of other instances.
+   *   Useful for isolated development of child apps.
+   *
+   * @default 'auto'
+   *
+   * @example
+   * // Host application (always show DevTools)
+   * ReactDevTools({ microFrontend: 'host' })
+   *
+   * // Child application (defer to host if exists)
+   * ReactDevTools({ microFrontend: 'child' })
+   *
+   * // Standalone development mode
+   * ReactDevTools({ microFrontend: 'standalone' })
+   */
+  microFrontend?: 'auto' | 'host' | 'child' | 'standalone'
 
   /**
    * Theme configuration
@@ -291,6 +318,7 @@ export interface ResolvedPluginConfig {
   scan?: ScanConfig
   clientUrl?: string
   rootSelector?: string
+  microFrontend?: 'auto' | 'host' | 'child' | 'standalone'
   theme?: {
     mode?: 'auto' | 'light' | 'dark'
     primaryColor?: string

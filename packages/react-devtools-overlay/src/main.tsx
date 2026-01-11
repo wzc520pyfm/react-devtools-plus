@@ -93,14 +93,58 @@ function createOverlayContainer(): HTMLElement {
 }
 
 /**
+ * Check if DevTools should initialize based on micro-frontend mode
+ *
+ * @returns true if DevTools should initialize, false otherwise
+ */
+function shouldInitializeDevTools(): boolean {
+  const config = (window as any).__REACT_DEVTOOLS_CONFIG__
+  const mode = config?.microFrontend || 'auto'
+
+  // Check if DevTools already exists (DOM check + global marker)
+  const existingOverlay = document.getElementById('react-devtools-overlay')
+  const globalMarker = (window as any).__REACT_DEVTOOLS_PLUS_INITIALIZED__
+
+  const devToolsExists = existingOverlay || globalMarker
+
+  switch (mode) {
+    case 'host':
+      // Host app: always initialize (take ownership)
+      // If another instance exists, it will be the same DOM element check that prevents re-render
+      return !existingOverlay
+    case 'child':
+      // Child app: skip if any DevTools exists
+      if (devToolsExists) {
+        console.debug('[React DevTools] Skipping initialization (child mode, DevTools already exists)')
+        return false
+      }
+      return true
+    case 'standalone':
+      // Standalone: always initialize for isolated development
+      // Only check DOM to prevent duplicate mounting in same context
+      return !existingOverlay
+    case 'auto':
+    default:
+      // Auto: detect and skip if exists
+      if (devToolsExists) {
+        return false
+      }
+      return true
+  }
+}
+
+/**
  * Initialize the DevTools overlay
  */
 async function init() {
   try {
-    // Prevent duplicate initialization
-    if (document.getElementById('react-devtools-overlay')) {
+    // Check micro-frontend mode to decide whether to initialize
+    if (!shouldInitializeDevTools()) {
       return
     }
+
+    // Set global marker to help other instances detect us
+    ;(window as any).__REACT_DEVTOOLS_PLUS_INITIALIZED__ = true
 
     // Register React Scan plugin (for purple flashing box)
     // Component tree hook is installed on-demand when user visits Components page
@@ -177,6 +221,9 @@ function cleanup() {
     if (container) {
       container.remove()
     }
+
+    // Clear global marker
+    delete (window as any).__REACT_DEVTOOLS_PLUS_INITIALIZED__
   }
   catch (e) {
     // Silently ignore cleanup errors
