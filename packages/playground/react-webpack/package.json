@@ -3,8 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "webpack serve --mode development",
-    "build": "webpack --mode production"
+    "dev": "webpack serve",
+    "build": "webpack --mode production",
+    "preview": "serve dist -p 4173"
   },
   "dependencies": {
     "@react-devtools-plus/scan": "workspace:*",
@@ -21,6 +22,7 @@
     "css-loader": "^7.1.2",
     "html-webpack-plugin": "^5.6.3",
     "react-devtools-plus": "workspace:*",
+    "serve": "^14.2.4",
     "style-loader": "^4.0.0",
     "webpack": "^5.97.1",
     "webpack-cli": "^5.1.4",

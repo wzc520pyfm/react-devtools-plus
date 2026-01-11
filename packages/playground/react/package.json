@@ -5,8 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "NODE_ENV=test vite build --mode test",
-    "preview": "NODE_ENV=test vite preview --mode test"
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@react-devtools-plus/ui": "workspace:*",

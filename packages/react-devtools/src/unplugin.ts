@@ -63,6 +63,38 @@ import {
 type Compiler = any
 
 /**
+ * Print environment detection info to console
+ * 打印环境探测信息到控制台
+ */
+function printEnvironmentInfo(
+  detectedEnv: string,
+  isEnabled: boolean,
+  enabledEnvironments: boolean | string[] | undefined,
+) {
+  const envInfo = `${bold('React DevTools')}: Environment detected as "${cyan(detectedEnv)}"`
+  const statusInfo = isEnabled
+    ? `${green('✓')} DevTools enabled`
+    : `${cyan('○')} DevTools disabled`
+
+  let reasonInfo = ''
+  if (Array.isArray(enabledEnvironments)) {
+    const envList = enabledEnvironments.map(e => `"${e}"`).join(', ')
+    reasonInfo = isEnabled
+      ? ` (matched enabledEnvironments: [${envList}])`
+      : ` (not in enabledEnvironments: [${envList}])`
+  }
+  else if (enabledEnvironments === false) {
+    reasonInfo = ' (enabledEnvironments: false)'
+  }
+  else {
+    reasonInfo = isEnabled ? ' (serve mode)' : ' (build mode)'
+  }
+
+  console.log(`  ${green('➜')}  ${envInfo}`)
+  console.log(`  ${green('➜')}  ${statusInfo}${reasonInfo}`)
+}
+
+/**
  * Print DevTools URLs to console
  * 打印 DevTools URL到控制台
  */
@@ -228,6 +260,14 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
       configureServer(server: ViteDevServer) {
         if (!pluginConfig)
           return
+
+        // Print environment detection info
+        // 打印环境探测信息
+        printEnvironmentInfo(
+          pluginConfig.detectedEnvironment,
+          pluginConfig.isEnabled,
+          pluginConfig.enabledEnvironments,
+        )
 
         const servePath = getClientPath(reactDevtoolsPath)
         setupDevServerMiddlewares(server, pluginConfig, servePath)
@@ -479,6 +519,14 @@ export const hydrateRoot = undefined;
       const projectRoot = getWebpackContext(compiler)
 
       pluginConfig = resolvePluginConfig(options, projectRoot, mode, command)
+
+      // Print environment detection info
+      // 打印环境探测信息
+      printEnvironmentInfo(
+        pluginConfig.detectedEnvironment,
+        pluginConfig.isEnabled,
+        pluginConfig.enabledEnvironments,
+      )
 
       if (!pluginConfig?.isEnabled) {
         return

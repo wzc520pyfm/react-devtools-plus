@@ -25,36 +25,81 @@ export function normalizeBasePath(base: string | undefined): string {
 }
 
 /**
- * Determine if DevTools should be enabled
- * 判断是否应该启用 DevTools
+ * Detect current environment from mode and NODE_ENV
+ * 从 mode 和 NODE_ENV 探测当前环境
+ *
+ * Priority (from highest to lowest):
+ * 优先级（从高到低）：
+ * 1. mode parameter (from Vite/Webpack config or --mode flag)
+ *    mode 参数（来自 Vite/Webpack 配置或 --mode 标志）
+ * 2. NODE_ENV environment variable
+ *    NODE_ENV 环境变量
+ * 3. Default to 'development'
+ *    默认为 'development'
+ *
+ * @param mode - Mode from build tool (Vite mode or Webpack mode)
+ * @returns Detected environment name
+ */
+export function detectEnvironment(mode: string): string {
+  // Priority: mode > NODE_ENV > 'development'
+  // mode is already resolved from build tool, which considers NODE_ENV
+  // mode 已经从构建工具解析，其中已考虑了 NODE_ENV
+  if (mode && mode !== 'undefined') {
+    return mode
+  }
+
+  // Fallback to NODE_ENV
+  // 回退到 NODE_ENV
+  const nodeEnv = process.env.NODE_ENV
+  if (nodeEnv && nodeEnv !== 'undefined') {
+    return nodeEnv
+  }
+
+  // Default to development
+  // 默认为 development
+  return 'development'
+}
+
+/**
+ * Determine if DevTools should be enabled based on environment detection
+ * 根据环境探测判断是否应该启用 DevTools
+ *
+ * @param enabledEnvironments - Configuration for enabled environments
+ * @param mode - Mode from build tool
+ * @param command - Command type ('build' or 'serve')
+ * @returns Whether DevTools should be enabled
  */
 export function shouldEnableDevTools(
   enabledEnvironments: ReactDevToolsPluginOptions['enabledEnvironments'],
   mode: string,
   command: 'build' | 'serve',
 ): boolean {
-  // Environment variable override
+  // Environment variable override (highest priority)
+  // 环境变量覆盖（最高优先级）
   if (process.env.VITE_REACT_DEVTOOLS_ENABLED !== undefined) {
     return process.env.VITE_REACT_DEVTOOLS_ENABLED === 'true'
   }
 
-  // Explicit true: enabled only in serve mode
-  if (enabledEnvironments === true) {
-    return command === 'serve'
-  }
+  // Detect current environment
+  // 探测当前环境
+  const detectedEnv = detectEnvironment(mode)
 
   // Explicit false: always disabled
+  // 显式 false：总是禁用
   if (enabledEnvironments === false) {
     return false
   }
 
-  // Array of environment names: check if current env is in the list
+  // Array of environment names: check if detected environment is in the list
+  // 环境名称数组：检查探测到的环境是否在列表中
   if (Array.isArray(enabledEnvironments)) {
-    const nodeEnv = process.env.NODE_ENV || mode
-    return enabledEnvironments.includes(nodeEnv) || enabledEnvironments.includes(mode)
+    const isInList = enabledEnvironments.includes(detectedEnv)
+
+    return isInList
   }
 
-  // Default: enabled only in serve mode
+  // Explicit true or default (undefined): enabled only in serve mode
+  // 显式 true 或默认值（undefined）：仅在 serve 模式启用
   return command === 'serve'
 }
 
@@ -122,6 +167,10 @@ export function resolvePluginConfig(
   const injectSourceOption = options.injectSource
   const sourcePathMode = options.sourcePathMode || 'absolute'
 
+  // Detect environment from mode and NODE_ENV
+  // 从 mode 和 NODE_ENV 探测环境
+  const detectedEnvironment = detectEnvironment(mode)
+
   const isEnabled = shouldEnableDevTools(enabledEnvironments, mode, command)
   const injectSource = shouldInjectSource(injectSourceOption, mode, command)
   const scan = normalizeScanConfig(options.scan, command)
@@ -148,6 +197,7 @@ export function resolvePluginConfig(
     plugins,
     appendTo: options.appendTo,
     enabledEnvironments: enabledEnvironments ?? true,
+    detectedEnvironment,
     injectSource,
     sourcePathMode,
     projectRoot,

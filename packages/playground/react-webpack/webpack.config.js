@@ -52,7 +52,7 @@ module.exports = {
     }),
     reactDevToolsPlus({
       launchEditor: 'cursor',
-      enabledEnvironments: ['development', 'test'],
+      // enabledEnvironments: ['development', 'test'],
       plugins: [
         {
           name: 'my-plugin',
