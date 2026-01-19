@@ -1,6 +1,7 @@
 import type { Root } from 'react-dom/client'
 import { ThemeProvider } from '@react-devtools-plus/ui'
 import React, { StrictMode } from 'react'
+import * as ReactDOM from 'react-dom'
 import { createRoot } from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'
 import { App } from './App'
@@ -14,10 +15,12 @@ import '@react-devtools-plus/ui/style.css'
 // @ts-expect-error - global variable
 window.__vite_plugin_react_preamble_installed__ = true
 
-// Expose React for plugins loaded in non-Vite environments (like Webpack)
-// where module resolution for 'react' might not be available.
+// Expose React and ReactDOM for plugins that externalize React
+// This ensures plugins share the same React instance as the DevTools client
 // @ts-expect-error - global variable
 window.React = React
+// @ts-expect-error - global variable
+window.ReactDOM = { ...ReactDOM, createRoot }
 
 let root: Root | null = null
 

@@ -1,4 +1,5 @@
 import type { LoadedPlugin } from '~/types/plugin'
+import { Icon } from '@iconify/react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import ReactLogo from '~/components/assets/ReactLogo'
 
@@ -104,14 +105,35 @@ function DefaultPluginIcon({ className }: { className?: string }) {
   )
 }
 
+/**
+ * Get icon component from icon string
+ * 从图标字符串获取图标组件
+ *
+ * Supports:
+ * - Iconify format: 'ph:rocket-launch-fill', 'lucide:puzzle'
+ * - SVG string: '<svg>...</svg>'
+ */
 function getIcon(iconStr?: string) {
-  if (!iconStr)
+  if (!iconStr) {
     return DefaultPluginIcon
+  }
+
+  // SVG string (backward compatibility)
   if (iconStr.startsWith('<svg')) {
     return ({ className }: { className?: string }) => (
       <div className={className} dangerouslySetInnerHTML={{ __html: iconStr }} />
     )
   }
+
+  // Iconify format (e.g., 'ph:rocket-launch-fill', 'lucide:puzzle')
+  // Iconify icons contain a colon separating the icon set and icon name
+  if (iconStr.includes(':')) {
+    return ({ className }: { className?: string }) => (
+      <Icon icon={iconStr} className={className} width={24} height={24} />
+    )
+  }
+
+  // Unknown format, use default
   return DefaultPluginIcon
 }
 
@@ -155,10 +177,10 @@ export function Sidebar({ plugins = [] }: { plugins?: LoadedPlugin[] }) {
         <NavItem to="/scan" icon={ScanIcon} label="React Scan" />
         {plugins.map(plugin => (
           <NavItem
-            key={plugin.name}
-            to={`/plugins/${plugin.name}`}
-            icon={getIcon(plugin.view?.icon)}
-            label={plugin.view?.title || plugin.name}
+            key={plugin.id}
+            to={`/plugins/${plugin.id}`}
+            icon={getIcon(plugin.icon)}
+            label={plugin.title}
           />
         ))}
       </div>

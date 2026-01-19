@@ -114,6 +114,20 @@ const nextClientEntryCommon = {
   },
 }
 
+// Common config for api entry (re-export from @react-devtools-plus/api)
+const apiEntryCommon = {
+  entry: { api: 'src/api.ts' },
+  dts: true,
+  target: 'es2017',
+  outDir: 'dist',
+  splitting: false,
+  sourcemap: true,
+  // Bundle @react-devtools-plus/api inline
+  external: [],
+  noExternal: ['@react-devtools-plus/api'],
+  skipNodeModulesBundle: false,
+}
+
 export default defineConfig([
   // Main plugin entry - ESM with __dirname polyfill
   {
@@ -243,6 +257,21 @@ export default defineConfig([
     banner: {
       js: `'use client';`,
     },
+  },
+  // API entry - ESM (re-export from @react-devtools-plus/api)
+  {
+    ...apiEntryCommon,
+    format: ['esm'],
+    shims: false,
+    clean: false,
+  },
+  // API entry - CJS
+  {
+    ...apiEntryCommon,
+    format: ['cjs'],
+    shims: false,
+    clean: false,
+    dts: false,
   },
   // Scan entry - bundle @react-devtools-plus/scan without resolving its types
   {

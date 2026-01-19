@@ -1,4 +1,9 @@
-import type { LoadedPlugin, UserPlugin } from '~/types/plugin'
+import type {
+  LoadedComponentPlugin,
+  LoadedPlugin,
+  SerializedComponentPlugin,
+  SerializedPlugin,
+} from '~/types/plugin'
 import { createRpcClient, getRpcClient, openInEditor } from '@react-devtools-plus/kit'
 import { useTheme } from '@react-devtools-plus/ui'
 import { Suspense, useEffect, useRef, useState } from 'react'
@@ -9,6 +14,7 @@ import { AssetsPage } from './pages/AssetsPage'
 import { ComponentsPage } from './pages/ComponentsPage'
 import { ContextPage } from './pages/ContextPage'
 import { GraphPage } from './pages/GraphPage'
+import { IframePluginPage } from './pages/IframePluginPage'
 import { OverviewPage } from './pages/OverviewPage'
 import { RoutesPage } from './pages/RoutesPage'
 import { ScanPage } from './pages/ScanPage'
@@ -44,38 +50,62 @@ export function App() {
         const pathname = window.location.pathname.replace(/#.*$/, '').replace(/\/$/, '')
         const isNextJs = pathname !== '' && pathname !== '/__react_devtools__'
 
-        const manifestUrl = isNextJs
-          ? `${pathname}/plugins-manifest.json`
-          : '/__react_devtools__/plugins-manifest.json'
+        const basePath = isNextJs ? pathname : '/__react_devtools__'
+        const manifestUrl = `${basePath}/plugins-manifest.json`
 
         const response = await fetch(manifestUrl)
         if (!response.ok)
           return
-        const pluginManifests: UserPlugin[] = await response.json()
+        const pluginManifests: SerializedPlugin[] = await response.json()
 
         const loadedPlugins = await Promise.all(
-          pluginManifests.map(async (plugin) => {
-            if (plugin.view?.src) {
-              try {
-                // Use dynamic import to load the component
-                // We assume the src is an absolute path or handled by the server
+          pluginManifests.map(async (plugin): Promise<LoadedPlugin | null> => {
+            // Iframe plugins don't need component loading
+            if (plugin.type === 'iframe') {
+              return plugin
+            }
+
+            // Component plugins need to load the React component
+            const componentPlugin = plugin as SerializedComponentPlugin
+
+            try {
+              let component: React.ComponentType<any>
+
+              if (typeof componentPlugin.renderer === 'object') {
+                // Renderer is package metadata: { packageName, exportName, bundlePath }
+                // Build URL to DevTools server proxy
+                const bundleUrl = `${basePath}/plugins/${componentPlugin.renderer.packageName}/${componentPlugin.renderer.bundlePath}`
+
                 // @ts-expect-error vite-ignore
-                const module = await import(/* @vite-ignore */ plugin.view.src)
-                return {
-                  ...plugin,
-                  component: module.default || module,
-                }
+                const module = await import(/* @vite-ignore */ bundleUrl)
+                component = componentPlugin.renderer.exportName === 'default'
+                  ? module.default
+                  : module[componentPlugin.renderer.exportName]
               }
-              catch (e) {
-                console.error(`[React DevTools] Failed to load plugin ${plugin.name}:`, e)
-                return plugin
+              else {
+                // Renderer is a string (URL or local path)
+                // @ts-expect-error vite-ignore
+                const module = await import(/* @vite-ignore */ componentPlugin.renderer)
+                component = module.default || module
+              }
+
+              return {
+                id: componentPlugin.id,
+                type: 'component' as const,
+                title: componentPlugin.title,
+                icon: componentPlugin.icon,
+                component,
               }
             }
-            return plugin
+            catch (e) {
+              console.error(`[React DevTools] Failed to load plugin ${componentPlugin.id}:`, e)
+              return null
+            }
           }),
         )
 
-        setPlugins(loadedPlugins)
+        // Filter out null values (failed loads)
+        setPlugins(loadedPlugins.filter((p): p is LoadedPlugin => p !== null))
       }
       catch (e) {
         console.error('[React DevTools] Failed to load plugins manifest:', e)
@@ -200,15 +230,30 @@ export function App() {
           <Route path="/scan" element={<ScanPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           {plugins.map((plugin) => {
-            const Component = plugin.component
-            if (!Component)
+            // Iframe plugin
+            if (plugin.type === 'iframe') {
+              return (
+                <Route
+                  key={plugin.id}
+                  path={`/plugins/${plugin.id}`}
+                  element={<IframePluginPage url={plugin.url} title={plugin.title} />}
+                />
+              )
+            }
+
+            // Component plugin
+            const componentPlugin = plugin as LoadedComponentPlugin
+            const Component = componentPlugin.component
+            if (!Component) {
               return null
+            }
+
             return (
               <Route
-                key={plugin.name}
-                path={`/plugins/${plugin.name}`}
+                key={plugin.id}
+                path={`/plugins/${plugin.id}`}
                 element={(
-                  <Suspense fallback={<div>Loading...</div>}>
+                  <Suspense fallback={<div className="h-full flex items-center justify-center">Loading plugin...</div>}>
                     <Component
                       tree={tree}
                       selectedNodeId={selectedNodeId}

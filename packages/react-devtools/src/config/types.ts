@@ -4,6 +4,7 @@
  */
 
 import type { ReactDevtoolsScanOptions } from '@react-devtools-plus/scan'
+import type { ComponentType } from 'react'
 
 /**
  * Source path mode for code location injection
@@ -48,8 +49,8 @@ export interface ScanConfig extends ReactDevtoolsScanOptions {
 }
 
 /**
- * User Plugin View Configuration
- * 用户插件视图配置
+ * User Plugin View Configuration (Legacy)
+ * 用户插件视图配置（旧版）
  */
 export interface UserPluginView {
   /**
@@ -72,10 +73,10 @@ export interface UserPluginView {
 }
 
 /**
- * User Plugin Configuration
- * 用户插件配置
+ * Legacy User Plugin Configuration
+ * 旧版用户插件配置（向后兼容）
  */
-export interface UserPlugin {
+export interface LegacyUserPlugin {
   /**
    * Plugin unique name
    * 插件唯一名称
@@ -87,14 +88,168 @@ export interface UserPlugin {
    * 插件视图配置
    */
   view?: UserPluginView
+}
+
+// ============================================================================
+// New Plugin API Types
+// 新插件 API 类型
+// ============================================================================
+
+/**
+ * Plugin metadata attached to component
+ * 附加在组件上的插件元数据
+ */
+export interface DevToolsPluginMeta {
+  /**
+   * npm package name
+   * npm 包名
+   */
+  packageName: string
 
   /**
-   * Setup function (runs in the browser/client context)
-   * NOTE: This is difficult to transmit from Node config to Browser.
-   * For now, we focus on View extensions. Logic extensions might need a different approach.
+   * Export name (e.g., 'default', 'MyPlugin')
+   * 导出名称
    */
-  // setup?: (context: any) => void
+  exportName: string
+
+  /**
+   * Path to ESM bundle within the package
+   * ESM bundle 在包内的路径
+   */
+  bundlePath: string
 }
+
+/**
+ * Component with devtools metadata
+ * 带有 devtools 元数据的组件
+ */
+export type DevToolsPluginComponent = ComponentType<any> & {
+  __devtools_source__?: DevToolsPluginMeta
+}
+
+/**
+ * Base plugin properties
+ * 基础插件属性
+ */
+export interface BaseDevToolsPlugin {
+  /**
+   * Plugin unique identifier
+   * 插件唯一标识符
+   */
+  id: string
+
+  /**
+   * Plugin display title
+   * 插件显示标题
+   */
+  title: string
+
+  /**
+   * Plugin icon (Iconify format like 'ph:rocket' or SVG string)
+   * 插件图标（Iconify 格式如 'ph:rocket' 或 SVG 字符串）
+   */
+  icon?: string
+}
+
+/**
+ * Component type plugin - renders a React component
+ * 组件类型插件 - 渲染 React 组件
+ */
+export interface ComponentPlugin extends BaseDevToolsPlugin {
+  /**
+   * Plugin type (optional, defaults to 'component')
+   * 插件类型（可选，默认为 'component'）
+   */
+  type?: 'component'
+
+  /**
+   * Plugin renderer - supports:
+   * - Component with __devtools_source__ metadata
+   * - URL string: 'https://cdn.example.com/plugin.js'
+   * - Local path: './dist/plugins/my-plugin.js'
+   *
+   * 插件渲染器 - 支持：
+   * - 带 __devtools_source__ 元数据的组件
+   * - URL 字符串
+   * - 本地路径
+   */
+  renderer: DevToolsPluginComponent | string
+}
+
+/**
+ * Iframe type plugin - embeds external application
+ * iframe 类型插件 - 嵌入外部应用
+ */
+export interface IframePlugin extends BaseDevToolsPlugin {
+  /**
+   * Plugin type
+   * 插件类型
+   */
+  type: 'iframe'
+
+  /**
+   * URL to embed in iframe
+   * iframe 中嵌入的 URL
+   */
+  url: string
+}
+
+/**
+ * DevTools Plugin (new API)
+ * DevTools 插件（新 API）
+ */
+export type DevToolsPlugin = ComponentPlugin | IframePlugin
+
+/**
+ * User Plugin - supports both new and legacy formats
+ * 用户插件 - 支持新旧两种格式
+ */
+export type UserPlugin = DevToolsPlugin | LegacyUserPlugin
+
+// ============================================================================
+// Serialized Plugin Types (for transmission to browser)
+// 序列化插件类型（用于传输到浏览器）
+// ============================================================================
+
+/**
+ * Serialized renderer metadata
+ * 序列化的渲染器元数据
+ */
+export interface SerializedRendererMeta {
+  packageName: string
+  exportName: string
+  bundlePath: string
+}
+
+/**
+ * Serialized component plugin
+ * 序列化的组件插件
+ */
+export interface SerializedComponentPlugin {
+  id: string
+  type: 'component'
+  title: string
+  icon?: string
+  renderer: SerializedRendererMeta | string
+}
+
+/**
+ * Serialized iframe plugin
+ * 序列化的 iframe 插件
+ */
+export interface SerializedIframePlugin {
+  id: string
+  type: 'iframe'
+  title: string
+  icon?: string
+  url: string
+}
+
+/**
+ * Serialized plugin (for JSON transmission)
+ * 序列化插件（用于 JSON 传输）
+ */
+export type SerializedPlugin = SerializedComponentPlugin | SerializedIframePlugin
 
 /**
  * Plugin options interface
@@ -301,7 +456,7 @@ export interface ReactDevToolsPluginOptions {
  * 解析后的插件配置
  */
 export interface ResolvedPluginConfig {
-  plugins: UserPlugin[]
+  plugins: SerializedPlugin[]
   appendTo: string | RegExp | undefined
   enabledEnvironments: EnabledEnvironments
   /**

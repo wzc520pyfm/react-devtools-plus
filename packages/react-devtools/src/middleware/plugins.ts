@@ -1,6 +1,13 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import type { ResolvedPluginConfig, UserPlugin } from '../config/types'
+import type { ResolvedPluginConfig, SerializedComponentPlugin, SerializedPlugin } from '../config/types'
 
+/**
+ * Plugins manifest middleware
+ * 插件清单中间件
+ *
+ * Serves the plugins-manifest.json that tells the client what plugins to load
+ * 提供 plugins-manifest.json 告诉客户端加载哪些插件
+ */
 export function createPluginsMiddleware(
   config: ResolvedPluginConfig,
   transformPath?: (path: string) => string,
@@ -14,21 +21,29 @@ export function createPluginsMiddleware(
     const isMatch = url.pathname === '/__react_devtools__/plugins-manifest.json'
 
     if (isMatch) {
-      // console.log('[React DevTools] Serving plugins manifest from:', rawUrl)
       res.setHeader('Content-Type', 'application/json')
       res.setHeader('Access-Control-Allow-Origin', '*')
 
-      const plugins = (config.plugins || []).map((plugin): UserPlugin => {
-        if (plugin.view && plugin.view.src && transformPath) {
+      // Transform plugins for client consumption
+      const plugins = (config.plugins || []).map((plugin): SerializedPlugin => {
+        // iframe plugins don't need transformation
+        if (plugin.type === 'iframe') {
+          return plugin
+        }
+
+        // Component plugins: transform local paths if needed
+        const componentPlugin = plugin as SerializedComponentPlugin
+
+        // If renderer is a string (local path), apply transformPath
+        if (typeof componentPlugin.renderer === 'string' && transformPath) {
           return {
-            ...plugin,
-            view: {
-              ...plugin.view,
-              src: transformPath(plugin.view.src),
-            },
+            ...componentPlugin,
+            renderer: transformPath(componentPlugin.renderer),
           }
         }
-        return plugin
+
+        // Renderer is an object (package metadata) - no transformation needed
+        return componentPlugin
       })
 
       res.end(JSON.stringify(plugins))

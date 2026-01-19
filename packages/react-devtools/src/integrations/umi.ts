@@ -14,6 +14,7 @@ import {
   createAssetsMiddleware,
   createGraphMiddleware,
   createOpenInEditorMiddleware,
+  createPluginBundleMiddleware,
   createPluginFileMiddleware,
   createPluginsMiddleware,
   getWebpackModuleGraph,
@@ -95,6 +96,9 @@ export function createUmiPlugin(options: ReactDevToolsPluginOptions = {}) {
 
       // Plugin file serving
       middlewares.push(createPluginFileMiddleware())
+
+      // Plugin ESM bundle serving from node_modules
+      middlewares.push(createPluginBundleMiddleware())
 
       // Graph API
       middlewares.push(

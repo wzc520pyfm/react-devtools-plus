@@ -34,11 +34,24 @@
  */
 
 export type {
+  ComponentPlugin,
+  DevToolsPlugin,
+  DevToolsPluginComponent,
+  DevToolsPluginMeta,
   EnabledEnvironments,
+  IframePlugin,
   ResolvedPluginConfig,
   ScanConfig,
+  SerializedComponentPlugin,
+  SerializedIframePlugin,
+  SerializedPlugin,
+  SerializedRendererMeta,
   SourcePathMode,
+  UserPlugin,
 } from './config/types.js'
+
+// Plugin definition helper for plugin authors
+export { defineDevToolsPlugin } from './define.js'
 
 export { default, vite, webpack } from './unplugin.js'
 export type { ReactDevToolsPluginOptions } from './unplugin.js'
