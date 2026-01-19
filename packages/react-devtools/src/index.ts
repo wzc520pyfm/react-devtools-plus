@@ -34,18 +34,19 @@
  */
 
 export type {
-  ComponentPlugin,
   DevToolsPlugin,
   DevToolsPluginComponent,
   DevToolsPluginMeta,
   EnabledEnvironments,
-  IframePlugin,
+  PluginView,
+  PluginViewType,
   ResolvedPluginConfig,
   ScanConfig,
-  SerializedComponentPlugin,
-  SerializedIframePlugin,
+  SerializedComponentView,
+  SerializedIframeView,
   SerializedPlugin,
-  SerializedRendererMeta,
+  SerializedView,
+  SerializedViewMeta,
   SourcePathMode,
   UserPlugin,
 } from './config/types.js'

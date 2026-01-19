@@ -4,13 +4,13 @@
  */
 
 import type {
-  ComponentPlugin,
-  IframePlugin,
+  DevToolsPlugin,
   LegacyUserPlugin,
   ReactDevToolsPluginOptions,
   ResolvedPluginConfig,
   ScanConfig,
   SerializedPlugin,
+  SerializedView,
   UserPlugin,
 } from './types'
 import path from 'node:path'
@@ -165,17 +165,21 @@ export function normalizeScanConfig(
 /**
  * Check if a plugin is using the legacy format
  * 检查插件是否使用旧格式
+ *
+ * Legacy format: { name, view: { title, icon, src } }
+ * New format: { name, title, icon, view: { type?, src } }
  */
 function isLegacyPlugin(plugin: UserPlugin): plugin is LegacyUserPlugin {
-  return 'name' in plugin && !('id' in plugin)
+  // Legacy has view.title/view.icon/view.src, new API has top-level title
+  return 'view' in plugin && plugin.view && 'title' in plugin.view
 }
 
 /**
- * Check if a plugin is an iframe plugin
- * 检查插件是否是 iframe 类型
+ * Check if a URL is an external URL (http/https)
+ * 检查 URL 是否是外部 URL
  */
-function isIframePlugin(plugin: UserPlugin): plugin is IframePlugin {
-  return 'type' in plugin && plugin.type === 'iframe'
+function isExternalUrl(src: string): boolean {
+  return src.startsWith('http://') || src.startsWith('https://')
 }
 
 /**
@@ -183,9 +187,8 @@ function isIframePlugin(plugin: UserPlugin): plugin is IframePlugin {
  * 将单个插件规范化为序列化格式
  *
  * Handles:
- * - Legacy format (name + view.src)
- * - New component plugin (renderer as component or string)
- * - Iframe plugin
+ * - Legacy format: { name, view: { title, icon, src } }
+ * - New format: { name, title, icon, view: { type?, src } }
  */
 export function normalizePlugin(plugin: UserPlugin, projectRoot: string): SerializedPlugin {
   // Legacy format: { name, view: { title, icon, src } }
@@ -203,68 +206,85 @@ export function normalizePlugin(plugin: UserPlugin, projectRoot: string): Serial
     }
 
     return {
-      id: legacyPlugin.name,
-      type: 'component',
+      name: legacyPlugin.name,
       title: legacyPlugin.view.title || legacyPlugin.name,
       icon: legacyPlugin.view.icon,
-      renderer: src,
+      view: {
+        type: 'component',
+        src,
+      },
     }
   }
 
-  // Iframe plugin: { type: 'iframe', url, ... }
-  if (isIframePlugin(plugin)) {
-    return {
-      id: plugin.id,
-      type: 'iframe',
-      title: plugin.title,
-      icon: plugin.icon,
-      url: plugin.url,
-    }
-  }
+  // New format: { name, title, icon, view: { type?, src } }
+  const newPlugin = plugin as DevToolsPlugin
 
-  // Component plugin: { renderer, ... }
-  const componentPlugin = plugin as ComponentPlugin
-
-  // Validate that renderer is provided
-  if (!componentPlugin.renderer) {
+  // Validate view
+  if (!newPlugin.view?.src) {
     throw new Error(
-      `[React DevTools] Plugin "${componentPlugin.id}" must have a renderer defined.`,
+      `[React DevTools] Plugin "${newPlugin.name}" must have view.src defined.`,
     )
   }
 
-  let rendererValue: SerializedPlugin extends { renderer: infer R } ? R : never
+  const { view } = newPlugin
+  let serializedView: SerializedView
 
-  if (typeof componentPlugin.renderer === 'function') {
-    // Component reference - extract metadata
-    const meta = componentPlugin.renderer.__devtools_source__
-    if (!meta) {
-      throw new Error(
-        `[React DevTools] Plugin "${componentPlugin.id}" renderer is a component without __devtools_source__ metadata. `
-        + `Use defineDevToolsPlugin() to wrap your component.`,
+  // Determine view type
+  const viewType = view.type || (
+    typeof view.src === 'string' && isExternalUrl(view.src) ? 'iframe' : 'component'
+  )
+
+  if (viewType === 'iframe') {
+    // Iframe view
+    if (typeof view.src !== 'string') {
+      throw new TypeError(
+        `[React DevTools] Plugin "${newPlugin.name}" iframe view.src must be a URL string.`,
       )
     }
-    rendererValue = {
-      packageName: meta.packageName,
-      exportName: meta.exportName,
-      bundlePath: meta.bundlePath,
+    serializedView = {
+      type: 'iframe',
+      src: view.src,
     }
   }
   else {
-    // String format: URL or local path
-    let rendererPath = componentPlugin.renderer
-    // Resolve relative paths to absolute
-    if (rendererPath.startsWith('./') || rendererPath.startsWith('../')) {
-      rendererPath = path.resolve(projectRoot, rendererPath)
+    // Component view
+    if (typeof view.src === 'function') {
+      // Component reference - extract metadata
+      const meta = view.src.__devtools_source__
+      if (!meta) {
+        throw new Error(
+          `[React DevTools] Plugin "${newPlugin.name}" view.src is a component without __devtools_source__ metadata. `
+          + `Use defineDevToolsPlugin() to wrap your component.`,
+        )
+      }
+      serializedView = {
+        type: 'component',
+        src: {
+          packageName: meta.packageName,
+          exportName: meta.exportName,
+          bundlePath: meta.bundlePath,
+        },
+      }
     }
-    rendererValue = rendererPath
+    else {
+      // String format: local path
+      let srcPath = view.src
+      // Resolve relative paths to absolute
+      if (srcPath.startsWith('./') || srcPath.startsWith('../')) {
+        srcPath = path.resolve(projectRoot, srcPath)
+      }
+      serializedView = {
+        type: 'component',
+        src: srcPath,
+      }
+    }
   }
 
   return {
-    id: componentPlugin.id,
-    type: 'component',
-    title: componentPlugin.title,
-    icon: componentPlugin.icon,
-    renderer: rendererValue,
+    name: newPlugin.name,
+    title: newPlugin.title,
+    icon: newPlugin.icon,
+    view: serializedView,
   }
 }
 

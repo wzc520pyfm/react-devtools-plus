@@ -177,8 +177,8 @@ export function Sidebar({ plugins = [] }: { plugins?: LoadedPlugin[] }) {
         <NavItem to="/scan" icon={ScanIcon} label="React Scan" />
         {plugins.map(plugin => (
           <NavItem
-            key={plugin.id}
-            to={`/plugins/${plugin.id}`}
+            key={plugin.name}
+            to={`/plugins/${plugin.name}`}
             icon={getIcon(plugin.icon)}
             label={plugin.title}
           />

@@ -15,44 +15,49 @@ export interface DevToolsPluginContext {
 // ============================================================================
 
 /**
- * Renderer metadata for component plugins loaded from npm packages
- * 从 npm 包加载的组件插件的渲染器元数据
+ * View source metadata for component plugins loaded from npm packages
+ * 从 npm 包加载的组件插件的视图源元数据
  */
-export interface RendererMeta {
+export interface ViewMeta {
   packageName: string
   exportName: string
   bundlePath: string
 }
 
 /**
- * Serialized component plugin (from server)
- * 序列化的组件插件（来自服务器）
+ * Serialized component view (from server)
+ * 序列化的组件视图（来自服务器）
  */
-export interface SerializedComponentPlugin {
-  id: string
+export interface SerializedComponentView {
   type: 'component'
-  title: string
-  icon?: string
-  renderer: RendererMeta | string
+  src: ViewMeta | string
 }
 
 /**
- * Serialized iframe plugin (from server)
- * 序列化的 iframe 插件（来自服务器）
+ * Serialized iframe view (from server)
+ * 序列化的 iframe 视图（来自服务器）
  */
-export interface SerializedIframePlugin {
-  id: string
+export interface SerializedIframeView {
   type: 'iframe'
-  title: string
-  icon?: string
-  url: string
+  src: string
 }
 
 /**
- * Serialized plugin union type
- * 序列化插件联合类型
+ * Serialized view union type
+ * 序列化视图联合类型
  */
-export type SerializedPlugin = SerializedComponentPlugin | SerializedIframePlugin
+export type SerializedView = SerializedComponentView | SerializedIframeView
+
+/**
+ * Serialized plugin (from server)
+ * 序列化插件（来自服务器）
+ */
+export interface SerializedPlugin {
+  name: string
+  title: string
+  icon?: string
+  view: SerializedView
+}
 
 // ============================================================================
 // Loaded Plugin Types (after dynamic import)
@@ -60,34 +65,39 @@ export type SerializedPlugin = SerializedComponentPlugin | SerializedIframePlugi
 // ============================================================================
 
 /**
- * Loaded component plugin with the actual React component
- * 加载后的组件插件，包含实际的 React 组件
+ * Loaded component view with the actual React component
+ * 加载后的组件视图，包含实际的 React 组件
  */
-export interface LoadedComponentPlugin {
-  id: string
+export interface LoadedComponentView {
   type: 'component'
-  title: string
-  icon?: string
   component?: React.ComponentType<DevToolsPluginContext>
 }
 
 /**
- * Loaded iframe plugin (same as serialized)
- * 加载后的 iframe 插件（与序列化相同）
+ * Loaded iframe view (same as serialized)
+ * 加载后的 iframe 视图（与序列化相同）
  */
-export interface LoadedIframePlugin {
-  id: string
+export interface LoadedIframeView {
   type: 'iframe'
-  title: string
-  icon?: string
-  url: string
+  src: string
 }
 
 /**
- * Loaded plugin union type
- * 加载后的插件联合类型
+ * Loaded view union type
+ * 加载后的视图联合类型
  */
-export type LoadedPlugin = LoadedComponentPlugin | LoadedIframePlugin
+export type LoadedView = LoadedComponentView | LoadedIframeView
+
+/**
+ * Loaded plugin with resolved view
+ * 加载后的插件，包含已解析的视图
+ */
+export interface LoadedPlugin {
+  name: string
+  title: string
+  icon?: string
+  view: LoadedView
+}
 
 // ============================================================================
 // Legacy Types (for backward compatibility)
@@ -95,7 +105,7 @@ export type LoadedPlugin = LoadedComponentPlugin | LoadedIframePlugin
 // ============================================================================
 
 /**
- * @deprecated Use SerializedComponentPlugin instead
+ * @deprecated Use SerializedPlugin instead
  */
 export interface UserPluginView {
   title: string

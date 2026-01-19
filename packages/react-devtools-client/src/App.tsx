@@ -1,7 +1,7 @@
 import type {
-  LoadedComponentPlugin,
+  LoadedComponentView,
   LoadedPlugin,
-  SerializedComponentPlugin,
+  SerializedComponentView,
   SerializedPlugin,
 } from '~/types/plugin'
 import { createRpcClient, getRpcClient, openInEditor } from '@react-devtools-plus/kit'
@@ -61,44 +61,54 @@ export function App() {
         const loadedPlugins = await Promise.all(
           pluginManifests.map(async (plugin): Promise<LoadedPlugin | null> => {
             // Iframe plugins don't need component loading
-            if (plugin.type === 'iframe') {
-              return plugin
+            if (plugin.view.type === 'iframe') {
+              return {
+                name: plugin.name,
+                title: plugin.title,
+                icon: plugin.icon,
+                view: {
+                  type: 'iframe',
+                  src: plugin.view.src,
+                },
+              }
             }
 
             // Component plugins need to load the React component
-            const componentPlugin = plugin as SerializedComponentPlugin
+            const componentView = plugin.view as SerializedComponentView
 
             try {
               let component: React.ComponentType<any>
 
-              if (typeof componentPlugin.renderer === 'object') {
-                // Renderer is package metadata: { packageName, exportName, bundlePath }
+              if (typeof componentView.src === 'object') {
+                // src is package metadata: { packageName, exportName, bundlePath }
                 // Build URL to DevTools server proxy
-                const bundleUrl = `${basePath}/plugins/${componentPlugin.renderer.packageName}/${componentPlugin.renderer.bundlePath}`
+                const bundleUrl = `${basePath}/plugins/${componentView.src.packageName}/${componentView.src.bundlePath}`
 
                 // @ts-expect-error vite-ignore
                 const module = await import(/* @vite-ignore */ bundleUrl)
-                component = componentPlugin.renderer.exportName === 'default'
+                component = componentView.src.exportName === 'default'
                   ? module.default
-                  : module[componentPlugin.renderer.exportName]
+                  : module[componentView.src.exportName]
               }
               else {
-                // Renderer is a string (URL or local path)
+                // src is a string (URL or local path)
                 // @ts-expect-error vite-ignore
-                const module = await import(/* @vite-ignore */ componentPlugin.renderer)
+                const module = await import(/* @vite-ignore */ componentView.src)
                 component = module.default || module
               }
 
               return {
-                id: componentPlugin.id,
-                type: 'component' as const,
-                title: componentPlugin.title,
-                icon: componentPlugin.icon,
-                component,
+                name: plugin.name,
+                title: plugin.title,
+                icon: plugin.icon,
+                view: {
+                  type: 'component',
+                  component,
+                },
               }
             }
             catch (e) {
-              console.error(`[React DevTools] Failed to load plugin ${componentPlugin.id}:`, e)
+              console.error(`[React DevTools] Failed to load plugin ${plugin.name}:`, e)
               return null
             }
           }),
@@ -231,27 +241,27 @@ export function App() {
           <Route path="/settings" element={<SettingsPage />} />
           {plugins.map((plugin) => {
             // Iframe plugin
-            if (plugin.type === 'iframe') {
+            if (plugin.view.type === 'iframe') {
               return (
                 <Route
-                  key={plugin.id}
-                  path={`/plugins/${plugin.id}`}
-                  element={<IframePluginPage url={plugin.url} title={plugin.title} />}
+                  key={plugin.name}
+                  path={`/plugins/${plugin.name}`}
+                  element={<IframePluginPage url={plugin.view.src} title={plugin.title} />}
                 />
               )
             }
 
             // Component plugin
-            const componentPlugin = plugin as LoadedComponentPlugin
-            const Component = componentPlugin.component
+            const componentView = plugin.view as LoadedComponentView
+            const Component = componentView.component
             if (!Component) {
               return null
             }
 
             return (
               <Route
-                key={plugin.id}
-                path={`/plugins/${plugin.id}`}
+                key={plugin.name}
+                path={`/plugins/${plugin.name}`}
                 element={(
                   <Suspense fallback={<div className="h-full flex items-center justify-center">Loading plugin...</div>}>
                     <Component

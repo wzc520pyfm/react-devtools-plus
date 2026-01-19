@@ -128,15 +128,88 @@ export type DevToolsPluginComponent = ComponentType<any> & {
 }
 
 /**
- * Base plugin properties
- * 基础插件属性
+ * Plugin view type
+ * 插件视图类型
  */
-export interface BaseDevToolsPlugin {
+export type PluginViewType = 'component' | 'iframe'
+
+/**
+ * Plugin view configuration
+ * 插件视图配置
+ *
+ * @example
+ * ```typescript
+ * // Component from bundled package
+ * view: { src: SamplePlugin }
+ *
+ * // Component from local path
+ * view: { src: './src/plugins/MyPlugin.tsx' }
+ *
+ * // Iframe
+ * view: { type: 'iframe', src: 'https://react.dev' }
+ * ```
+ */
+export interface PluginView {
   /**
-   * Plugin unique identifier
-   * 插件唯一标识符
+   * View type (auto-detected if not provided)
+   * - 'component': React component (default for local paths and components)
+   * - 'iframe': External URL in iframe (auto-detected for http:// or https://)
+   *
+   * 视图类型（如果未提供则自动检测）
    */
-  id: string
+  type?: PluginViewType
+
+  /**
+   * View source - supports:
+   * - Component with __devtools_source__ metadata (bundled package)
+   * - Local file path: './src/plugins/MyPlugin.tsx'
+   * - URL for iframe: 'https://react.dev'
+   *
+   * 视图源 - 支持：
+   * - 带 __devtools_source__ 元数据的组件（打包的包）
+   * - 本地文件路径
+   * - iframe 的 URL
+   */
+  src: DevToolsPluginComponent | string
+}
+
+/**
+ * DevTools Plugin Configuration
+ * DevTools 插件配置
+ *
+ * @example
+ * ```typescript
+ * // Component plugin (bundled package)
+ * {
+ *   name: 'sample-plugin',
+ *   title: 'Sample Plugin',
+ *   icon: 'ph:puzzle-piece-fill',
+ *   view: { src: SamplePlugin },
+ * }
+ *
+ * // Component plugin (local path)
+ * {
+ *   name: 'my-plugin',
+ *   title: 'My Plugin',
+ *   icon: 'lucide:puzzle',
+ *   view: { src: './src/plugins/MyPlugin.tsx' },
+ * }
+ *
+ * // Iframe plugin
+ * {
+ *   name: 'external-docs',
+ *   title: 'React Docs',
+ *   icon: 'ph:book-open-fill',
+ *   view: { type: 'iframe', src: 'https://react.dev' },
+ * }
+ * ```
+ */
+export interface DevToolsPlugin {
+  /**
+   * Plugin unique name (identifier)
+   * 插件唯一名称（标识符）
+   */
+  name: string
 
   /**
    * Plugin display title
@@ -149,56 +222,13 @@ export interface BaseDevToolsPlugin {
    * 插件图标（Iconify 格式如 'ph:rocket' 或 SVG 字符串）
    */
   icon?: string
+
+  /**
+   * Plugin view configuration
+   * 插件视图配置
+   */
+  view: PluginView
 }
-
-/**
- * Component type plugin - renders a React component
- * 组件类型插件 - 渲染 React 组件
- */
-export interface ComponentPlugin extends BaseDevToolsPlugin {
-  /**
-   * Plugin type (optional, defaults to 'component')
-   * 插件类型（可选，默认为 'component'）
-   */
-  type?: 'component'
-
-  /**
-   * Plugin renderer - supports:
-   * - Component with __devtools_source__ metadata
-   * - URL string: 'https://cdn.example.com/plugin.js'
-   * - Local path: './dist/plugins/my-plugin.js'
-   *
-   * 插件渲染器 - 支持：
-   * - 带 __devtools_source__ 元数据的组件
-   * - URL 字符串
-   * - 本地路径
-   */
-  renderer: DevToolsPluginComponent | string
-}
-
-/**
- * Iframe type plugin - embeds external application
- * iframe 类型插件 - 嵌入外部应用
- */
-export interface IframePlugin extends BaseDevToolsPlugin {
-  /**
-   * Plugin type
-   * 插件类型
-   */
-  type: 'iframe'
-
-  /**
-   * URL to embed in iframe
-   * iframe 中嵌入的 URL
-   */
-  url: string
-}
-
-/**
- * DevTools Plugin (new API)
- * DevTools 插件（新 API）
- */
-export type DevToolsPlugin = ComponentPlugin | IframePlugin
 
 /**
  * User Plugin - supports both new and legacy formats
@@ -212,44 +242,49 @@ export type UserPlugin = DevToolsPlugin | LegacyUserPlugin
 // ============================================================================
 
 /**
- * Serialized renderer metadata
- * 序列化的渲染器元数据
+ * Serialized view source metadata
+ * 序列化的视图源元数据
  */
-export interface SerializedRendererMeta {
+export interface SerializedViewMeta {
   packageName: string
   exportName: string
   bundlePath: string
 }
 
 /**
- * Serialized component plugin
- * 序列化的组件插件
+ * Serialized component view
+ * 序列化的组件视图
  */
-export interface SerializedComponentPlugin {
-  id: string
+export interface SerializedComponentView {
   type: 'component'
-  title: string
-  icon?: string
-  renderer: SerializedRendererMeta | string
+  src: SerializedViewMeta | string
 }
 
 /**
- * Serialized iframe plugin
- * 序列化的 iframe 插件
+ * Serialized iframe view
+ * 序列化的 iframe 视图
  */
-export interface SerializedIframePlugin {
-  id: string
+export interface SerializedIframeView {
   type: 'iframe'
-  title: string
-  icon?: string
-  url: string
+  src: string
 }
+
+/**
+ * Serialized view (for JSON transmission)
+ * 序列化的视图（用于 JSON 传输）
+ */
+export type SerializedView = SerializedComponentView | SerializedIframeView
 
 /**
  * Serialized plugin (for JSON transmission)
- * 序列化插件（用于 JSON 传输）
+ * 序列化的插件（用于 JSON 传输）
  */
-export type SerializedPlugin = SerializedComponentPlugin | SerializedIframePlugin
+export interface SerializedPlugin {
+  name: string
+  title: string
+  icon?: string
+  view: SerializedView
+}
 
 /**
  * Plugin options interface

@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import type { ResolvedPluginConfig, SerializedComponentPlugin, SerializedPlugin } from '../config/types'
+import type { ResolvedPluginConfig, SerializedPlugin } from '../config/types'
 
 /**
  * Plugins manifest middleware
@@ -27,23 +27,24 @@ export function createPluginsMiddleware(
       // Transform plugins for client consumption
       const plugins = (config.plugins || []).map((plugin): SerializedPlugin => {
         // iframe plugins don't need transformation
-        if (plugin.type === 'iframe') {
+        if (plugin.view.type === 'iframe') {
           return plugin
         }
 
         // Component plugins: transform local paths if needed
-        const componentPlugin = plugin as SerializedComponentPlugin
-
-        // If renderer is a string (local path), apply transformPath
-        if (typeof componentPlugin.renderer === 'string' && transformPath) {
+        // If src is a string (local path), apply transformPath
+        if (typeof plugin.view.src === 'string' && transformPath) {
           return {
-            ...componentPlugin,
-            renderer: transformPath(componentPlugin.renderer),
+            ...plugin,
+            view: {
+              ...plugin.view,
+              src: transformPath(plugin.view.src),
+            },
           }
         }
 
-        // Renderer is an object (package metadata) - no transformation needed
-        return componentPlugin
+        // src is an object (package metadata) - no transformation needed
+        return plugin
       })
 
       res.end(JSON.stringify(plugins))
