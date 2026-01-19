@@ -9,7 +9,7 @@ export default defineConfig({
     reactDevToolsPlus({
       // enabledEnvironments: ['development', 'test'],
       plugins: [
-        // ✨ 新 API: 独立打包的插件（推荐方式）
+        // ✨ 独立打包的插件（推荐用于发布）
         // 插件使用 defineDevToolsPlugin() 定义，包含 __devtools_source__ 元数据
         {
           id: 'sample-plugin',
@@ -17,7 +17,15 @@ export default defineConfig({
           icon: 'ph:puzzle-piece-fill',
           renderer: SamplePlugin,
         },
-        // New API: Iframe plugin example
+        // ✨ 本地插件（推荐用于开发）
+        // 使用字符串路径，由 Vite 处理热更新
+        {
+          id: 'my-plugin',
+          title: 'My Plugin',
+          icon: 'lucide:puzzle',
+          renderer: './src/plugins/MyPlugin.tsx',
+        },
+        // ✨ Iframe 插件
         {
           id: 'external-docs',
           type: 'iframe',

@@ -9,7 +9,11 @@
  *
  * @example
  * ```typescript
- * import { defineDevToolsPlugin } from '@react-devtools-plus/api'
+ * import { defineDevToolsPlugin, type DevToolsPluginProps } from '@react-devtools-plus/api'
+ *
+ * function MyPanel({ tree, selectedNodeId, theme }: DevToolsPluginProps) {
+ *   return <div>My Plugin</div>
+ * }
  *
  * export const MyPlugin = defineDevToolsPlugin(MyPanel, {
  *   packageName: '@my-org/devtools-plugin',
@@ -19,7 +23,101 @@
  * ```
  */
 
-import type { ComponentType } from 'react'
+import type { ComponentType, FC } from 'react'
+
+// ============================================================================
+// Plugin Props Types
+// ============================================================================
+
+/**
+ * Theme mode
+ * 主题模式
+ */
+export type ThemeMode = 'light' | 'dark'
+
+/**
+ * Color palette with shades
+ * 颜色调色板
+ */
+export interface ColorPalette {
+  50: string
+  100: string
+  200: string
+  300: string
+  400: string
+  500: string
+  600: string
+  700: string
+  800: string
+  900: string
+  950: string
+}
+
+/**
+ * Theme object passed to plugins
+ * 传递给插件的主题对象
+ */
+export interface DevToolsTheme {
+  /** Current theme mode / 当前主题模式 */
+  mode: ThemeMode
+  /** Color palettes / 颜色调色板 */
+  colors: {
+    primary: ColorPalette
+    success: ColorPalette
+    warning: ColorPalette
+    error: ColorPalette
+    info: ColorPalette
+    neutral: ColorPalette
+  }
+}
+
+/**
+ * Component tree node (simplified)
+ * 组件树节点（简化版）
+ */
+export interface ComponentTreeNode {
+  id: number
+  name: string
+  children?: ComponentTreeNode[]
+  [key: string]: any
+}
+
+/**
+ * Props passed to DevTools plugin components
+ * 传递给 DevTools 插件组件的 props
+ *
+ * @example
+ * ```typescript
+ * import type { DevToolsPluginProps } from '@react-devtools-plus/api'
+ *
+ * export default function MyPlugin({ tree, selectedNodeId, theme }: DevToolsPluginProps) {
+ *   return (
+ *     <div>
+ *       <p>Selected: {selectedNodeId ?? 'None'}</p>
+ *       <p>Theme: {theme.mode}</p>
+ *     </div>
+ *   )
+ * }
+ * ```
+ */
+export interface DevToolsPluginProps {
+  /** Component tree data / 组件树数据 */
+  tree: ComponentTreeNode | null
+  /** Currently selected node ID / 当前选中的节点 ID */
+  selectedNodeId: string | null
+  /** Theme configuration / 主题配置 */
+  theme: DevToolsTheme
+}
+
+/**
+ * DevTools plugin component type
+ * DevTools 插件组件类型
+ */
+export type DevToolsPluginFC = FC<DevToolsPluginProps>
+
+// ============================================================================
+// Plugin Definition Types
+// ============================================================================
 
 /**
  * Plugin metadata for locating and loading the plugin bundle
@@ -38,8 +136,8 @@ export interface DevToolsPluginMeta {
  * A React component with DevTools plugin metadata attached
  * 附加了 DevTools 插件元数据的 React 组件
  */
-export type DevToolsPluginComponent<T extends ComponentType<any> = ComponentType<any>>
-  = T & { __devtools_source__: DevToolsPluginMeta }
+export type DevToolsPluginComponent<T extends ComponentType<DevToolsPluginProps> = ComponentType<DevToolsPluginProps>>
+  = T & { __devtools_source__?: DevToolsPluginMeta }
 
 /**
  * Define a DevTools plugin component with metadata
@@ -51,14 +149,17 @@ export type DevToolsPluginComponent<T extends ComponentType<any> = ComponentType
  * 此函数将元数据附加到 React 组件上，使 DevTools 能够
  * 从其 npm 包动态加载插件。
  *
- * @param component - The React component to use as the plugin panel
+ * @param component - The React component to use as the plugin panel (must accept DevToolsPluginProps)
  * @param meta - Plugin metadata for loading the component in the browser
  * @returns The component with attached metadata
  *
  * @example
  * ```typescript
- * import { defineDevToolsPlugin } from '@react-devtools-plus/api'
- * import MyPanel from './MyPanel'
+ * import { defineDevToolsPlugin, type DevToolsPluginProps } from '@react-devtools-plus/api'
+ *
+ * function MyPanel({ tree, selectedNodeId, theme }: DevToolsPluginProps) {
+ *   return <div>Theme: {theme.mode}</div>
+ * }
  *
  * export const MyPlugin = defineDevToolsPlugin(MyPanel, {
  *   packageName: '@my-org/devtools-plugin',
@@ -67,9 +168,9 @@ export type DevToolsPluginComponent<T extends ComponentType<any> = ComponentType
  * })
  * ```
  */
-export function defineDevToolsPlugin<T extends ComponentType<any>>(
+export function defineDevToolsPlugin<T extends ComponentType<DevToolsPluginProps>>(
   component: T,
-  meta: DevToolsPluginMeta,
+  meta?: DevToolsPluginMeta,
 ): DevToolsPluginComponent<T> {
   return Object.assign(component, {
     __devtools_source__: meta,

@@ -3,13 +3,9 @@
  * 示例插件面板组件
  */
 
-interface DevToolsPluginContext {
-  tree: any
-  selectedNodeId: string | null
-  theme: any
-}
+import type { DevToolsPluginProps } from '@react-devtools-plus/api'
 
-export default function SamplePanel({ tree, selectedNodeId, theme }: DevToolsPluginContext) {
+export default function SamplePanel({ tree, selectedNodeId, theme }: DevToolsPluginProps) {
   return (
     <div className="h-full flex flex-col overflow-auto p-4">
       <h1 className="mb-4 text-xl font-bold">🔌 Sample Plugin</h1>
