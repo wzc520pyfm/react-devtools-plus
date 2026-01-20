@@ -5,8 +5,10 @@
 
 import type {
   DevToolsPlugin,
+  DevToolsPluginInstance,
   LegacyUserPlugin,
   ReactDevToolsPluginOptions,
+  ResolvedInstanceConfig,
   ResolvedPluginConfig,
   ScanConfig,
   SerializedPlugin,
@@ -14,6 +16,14 @@ import type {
   UserPlugin,
 } from './types'
 import path from 'node:path'
+
+/**
+ * Check if a value is a new plugin instance (callable function with __isDevToolsPlugin)
+ * 检查值是否为新的插件实例（带 __isDevToolsPlugin 的可调用函数）
+ */
+function isPluginInstance(plugin: UserPlugin): plugin is DevToolsPluginInstance {
+  return typeof plugin === 'function' && (plugin as any).__isDevToolsPlugin === true
+}
 
 /**
  * Normalize base path
@@ -183,14 +193,117 @@ function isExternalUrl(src: string): boolean {
 }
 
 /**
+ * Resolve plugin path (handle package-relative paths)
+ * 解析插件路径（处理包相对路径）
+ */
+function resolvePluginPath(src: string, projectRoot: string): string {
+  // If it's a node_modules package path (e.g., '@my-org/plugin/src/host.ts')
+  if (src.includes('/') && !src.startsWith('./') && !src.startsWith('../') && !path.isAbsolute(src)) {
+    // This is a package path, resolve from node_modules
+    try {
+      const packageName = src.startsWith('@')
+        ? src.split('/').slice(0, 2).join('/')
+        : src.split('/')[0]
+      const packagePath = require.resolve(`${packageName}/package.json`, { paths: [projectRoot] })
+      const packageDir = path.dirname(packagePath)
+      const relativePath = src.replace(packageName, '').replace(/^\//, '')
+      return path.join(packageDir, relativePath)
+    }
+    catch {
+      // If resolution fails, return as-is
+      return src
+    }
+  }
+
+  // Relative path
+  if (src.startsWith('./') || src.startsWith('../')) {
+    return path.resolve(projectRoot, src)
+  }
+
+  // Already absolute or other format
+  return src
+}
+
+/**
+ * Normalize a plugin instance (new callable API) to serialized format
+ * 将插件实例（新的可调用 API）规范化为序列化格式
+ */
+function normalizePluginInstance(instance: DevToolsPluginInstance, projectRoot: string): SerializedPlugin {
+  // Call the instance to get resolved config
+  const resolved: ResolvedInstanceConfig = instance()
+
+  // Process view
+  let serializedView: SerializedView
+  if (resolved.view.type === 'iframe') {
+    serializedView = {
+      type: 'iframe',
+      src: resolved.view.src as string,
+    }
+  }
+  else {
+    // Component view
+    if (typeof resolved.view.src === 'object') {
+      // Package metadata
+      serializedView = {
+        type: 'component',
+        src: resolved.view.src,
+      }
+    }
+    else {
+      // String path - resolve it
+      serializedView = {
+        type: 'component',
+        src: resolvePluginPath(resolved.view.src, projectRoot),
+      }
+    }
+  }
+
+  // Build serialized plugin
+  const serialized: SerializedPlugin = {
+    name: resolved.name,
+    title: resolved.title,
+    icon: resolved.icon,
+    view: serializedView,
+  }
+
+  // Add host config if present
+  if (resolved.host) {
+    serialized.host = {
+      src: resolvePluginPath(resolved.host.src, projectRoot),
+      inject: resolved.host.inject,
+    }
+  }
+
+  // Add server config if present
+  if (resolved.server?.middleware) {
+    serialized.server = {
+      middleware: resolvePluginPath(resolved.server.middleware, projectRoot),
+    }
+  }
+
+  // Add options if present
+  if (resolved.options) {
+    serialized.options = resolved.options
+  }
+
+  return serialized
+}
+
+/**
  * Normalize a single plugin to serialized format
  * 将单个插件规范化为序列化格式
  *
  * Handles:
+ * - New callable API: SamplePlugin() - function with __isDevToolsPlugin
+ * - Object format: { name, title, icon, view: { type?, src } }
  * - Legacy format: { name, view: { title, icon, src } }
- * - New format: { name, title, icon, view: { type?, src } }
  */
 export function normalizePlugin(plugin: UserPlugin, projectRoot: string): SerializedPlugin {
+  // New callable API: SamplePlugin()
+  if (isPluginInstance(plugin)) {
+    return normalizePluginInstance(plugin, projectRoot)
+  }
+
   // Legacy format: { name, view: { title, icon, src } }
   if (isLegacyPlugin(plugin)) {
     const legacyPlugin = plugin as LegacyUserPlugin
@@ -216,7 +329,7 @@ export function normalizePlugin(plugin: UserPlugin, projectRoot: string): Serial
     }
   }
 
-  // New format: { name, title, icon, view: { type?, src } }
+  // Object format: { name, title, icon, view: { type?, src } }
   const newPlugin = plugin as DevToolsPlugin
 
   // Validate view
@@ -266,9 +379,21 @@ export function normalizePlugin(plugin: UserPlugin, projectRoot: string): Serial
         },
       }
     }
+    else if (typeof view.src === 'object' && view.src !== null) {
+      // Already resolved metadata object (from calling a plugin instance like SamplePlugin())
+      const meta = view.src as { packageName: string, exportName: string, bundlePath: string }
+      serializedView = {
+        type: 'component',
+        src: {
+          packageName: meta.packageName,
+          exportName: meta.exportName,
+          bundlePath: meta.bundlePath,
+        },
+      }
+    }
     else {
       // String format: local path
-      let srcPath = view.src
+      let srcPath = view.src as string
       // Resolve relative paths to absolute
       if (srcPath.startsWith('./') || srcPath.startsWith('../')) {
         srcPath = path.resolve(projectRoot, srcPath)
@@ -315,8 +440,29 @@ export function resolvePluginConfig(
     normalizePlugin(plugin, projectRoot),
   )
 
+  // Extract host plugins (plugins with host scripts)
+  const hostPlugins = plugins
+    .filter(p => p.host)
+    .map(p => ({
+      name: p.name,
+      src: p.host!.src,
+      inject: p.host!.inject,
+      options: p.options,
+    }))
+
+  // Extract server plugins (plugins with server middleware)
+  const serverPlugins = plugins
+    .filter(p => p.server?.middleware)
+    .map(p => ({
+      name: p.name,
+      middleware: p.server!.middleware!,
+      options: p.options,
+    }))
+
   return {
     plugins,
+    hostPlugins,
+    serverPlugins,
     appendTo: options.appendTo,
     enabledEnvironments: enabledEnvironments ?? true,
     detectedEnvironment,

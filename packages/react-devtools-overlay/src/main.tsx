@@ -16,6 +16,7 @@ import { globalPluginManager } from '@react-devtools-plus/core'
 import { installReactHook } from '@react-devtools-plus/kit'
 import { createScanPlugin } from '@react-devtools-plus/scan'
 import { App } from './App'
+import { initPluginRpcBridge } from './utils/plugin-rpc-bridge'
 import { renderToContainer, unmountRoot } from './utils/react-render'
 
 /**
@@ -27,6 +28,7 @@ function getReact(): any {
 
 // Module state
 let rootRef: ReactRootRef | null = null
+let pluginRpcBridgeCleanup: (() => void) | null = null
 
 let componentTreeHookInstalled = false
 const showHostComponents = false
@@ -150,6 +152,9 @@ async function init() {
     // Component tree hook is installed on-demand when user visits Components page
     await registerScanPlugin()
 
+    // Initialize plugin RPC bridge (for host script <-> devtools communication)
+    pluginRpcBridgeCleanup = initPluginRpcBridge()
+
     // Setup message listeners for component tree hook installation
     setupMessageListeners()
 
@@ -211,6 +216,12 @@ function handleKeydown(event: KeyboardEvent) {
 function cleanup() {
   try {
     window.removeEventListener('keydown', handleKeydown)
+
+    // Cleanup plugin RPC bridge
+    if (pluginRpcBridgeCleanup) {
+      pluginRpcBridgeCleanup()
+      pluginRpcBridgeCleanup = null
+    }
 
     // Unmount using the appropriate method
     unmountRoot(rootRef)

@@ -1,4 +1,5 @@
 import type { Root } from 'react-dom/client'
+import * as DevToolsApi from '@react-devtools-plus/api'
 import { ThemeProvider } from '@react-devtools-plus/ui'
 import React, { StrictMode } from 'react'
 import * as ReactDOM from 'react-dom'
@@ -21,6 +22,11 @@ window.__vite_plugin_react_preamble_installed__ = true
 window.React = React
 // @ts-expect-error - global variable
 window.ReactDOM = { ...ReactDOM, createRoot }
+
+// Expose DevTools API for plugins that externalize @react-devtools-plus/api
+// This allows plugins to use hooks like usePluginRpc, usePluginEvent, etc.
+// @ts-expect-error - global variable
+window.__REACT_DEVTOOLS_API__ = DevToolsApi
 
 let root: Root | null = null
 

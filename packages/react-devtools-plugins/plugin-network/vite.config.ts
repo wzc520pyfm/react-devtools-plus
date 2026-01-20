@@ -10,15 +10,9 @@ export default defineConfig({
       fileName: format => format === 'es' ? 'index.mjs' : 'index.cjs',
     },
     rollupOptions: {
-      // React 和 DevTools API 外部化
-      external: [
-        'react',
-        'react-dom',
-        'react/jsx-runtime',
-        '@react-devtools-plus/api',
-      ],
+      // React 外部化，使用宿主应用的 React
+      external: ['react', 'react-dom', 'react/jsx-runtime', '@react-devtools-plus/api'],
     },
-    // 输出到 dist 目录
     outDir: 'dist',
     emptyOutDir: true,
   },

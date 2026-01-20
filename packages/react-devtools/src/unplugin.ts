@@ -25,6 +25,13 @@ import {
   generateScanScriptTag,
 } from './codegen'
 import {
+  extractPluginNameFromHostRequest,
+  generateHostScriptTags,
+  generateHostScriptWrapper,
+  HOST_SCRIPT_PREFIX,
+  isHostScriptRequest,
+} from './codegen/host-script'
+import {
   normalizeBasePath,
   resolvePluginConfig,
   validatePluginOptions,
@@ -316,6 +323,14 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           return '\0__react-devtools-globals__'
         }
 
+        // Resolve host script virtual module
+        if (isHostScriptRequest(id)) {
+          const pluginName = extractPluginNameFromHostRequest(id)
+          if (pluginName) {
+            return `\0${HOST_SCRIPT_PREFIX}${pluginName}`
+          }
+        }
+
         // Handle react-dom/client import from our globals module
         // For React 16/17, this module doesn't exist, so provide a fallback
         if (id === 'react-dom/client' && importer?.includes('__react-devtools-globals__')) {
@@ -375,6 +390,18 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
 export const createRoot = undefined;
 export const hydrateRoot = undefined;
 `
+        }
+
+        // Load host script virtual module
+        if (id.startsWith(`\0${HOST_SCRIPT_PREFIX}`)) {
+          const pluginName = id.replace(`\0${HOST_SCRIPT_PREFIX}`, '')
+          if (pluginConfig) {
+            const hostPlugin = pluginConfig.hostPlugins.find(p => p.name === pluginName)
+            if (hostPlugin) {
+              return generateHostScriptWrapper(pluginName, hostPlugin.src)
+            }
+          }
+          return `console.warn('[DevTools] Host plugin "${pluginName}" not found');`
         }
 
         return null
@@ -466,7 +493,12 @@ export const hydrateRoot = undefined;
           injectTo: 'head',
         })
 
-        // 6. Overlay loader with globals ready check
+        // 6. Plugin host scripts (for network interception, etc.)
+        if (pluginConfig.hostPlugins.length > 0) {
+          tags.push(...generateHostScriptTags(pluginConfig, base, isProduction))
+        }
+
+        // 7. Overlay loader with globals ready check
         tags.push({
           tag: 'script',
           attrs: {

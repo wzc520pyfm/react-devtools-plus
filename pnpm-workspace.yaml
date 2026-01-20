@@ -2,6 +2,7 @@ packages:
   - packages/*
   - docs
   - packages/playground/**
+  - packages/react-devtools-plugins/**
 
 catalog:
   '@iconify/json': ^2.2.395

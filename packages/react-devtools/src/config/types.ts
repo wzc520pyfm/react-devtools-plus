@@ -231,10 +231,47 @@ export interface DevToolsPlugin {
 }
 
 /**
- * User Plugin - supports both new and legacy formats
- * 用户插件 - 支持新旧两种格式
+ * Plugin instance from defineDevToolsPlugin (new callable API)
+ * 来自 defineDevToolsPlugin 的插件实例（新的可调用 API）
  */
-export type UserPlugin = DevToolsPlugin | LegacyUserPlugin
+export interface DevToolsPluginInstance {
+  __isDevToolsPlugin: true
+  __pluginName: string
+  (): ResolvedInstanceConfig
+  (options: Record<string, any>): ResolvedInstanceConfig
+}
+
+/**
+ * Resolved config from plugin instance
+ * 从插件实例解析的配置
+ */
+export interface ResolvedInstanceConfig {
+  name: string
+  title: string
+  icon?: string
+  view: {
+    type: 'component' | 'iframe'
+    src: string | {
+      packageName: string
+      exportName: string
+      bundlePath: string
+    }
+  }
+  host?: {
+    src: string
+    inject: 'head' | 'body' | 'idle'
+  }
+  server?: {
+    middleware?: string
+  }
+  options?: Record<string, any>
+}
+
+/**
+ * User Plugin - supports new callable API, object format, and legacy formats
+ * 用户插件 - 支持新的可调用 API、对象格式和旧格式
+ */
+export type UserPlugin = DevToolsPluginInstance | DevToolsPlugin | LegacyUserPlugin
 
 // ============================================================================
 // Serialized Plugin Types (for transmission to browser)
@@ -276,6 +313,23 @@ export interface SerializedIframeView {
 export type SerializedView = SerializedComponentView | SerializedIframeView
 
 /**
+ * Serialized host config
+ * 序列化的宿主配置
+ */
+export interface SerializedHostConfig {
+  src: string
+  inject: 'head' | 'body' | 'idle'
+}
+
+/**
+ * Serialized server config
+ * 序列化的服务端配置
+ */
+export interface SerializedServerConfig {
+  middleware?: string
+}
+
+/**
  * Serialized plugin (for JSON transmission)
  * 序列化的插件（用于 JSON 传输）
  */
@@ -284,6 +338,12 @@ export interface SerializedPlugin {
   title: string
   icon?: string
   view: SerializedView
+  /** Host script configuration (for injection into host app) */
+  host?: SerializedHostConfig
+  /** Server middleware configuration (for dev server) */
+  server?: SerializedServerConfig
+  /** Plugin options (passed by user) */
+  options?: Record<string, any>
 }
 
 /**
@@ -492,6 +552,25 @@ export interface ReactDevToolsPluginOptions {
  */
 export interface ResolvedPluginConfig {
   plugins: SerializedPlugin[]
+  /**
+   * Plugins that have host scripts to inject
+   * 需要注入宿主脚本的插件
+   */
+  hostPlugins: Array<{
+    name: string
+    src: string
+    inject: 'head' | 'body' | 'idle'
+    options?: Record<string, any>
+  }>
+  /**
+   * Plugins that have server middleware
+   * 有服务端中间件的插件
+   */
+  serverPlugins: Array<{
+    name: string
+    middleware: string
+    options?: Record<string, any>
+  }>
   appendTo: string | RegExp | undefined
   enabledEnvironments: EnabledEnvironments
   /**

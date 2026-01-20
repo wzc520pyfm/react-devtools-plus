@@ -2,177 +2,133 @@
  * @react-devtools-plus/api
  *
  * Public API for React DevTools Plus plugins.
- * This package provides browser-safe utilities for plugin authors.
- *
  * React DevTools Plus 插件的公共 API。
- * 此包为插件作者提供浏览器安全的工具函数。
+ *
+ * This package provides:
+ * - Plugin definition API (`defineDevToolsPlugin`)
+ * - Host script API (`defineHostPlugin`)
+ * - View hooks (`usePluginRpc`, `usePluginEvent`, `usePluginOptions`)
+ * - Type definitions
  *
  * @example
  * ```typescript
+ * // Define a plugin with full capabilities
  * import { defineDevToolsPlugin, type DevToolsPluginProps } from '@react-devtools-plus/api'
  *
  * function MyPanel({ tree, selectedNodeId, theme }: DevToolsPluginProps) {
  *   return <div>My Plugin</div>
  * }
  *
- * export const MyPlugin = defineDevToolsPlugin(MyPanel, {
- *   packageName: '@my-org/devtools-plugin',
- *   exportName: 'MyPlugin',
- *   bundlePath: 'dist/index.mjs',
+ * export const MyPlugin = defineDevToolsPlugin({
+ *   meta: {
+ *     name: 'my-plugin',
+ *     title: 'My Plugin',
+ *     icon: 'lucide:puzzle',
+ *     packageName: '@my-org/devtools-plugin',
+ *     exportName: 'MyPlugin',
+ *     bundlePath: 'dist/index.mjs',
+ *   },
+ *   view: { src: MyPanel },
+ *   host: { src: './src/host.ts' },
  * })
+ *
+ * // Use in vite.config.ts:
+ * // plugins: [reactDevToolsPlus({ plugins: [MyPlugin()] })]
  * ```
  */
 
-import type { ComponentType, FC } from 'react'
+// ============================================================================
+// Type Exports
+// 类型导出
+// ============================================================================
+
+export {
+  defineDevToolsPlugin,
+  isDevToolsPlugin,
+  isLegacyPluginComponent,
+} from './define'
 
 // ============================================================================
-// Plugin Props Types
+// Plugin Definition API
+// 插件定义 API
 // ============================================================================
 
-/**
- * Theme mode
- * 主题模式
- */
-export type ThemeMode = 'light' | 'dark'
-
-/**
- * Color palette with shades
- * 颜色调色板
- */
-export interface ColorPalette {
-  50: string
-  100: string
-  200: string
-  300: string
-  400: string
-  500: string
-  600: string
-  700: string
-  800: string
-  900: string
-  950: string
-}
-
-/**
- * Theme object passed to plugins
- * 传递给插件的主题对象
- */
-export interface DevToolsTheme {
-  /** Current theme mode / 当前主题模式 */
-  mode: ThemeMode
-  /** Color palettes / 颜色调色板 */
-  colors: {
-    primary: ColorPalette
-    success: ColorPalette
-    warning: ColorPalette
-    error: ColorPalette
-    info: ColorPalette
-    neutral: ColorPalette
-  }
-}
-
-/**
- * Component tree node (simplified)
- * 组件树节点（简化版）
- */
-export interface ComponentTreeNode {
-  id: number
-  name: string
-  children?: ComponentTreeNode[]
-  [key: string]: any
-}
-
-/**
- * Props passed to DevTools plugin components
- * 传递给 DevTools 插件组件的 props
- *
- * @example
- * ```typescript
- * import type { DevToolsPluginProps } from '@react-devtools-plus/api'
- *
- * export default function MyPlugin({ tree, selectedNodeId, theme }: DevToolsPluginProps) {
- *   return (
- *     <div>
- *       <p>Selected: {selectedNodeId ?? 'None'}</p>
- *       <p>Theme: {theme.mode}</p>
- *     </div>
- *   )
- * }
- * ```
- */
-export interface DevToolsPluginProps {
-  /** Component tree data / 组件树数据 */
-  tree: ComponentTreeNode | null
-  /** Currently selected node ID / 当前选中的节点 ID */
-  selectedNodeId: string | null
-  /** Theme configuration / 主题配置 */
-  theme: DevToolsTheme
-}
-
-/**
- * DevTools plugin component type
- * DevTools 插件组件类型
- */
-export type DevToolsPluginFC = FC<DevToolsPluginProps>
+export {
+  // Non-hook API
+  createRpcClient,
+  getPluginOptions,
+  usePluginEvent,
+  usePluginOptions,
+  // React hooks
+  usePluginRpc,
+} from './hooks'
 
 // ============================================================================
-// Plugin Definition Types
+// Host Plugin API
+// 宿主插件 API
+// ============================================================================
+
+export {
+  defineHostPlugin,
+  getRegisteredHostPlugins,
+  unregisterHostPlugin,
+} from './host'
+
+// ============================================================================
+// View Hooks API
+// 视图 Hooks API
+// ============================================================================
+
+export type {
+  ColorPalette,
+  // Component tree types
+  ComponentTreeNode,
+  DefinePluginConfig,
+
+  DevToolsPluginFC,
+
+  DevToolsPluginInstance,
+  // Plugin props
+  DevToolsPluginProps,
+
+  DevToolsTheme,
+  FetchInterceptHandler,
+  // Host plugin types
+  HostPluginConfig,
+  HostPluginContext,
+  LegacyPluginComponent,
+  // Legacy types (backward compatibility)
+  LegacyPluginMeta,
+  // Network interceptor types
+  NetworkInterceptor,
+
+  PluginHostConfig,
+  // Plugin definition types (new API)
+  PluginMeta,
+
+  // RPC types
+  PluginRpcClient,
+  PluginServerConfig,
+
+  PluginViewConfig,
+  ResolvedPluginConfig,
+  // Theme types
+  ThemeMode,
+
+  XHRInterceptHandler,
+} from './types'
+
+// ============================================================================
+// Legacy API (for backward compatibility)
+// 旧 API（向后兼容）
 // ============================================================================
 
 /**
- * Plugin metadata for locating and loading the plugin bundle
- * 用于定位和加载插件 bundle 的元数据
+ * @deprecated Use PluginMeta instead
  */
-export interface DevToolsPluginMeta {
-  /** npm package name / npm 包名 */
-  packageName: string
-  /** Export name from the module / 模块的导出名 */
-  exportName: string
-  /** Path to the ESM bundle within the package / 包内 ESM bundle 的路径 */
-  bundlePath: string
-}
+export type { LegacyPluginMeta as DevToolsPluginMeta } from './types'
 
 /**
- * A React component with DevTools plugin metadata attached
- * 附加了 DevTools 插件元数据的 React 组件
+ * @deprecated Use DevToolsPluginInstance instead
  */
-export type DevToolsPluginComponent<T extends ComponentType<DevToolsPluginProps> = ComponentType<DevToolsPluginProps>>
-  = T & { __devtools_source__?: DevToolsPluginMeta }
-
-/**
- * Define a DevTools plugin component with metadata
- * 定义带有元数据的 DevTools 插件组件
- *
- * This function attaches metadata to a React component that allows
- * the DevTools to dynamically load the plugin from its npm package.
- *
- * 此函数将元数据附加到 React 组件上，使 DevTools 能够
- * 从其 npm 包动态加载插件。
- *
- * @param component - The React component to use as the plugin panel (must accept DevToolsPluginProps)
- * @param meta - Plugin metadata for loading the component in the browser
- * @returns The component with attached metadata
- *
- * @example
- * ```typescript
- * import { defineDevToolsPlugin, type DevToolsPluginProps } from '@react-devtools-plus/api'
- *
- * function MyPanel({ tree, selectedNodeId, theme }: DevToolsPluginProps) {
- *   return <div>Theme: {theme.mode}</div>
- * }
- *
- * export const MyPlugin = defineDevToolsPlugin(MyPanel, {
- *   packageName: '@my-org/devtools-plugin',
- *   exportName: 'MyPlugin',
- *   bundlePath: 'dist/index.mjs',
- * })
- * ```
- */
-export function defineDevToolsPlugin<T extends ComponentType<DevToolsPluginProps>>(
-  component: T,
-  meta?: DevToolsPluginMeta,
-): DevToolsPluginComponent<T> {
-  return Object.assign(component, {
-    __devtools_source__: meta,
-  })
-}
+export type { LegacyPluginComponent as DevToolsPluginComponent } from './types'

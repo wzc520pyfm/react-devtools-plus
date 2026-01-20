@@ -32,23 +32,25 @@ function resolvePackageJson(packageName: string): string | null {
 }
 
 /**
- * Transform bare React imports to use globals
- * 将裸 React 导入转换为使用全局变量
+ * Transform bare React and DevTools API imports to use globals
+ * 将裸 React 和 DevTools API 导入转换为使用全局变量
  *
  * This transforms imports like:
  *   import { jsx } from "react/jsx-runtime"
  *   import React, { useState } from "react"
  *   import { createRoot } from "react-dom/client"
+ *   import { defineDevToolsPlugin, usePluginRpc } from "@react-devtools-plus/api"
  *
- * Into code that uses the React globals exposed by the DevTools client
+ * Into code that uses the globals exposed by the DevTools client
  */
 function transformReactImports(code: string): string {
   // Shim code that provides React modules from globals
-  // The DevTools client exposes React, ReactDOM via window
+  // The DevTools client exposes React, ReactDOM, and DevTools API via window
   const shimCode = `
 // === React DevTools Plugin Shim ===
 const __DEVTOOLS_REACT__ = window.React;
 const __DEVTOOLS_REACT_DOM__ = window.ReactDOM;
+const __DEVTOOLS_API__ = window.__REACT_DEVTOOLS_API__;
 const __DEVTOOLS_JSX_RUNTIME__ = {
   jsx: __DEVTOOLS_REACT__.createElement,
   jsxs: __DEVTOOLS_REACT__.createElement,
@@ -144,6 +146,32 @@ const __DEVTOOLS_JSX_RUNTIME__ = {
       }).join('\n')
       return assignments
     },
+  )
+
+  // Transform: import { defineDevToolsPlugin, usePluginRpc } from "@react-devtools-plus/api"
+  transformed = transformed.replace(
+    /import\s*\{([^}]+)\}\s*from\s*["']@react-devtools-plus\/api["'];?/g,
+    (_, namedImports) => {
+      const importList = namedImports.split(',').map((s: string) => s.trim()).filter(Boolean)
+      const assignments = importList.map((imp: string) => {
+        const [name, alias] = imp.split(/\s+as\s+/).map((s: string) => s.trim())
+        const localName = alias || name
+        return `const ${localName} = __DEVTOOLS_API__.${name};`
+      }).join('\n')
+      return assignments
+    },
+  )
+
+  // Transform: import * as DevToolsApi from "@react-devtools-plus/api"
+  transformed = transformed.replace(
+    /import\s*\*\s*as\s+(\w+)\s+from\s*["']@react-devtools-plus\/api["'];?/g,
+    (_, namespaceImport) => `const ${namespaceImport} = __DEVTOOLS_API__;`,
+  )
+
+  // Transform: import DevToolsApi from "@react-devtools-plus/api" (default import)
+  transformed = transformed.replace(
+    /import\s+(\w+)\s+from\s*["']@react-devtools-plus\/api["'];?/g,
+    (_, defaultImport) => `const ${defaultImport} = __DEVTOOLS_API__;`,
   )
 
   // Only add shim if we transformed any imports
