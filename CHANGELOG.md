@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.8.0...main
+
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.8.0...main)
+
+### 🚀 Features
+
+- Improve plugin api ([#17](https://github.com/wzc520pyfm/react-devtools-plus/pull/17))
+
+### ❤️ Contributors
+
+- Wzc520pyfm ([@wzc520pyfm](https://github.com/wzc520pyfm))
+
 ## v0.7.0...main
 
 [compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.7.0...main)
