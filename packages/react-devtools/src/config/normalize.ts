@@ -3,7 +3,16 @@
  * 配置规范化和验证
  */
 
-import type { ReactDevToolsPluginOptions, ResolvedPluginConfig, ScanConfig, UserPlugin } from './types'
+import type {
+  DevToolsPlugin,
+  LegacyUserPlugin,
+  ReactDevToolsPluginOptions,
+  ResolvedPluginConfig,
+  ScanConfig,
+  SerializedPlugin,
+  SerializedView,
+  UserPlugin,
+} from './types'
 import path from 'node:path'
 
 /**
@@ -154,6 +163,132 @@ export function normalizeScanConfig(
 }
 
 /**
+ * Check if a plugin is using the legacy format
+ * 检查插件是否使用旧格式
+ *
+ * Legacy format: { name, view: { title, icon, src } }
+ * New format: { name, title, icon, view: { type?, src } }
+ */
+function isLegacyPlugin(plugin: UserPlugin): plugin is LegacyUserPlugin {
+  // Legacy has view.title/view.icon/view.src, new API has top-level title
+  return 'view' in plugin && plugin.view && 'title' in plugin.view
+}
+
+/**
+ * Check if a URL is an external URL (http/https)
+ * 检查 URL 是否是外部 URL
+ */
+function isExternalUrl(src: string): boolean {
+  return src.startsWith('http://') || src.startsWith('https://')
+}
+
+/**
+ * Normalize a single plugin to serialized format
+ * 将单个插件规范化为序列化格式
+ *
+ * Handles:
+ * - Legacy format: { name, view: { title, icon, src } }
+ * - New format: { name, title, icon, view: { type?, src } }
+ */
+export function normalizePlugin(plugin: UserPlugin, projectRoot: string): SerializedPlugin {
+  // Legacy format: { name, view: { title, icon, src } }
+  if (isLegacyPlugin(plugin)) {
+    const legacyPlugin = plugin as LegacyUserPlugin
+    if (!legacyPlugin.view?.src) {
+      throw new Error(
+        `[React DevTools] Legacy plugin "${legacyPlugin.name}" must have view.src defined.`,
+      )
+    }
+
+    let src = legacyPlugin.view.src
+    if (!path.isAbsolute(src)) {
+      src = path.resolve(projectRoot, src)
+    }
+
+    return {
+      name: legacyPlugin.name,
+      title: legacyPlugin.view.title || legacyPlugin.name,
+      icon: legacyPlugin.view.icon,
+      view: {
+        type: 'component',
+        src,
+      },
+    }
+  }
+
+  // New format: { name, title, icon, view: { type?, src } }
+  const newPlugin = plugin as DevToolsPlugin
+
+  // Validate view
+  if (!newPlugin.view?.src) {
+    throw new Error(
+      `[React DevTools] Plugin "${newPlugin.name}" must have view.src defined.`,
+    )
+  }
+
+  const { view } = newPlugin
+  let serializedView: SerializedView
+
+  // Determine view type
+  const viewType = view.type || (
+    typeof view.src === 'string' && isExternalUrl(view.src) ? 'iframe' : 'component'
+  )
+
+  if (viewType === 'iframe') {
+    // Iframe view
+    if (typeof view.src !== 'string') {
+      throw new TypeError(
+        `[React DevTools] Plugin "${newPlugin.name}" iframe view.src must be a URL string.`,
+      )
+    }
+    serializedView = {
+      type: 'iframe',
+      src: view.src,
+    }
+  }
+  else {
+    // Component view
+    if (typeof view.src === 'function') {
+      // Component reference - extract metadata
+      const meta = view.src.__devtools_source__
+      if (!meta) {
+        throw new Error(
+          `[React DevTools] Plugin "${newPlugin.name}" view.src is a component without __devtools_source__ metadata. `
+          + `Use defineDevToolsPlugin() to wrap your component.`,
+        )
+      }
+      serializedView = {
+        type: 'component',
+        src: {
+          packageName: meta.packageName,
+          exportName: meta.exportName,
+          bundlePath: meta.bundlePath,
+        },
+      }
+    }
+    else {
+      // String format: local path
+      let srcPath = view.src
+      // Resolve relative paths to absolute
+      if (srcPath.startsWith('./') || srcPath.startsWith('../')) {
+        srcPath = path.resolve(projectRoot, srcPath)
+      }
+      serializedView = {
+        type: 'component',
+        src: srcPath,
+      }
+    }
+  }
+
+  return {
+    name: newPlugin.name,
+    title: newPlugin.title,
+    icon: newPlugin.icon,
+    view: serializedView,
+  }
+}
+
+/**
  * Resolve and normalize plugin configuration
  * 解析和规范化插件配置
  */
@@ -175,23 +310,10 @@ export function resolvePluginConfig(
   const injectSource = shouldInjectSource(injectSourceOption, mode, command)
   const scan = normalizeScanConfig(options.scan, command)
 
-  // Normalize plugins
-  const plugins = (options.plugins || []).map((plugin): UserPlugin => {
-    if (plugin.view && plugin.view.src) {
-      let src = plugin.view.src
-      if (!path.isAbsolute(src)) {
-        src = path.resolve(projectRoot, src)
-      }
-      return {
-        ...plugin,
-        view: {
-          ...plugin.view,
-          src, // Resolved absolute path
-        },
-      }
-    }
-    return plugin
-  })
+  // Normalize plugins to serialized format
+  const plugins = (options.plugins || []).map(plugin =>
+    normalizePlugin(plugin, projectRoot),
+  )
 
   return {
     plugins,

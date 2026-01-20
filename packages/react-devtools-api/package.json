@@ -1,0 +1,44 @@
+{
+  "name": "@react-devtools-plus/api",
+  "type": "module",
+  "version": "0.7.0",
+  "description": "Public API for React DevTools Plus plugins",
+  "author": {
+    "name": "wzc520pyfm",
+    "email": "wzc520pyf@163.com",
+    "url": "https://github.com/wzc520pyfm"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git"
+  },
+  "keywords": [
+    "react-devtools-plus",
+    "react-devtools",
+    "devtools",
+    "plugin",
+    "api"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.72",
+    "tsup": "^8.3.5",
+    "typescript": "^5.5.0"
+  }
+}

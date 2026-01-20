@@ -46,6 +46,7 @@ import {
   injectDevToolsEntries,
   setupWebpackDevServerMiddlewares,
 } from './integrations/webpack.js'
+import { createPluginBundleMiddleware } from './middleware/plugin-bundle.js'
 import { createPluginsMiddleware } from './middleware/plugins.js'
 import { shouldProcessFile, transformSourceCode } from './utils/babel-transform.js'
 import {
@@ -279,6 +280,9 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           }
           return `/@fs${filePath}`
         }))
+
+        // Serve plugin ESM bundles from node_modules
+        server.middlewares.use(createPluginBundleMiddleware())
 
         wrapPrintUrls(server)
       },

@@ -14,7 +14,7 @@ import {
   isDevServerV3,
   isWebpack4,
 } from '../compat'
-import { createAssetsMiddleware, createGraphMiddleware, createOpenInEditorMiddleware, createPluginFileMiddleware, createPluginsMiddleware, getWebpackModuleGraph, serveClient, setupWebpackModuleGraph } from '../middleware'
+import { createAssetsMiddleware, createGraphMiddleware, createOpenInEditorMiddleware, createPluginBundleMiddleware, createPluginFileMiddleware, createPluginsMiddleware, getWebpackModuleGraph, serveClient, setupWebpackModuleGraph } from '../middleware'
 import { createSourceAttributePlugin } from '../utils/babel-transform'
 
 type Compiler = any
@@ -58,6 +58,11 @@ export function setupWebpackDevServerMiddlewares(
       // Mount globally to debug why path matching fails.
       // The middleware itself handles path checking.
       middleware: createPluginFileMiddleware(),
+    },
+    {
+      name: 'react-devtools-plugin-bundle',
+      // Serve plugin ESM bundles from node_modules
+      middleware: createPluginBundleMiddleware(),
     },
     {
       name: 'react-devtools-graph',

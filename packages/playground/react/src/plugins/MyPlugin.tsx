@@ -1,12 +1,7 @@
 import React from 'react'
+import { defineDevToolsPlugin } from 'react-devtools-plus/api'
 
-interface DevToolsPluginContext {
-  tree: any
-  selectedNodeId: string | null
-  theme: any
-}
-
-export default function MyPlugin(props: DevToolsPluginContext) {
+export const MyPlugin = defineDevToolsPlugin((props) => {
   const { tree, selectedNodeId, theme } = props
 
   return (
@@ -73,4 +68,6 @@ export default function MyPlugin(props: DevToolsPluginContext) {
       </div>
     </div>
   )
-}
+})
+
+export default MyPlugin

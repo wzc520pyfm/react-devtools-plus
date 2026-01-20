@@ -19,6 +19,7 @@
     "stub": "vite build --watch"
   },
   "dependencies": {
+    "@iconify/react": "^5.0.2",
     "@react-devtools-plus/kit": "workspace:^",
     "@react-devtools-plus/ui": "workspace:^",
     "react": "catalog:",

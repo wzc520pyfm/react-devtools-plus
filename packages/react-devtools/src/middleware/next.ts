@@ -13,6 +13,7 @@ import {
   createAssetsMiddleware,
   createGraphMiddleware,
   createOpenInEditorMiddleware,
+  createPluginBundleMiddleware,
   createPluginFileMiddleware,
   createPluginsMiddleware,
   getWebpackModuleGraph,
@@ -35,6 +36,7 @@ export function createDevToolsApiHandler(
       return `/__react_devtools__/file?path=${encodeURIComponent(filePath)}`
     }),
     createPluginFileMiddleware(),
+    createPluginBundleMiddleware(),
     createGraphMiddleware(getWebpackModuleGraph(), '/'),
     createOpenInEditorMiddleware(config.projectRoot, config.sourcePathMode, config.launchEditor),
     createAssetsMiddleware({

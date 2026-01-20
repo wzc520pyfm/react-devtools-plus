@@ -65,6 +65,11 @@
       "import": "./dist/next-client.js",
       "require": "./dist/next-client.cjs"
     },
+    "./api": {
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js",
+      "require": "./dist/api.cjs"
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",
@@ -107,6 +112,7 @@
     "unplugin": "^2.3.10"
   },
   "devDependencies": {
+    "@react-devtools-plus/api": "workspace:*",
     "@react-devtools-plus/scan": "workspace:*",
     "tsup": "^8.3.5",
     "typescript": "^5.5.0"

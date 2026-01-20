@@ -4,6 +4,7 @@
  */
 
 import type { ReactDevtoolsScanOptions } from '@react-devtools-plus/scan'
+import type { ComponentType } from 'react'
 
 /**
  * Source path mode for code location injection
@@ -48,8 +49,8 @@ export interface ScanConfig extends ReactDevtoolsScanOptions {
 }
 
 /**
- * User Plugin View Configuration
- * 用户插件视图配置
+ * User Plugin View Configuration (Legacy)
+ * 用户插件视图配置（旧版）
  */
 export interface UserPluginView {
   /**
@@ -72,10 +73,10 @@ export interface UserPluginView {
 }
 
 /**
- * User Plugin Configuration
- * 用户插件配置
+ * Legacy User Plugin Configuration
+ * 旧版用户插件配置（向后兼容）
  */
-export interface UserPlugin {
+export interface LegacyUserPlugin {
   /**
    * Plugin unique name
    * 插件唯一名称
@@ -87,13 +88,202 @@ export interface UserPlugin {
    * 插件视图配置
    */
   view?: UserPluginView
+}
+
+// ============================================================================
+// New Plugin API Types
+// 新插件 API 类型
+// ============================================================================
+
+/**
+ * Plugin metadata attached to component
+ * 附加在组件上的插件元数据
+ */
+export interface DevToolsPluginMeta {
+  /**
+   * npm package name
+   * npm 包名
+   */
+  packageName: string
 
   /**
-   * Setup function (runs in the browser/client context)
-   * NOTE: This is difficult to transmit from Node config to Browser.
-   * For now, we focus on View extensions. Logic extensions might need a different approach.
+   * Export name (e.g., 'default', 'MyPlugin')
+   * 导出名称
    */
-  // setup?: (context: any) => void
+  exportName: string
+
+  /**
+   * Path to ESM bundle within the package
+   * ESM bundle 在包内的路径
+   */
+  bundlePath: string
+}
+
+/**
+ * Component with devtools metadata
+ * 带有 devtools 元数据的组件
+ */
+export type DevToolsPluginComponent = ComponentType<any> & {
+  __devtools_source__?: DevToolsPluginMeta
+}
+
+/**
+ * Plugin view type
+ * 插件视图类型
+ */
+export type PluginViewType = 'component' | 'iframe'
+
+/**
+ * Plugin view configuration
+ * 插件视图配置
+ *
+ * @example
+ * ```typescript
+ * // Component from bundled package
+ * view: { src: SamplePlugin }
+ *
+ * // Component from local path
+ * view: { src: './src/plugins/MyPlugin.tsx' }
+ *
+ * // Iframe
+ * view: { type: 'iframe', src: 'https://react.dev' }
+ * ```
+ */
+export interface PluginView {
+  /**
+   * View type (auto-detected if not provided)
+   * - 'component': React component (default for local paths and components)
+   * - 'iframe': External URL in iframe (auto-detected for http:// or https://)
+   *
+   * 视图类型（如果未提供则自动检测）
+   */
+  type?: PluginViewType
+
+  /**
+   * View source - supports:
+   * - Component with __devtools_source__ metadata (bundled package)
+   * - Local file path: './src/plugins/MyPlugin.tsx'
+   * - URL for iframe: 'https://react.dev'
+   *
+   * 视图源 - 支持：
+   * - 带 __devtools_source__ 元数据的组件（打包的包）
+   * - 本地文件路径
+   * - iframe 的 URL
+   */
+  src: DevToolsPluginComponent | string
+}
+
+/**
+ * DevTools Plugin Configuration
+ * DevTools 插件配置
+ *
+ * @example
+ * ```typescript
+ * // Component plugin (bundled package)
+ * {
+ *   name: 'sample-plugin',
+ *   title: 'Sample Plugin',
+ *   icon: 'ph:puzzle-piece-fill',
+ *   view: { src: SamplePlugin },
+ * }
+ *
+ * // Component plugin (local path)
+ * {
+ *   name: 'my-plugin',
+ *   title: 'My Plugin',
+ *   icon: 'lucide:puzzle',
+ *   view: { src: './src/plugins/MyPlugin.tsx' },
+ * }
+ *
+ * // Iframe plugin
+ * {
+ *   name: 'external-docs',
+ *   title: 'React Docs',
+ *   icon: 'ph:book-open-fill',
+ *   view: { type: 'iframe', src: 'https://react.dev' },
+ * }
+ * ```
+ */
+export interface DevToolsPlugin {
+  /**
+   * Plugin unique name (identifier)
+   * 插件唯一名称（标识符）
+   */
+  name: string
+
+  /**
+   * Plugin display title
+   * 插件显示标题
+   */
+  title: string
+
+  /**
+   * Plugin icon (Iconify format like 'ph:rocket' or SVG string)
+   * 插件图标（Iconify 格式如 'ph:rocket' 或 SVG 字符串）
+   */
+  icon?: string
+
+  /**
+   * Plugin view configuration
+   * 插件视图配置
+   */
+  view: PluginView
+}
+
+/**
+ * User Plugin - supports both new and legacy formats
+ * 用户插件 - 支持新旧两种格式
+ */
+export type UserPlugin = DevToolsPlugin | LegacyUserPlugin
+
+// ============================================================================
+// Serialized Plugin Types (for transmission to browser)
+// 序列化插件类型（用于传输到浏览器）
+// ============================================================================
+
+/**
+ * Serialized view source metadata
+ * 序列化的视图源元数据
+ */
+export interface SerializedViewMeta {
+  packageName: string
+  exportName: string
+  bundlePath: string
+}
+
+/**
+ * Serialized component view
+ * 序列化的组件视图
+ */
+export interface SerializedComponentView {
+  type: 'component'
+  src: SerializedViewMeta | string
+}
+
+/**
+ * Serialized iframe view
+ * 序列化的 iframe 视图
+ */
+export interface SerializedIframeView {
+  type: 'iframe'
+  src: string
+}
+
+/**
+ * Serialized view (for JSON transmission)
+ * 序列化的视图（用于 JSON 传输）
+ */
+export type SerializedView = SerializedComponentView | SerializedIframeView
+
+/**
+ * Serialized plugin (for JSON transmission)
+ * 序列化的插件（用于 JSON 传输）
+ */
+export interface SerializedPlugin {
+  name: string
+  title: string
+  icon?: string
+  view: SerializedView
 }
 
 /**
@@ -301,7 +491,7 @@ export interface ReactDevToolsPluginOptions {
  * 解析后的插件配置
  */
 export interface ResolvedPluginConfig {
-  plugins: UserPlugin[]
+  plugins: SerializedPlugin[]
   appendTo: string | RegExp | undefined
   enabledEnvironments: EnabledEnvironments
   /**

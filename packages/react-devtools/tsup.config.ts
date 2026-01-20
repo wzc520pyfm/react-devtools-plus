@@ -114,6 +114,21 @@ const nextClientEntryCommon = {
   },
 }
 
+// Common config for api entry (re-export from @react-devtools-plus/api)
+// DTS disabled - we copy from @react-devtools-plus/api in onSuccess
+const apiEntryCommon = {
+  entry: { api: 'src/api.ts' },
+  dts: false, // Disabled - copy full types from @react-devtools-plus/api instead
+  target: 'es2017',
+  outDir: 'dist',
+  splitting: false,
+  sourcemap: true,
+  // Bundle @react-devtools-plus/api inline
+  external: [],
+  noExternal: ['@react-devtools-plus/api'],
+  skipNodeModulesBundle: false,
+}
+
 export default defineConfig([
   // Main plugin entry - ESM with __dirname polyfill
   {
@@ -123,6 +138,42 @@ export default defineConfig([
     clean: true,
     banner: {
       js: esmDirnameBanner,
+    },
+    // onSuccess runs AFTER build completes, so we copy extra type files here
+    onSuccess: async () => {
+      // Wait for parallel builds to complete their DTS generation
+      // This is necessary because tsup runs multiple configs in parallel
+      await new Promise(r => setTimeout(r, 15000))
+
+      // Copy type declarations from @react-devtools-plus/api
+      const apiDtsPath = resolve(__dirname, '../react-devtools-api/dist/index.d.ts')
+      const apiTargetDtsPath = resolve(__dirname, 'dist/api.d.ts')
+
+      if (existsSync(apiDtsPath)) {
+        copyFileSync(apiDtsPath, apiTargetDtsPath)
+        console.log('Copied api.d.ts from @react-devtools-plus/api')
+      }
+
+      // Copy type declarations from @react-devtools-plus/scan
+      const scanDtsPath = resolve(__dirname, '../react-devtools-scan/dist/index.d.ts')
+      const scanTargetDtsPath = resolve(__dirname, 'dist/scan.d.ts')
+
+      if (existsSync(scanDtsPath)) {
+        copyFileSync(scanDtsPath, scanTargetDtsPath)
+        console.log('Copied scan.d.ts from @react-devtools-plus/scan')
+      }
+
+      // Copy react-devtools-client/dist to client/ directory
+      const clientSourcePath = resolve(__dirname, '../react-devtools-client/dist')
+      const clientTargetPath = resolve(__dirname, 'client')
+
+      if (existsSync(clientSourcePath)) {
+        if (existsSync(clientTargetPath)) {
+          rmSync(clientTargetPath, { recursive: true, force: true })
+        }
+        cpSync(clientSourcePath, clientTargetPath, { recursive: true })
+        console.log('Copied client UI from react-devtools-client')
+      }
     },
   },
   // Main plugin entry - CJS (native __dirname)
@@ -244,6 +295,21 @@ export default defineConfig([
       js: `'use client';`,
     },
   },
+  // API entry - ESM (re-export from @react-devtools-plus/api)
+  {
+    ...apiEntryCommon,
+    format: ['esm'],
+    shims: false,
+    clean: false,
+  },
+  // API entry - CJS
+  {
+    ...apiEntryCommon,
+    format: ['cjs'],
+    shims: false,
+    clean: false,
+    dts: false,
+  },
   // Scan entry - bundle @react-devtools-plus/scan without resolving its types
   {
     entry: ['src/scan.ts'],
@@ -263,36 +329,5 @@ export default defineConfig([
       '@react-devtools-plus/scan',
     ],
     skipNodeModulesBundle: false,
-    onSuccess: async () => {
-      // Copy type declarations from @react-devtools-plus/scan
-      const scanDtsPath = resolve(__dirname, '../react-devtools-scan/dist/index.d.ts')
-      const scanDctPath = resolve(__dirname, '../react-devtools-scan/dist/index.cts')
-      const targetDtsPath = resolve(__dirname, 'dist/scan.d.ts')
-      const targetDctPath = resolve(__dirname, 'dist/scan.cts')
-
-      if (existsSync(scanDtsPath)) {
-        copyFileSync(scanDtsPath, targetDtsPath)
-      }
-      if (existsSync(scanDctPath)) {
-        copyFileSync(scanDctPath, targetDctPath)
-      }
-
-      // Copy react-devtools-client/dist to client/ directory
-      // This ensures the DevTools client UI is included in the package
-      const clientSourcePath = resolve(__dirname, '../react-devtools-client/dist')
-      const clientTargetPath = resolve(__dirname, 'client')
-
-      if (existsSync(clientSourcePath)) {
-        // Remove old client directory contents (except keep directory)
-        if (existsSync(clientTargetPath)) {
-          rmSync(clientTargetPath, { recursive: true, force: true })
-        }
-        // Copy new client files
-        cpSync(clientSourcePath, clientTargetPath, { recursive: true })
-      }
-      else {
-        console.warn('Warning: react-devtools-client/dist not found, client UI will not be available')
-      }
-    },
   },
 ])
