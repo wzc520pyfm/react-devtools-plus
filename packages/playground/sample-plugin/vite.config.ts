@@ -6,8 +6,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: './src/index.ts',
-      formats: ['es'],
-      fileName: () => 'index.mjs',
+      formats: ['es', 'cjs'],
+      fileName: format => format === 'es' ? 'index.mjs' : 'index.cjs',
     },
     rollupOptions: {
       // React 外部化，使用宿主应用的 React
