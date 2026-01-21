@@ -18,6 +18,7 @@
     "@babel/core": "^7.28.4",
     "@babel/preset-react": "^7.28.4",
     "@babel/preset-typescript": "^7.28.4",
+    "@react-devtools-plus/sample-plugin": "workspace:*",
     "babel-loader": "^9.2.1",
     "css-loader": "^7.1.2",
     "html-webpack-plugin": "^5.6.3",

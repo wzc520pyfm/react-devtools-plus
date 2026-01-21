@@ -45,13 +45,80 @@ function createNetworkInterceptor(): NetworkInterceptor {
   const xhrHandlers: XHRInterceptHandler[] = []
   const resourceHandlers: Array<(entry: PerformanceResourceTiming) => void> = []
 
-  // Store original functions
-  const originalFetch = typeof window !== 'undefined' ? window.fetch : undefined
-  const OriginalXHR = typeof window !== 'undefined' ? window.XMLHttpRequest : undefined
+  // Get original functions (may have been stored by early patch script)
+  const originalFetch = typeof window !== 'undefined'
+    ? ((window as any).__DEVTOOLS_ORIGINAL_FETCH__ || window.fetch)
+    : undefined
+  const OriginalXHR = typeof window !== 'undefined'
+    ? ((window as any).__DEVTOOLS_ORIGINAL_XHR__ || window.XMLHttpRequest)
+    : undefined
 
   let fetchPatched = false
   let xhrPatched = false
   let resourceObserver: PerformanceObserver | null = null
+  let earlyRequestsProcessed = false
+
+  /**
+   * Process early requests captured before host script loaded
+   */
+  function processEarlyRequests() {
+    if (earlyRequestsProcessed || typeof window === 'undefined')
+      return
+    earlyRequestsProcessed = true
+
+    const earlyRequests = (window as any).__DEVTOOLS_EARLY_REQUESTS__ as Array<{
+      input?: RequestInfo | URL
+      init?: RequestInit
+      method?: string
+      url?: string
+      time: number
+      type: 'fetch' | 'xhr'
+      xhr?: XMLHttpRequest
+    }> | undefined
+
+    if (!earlyRequests || earlyRequests.length === 0)
+      return
+
+    console.log(`[DevTools Plugin] Processing ${earlyRequests.length} early requests`)
+
+    for (const req of earlyRequests) {
+      if (req.type === 'fetch' && req.input) {
+        // Create a synthetic request for early fetch calls
+        try {
+          const request = new Request(req.input, req.init)
+          for (const handler of fetchHandlers) {
+            if (handler.onRequest) {
+              try {
+                handler.onRequest(request)
+              }
+              catch (e) {
+                console.error('[DevTools Plugin] onRequest error:', e)
+              }
+            }
+          }
+        }
+        catch (e) {
+          // Ignore invalid requests
+        }
+      }
+      else if (req.type === 'xhr' && req.method && req.url) {
+        // Process early XHR calls
+        for (const handler of xhrHandlers) {
+          if (handler.onOpen) {
+            try {
+              handler.onOpen(req.method!, req.url!, req.xhr!)
+            }
+            catch (e) {
+              console.error('[DevTools Plugin] XHR onOpen error:', e)
+            }
+          }
+        }
+      }
+    }
+
+    // Clear the queue
+    ;(window as any).__DEVTOOLS_EARLY_REQUESTS__ = []
+  }
 
   /**
    * Patch fetch
@@ -219,6 +286,20 @@ function createNetworkInterceptor(): NetworkInterceptor {
     if (resourceObserver || typeof PerformanceObserver === 'undefined')
       return
 
+    // First, get existing resource entries (loaded before observer started)
+    const existingEntries = performance.getEntriesByType('resource') as PerformanceResourceTiming[]
+    for (const entry of existingEntries) {
+      for (const handler of resourceHandlers) {
+        try {
+          handler(entry)
+        }
+        catch (e) {
+          console.error('[DevTools Plugin] Resource handler error:', e)
+        }
+      }
+    }
+
+    // Then observe new resources
     resourceObserver = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
         if (entry.entryType === 'resource') {
@@ -239,8 +320,10 @@ function createNetworkInterceptor(): NetworkInterceptor {
 
   return {
     onFetch(handler: FetchInterceptHandler) {
-      patchFetch()
       fetchHandlers.push(handler)
+      patchFetch()
+      // Process any early requests captured before this handler was registered
+      processEarlyRequests()
       return () => {
         const idx = fetchHandlers.indexOf(handler)
         if (idx > -1)
@@ -249,8 +332,10 @@ function createNetworkInterceptor(): NetworkInterceptor {
     },
 
     onXHR(handler: XHRInterceptHandler) {
-      patchXHR()
       xhrHandlers.push(handler)
+      patchXHR()
+      // Process any early XHR requests
+      processEarlyRequests()
       return () => {
         const idx = xhrHandlers.indexOf(handler)
         if (idx > -1)
@@ -259,8 +344,8 @@ function createNetworkInterceptor(): NetworkInterceptor {
     },
 
     onResource(handler: (entry: PerformanceResourceTiming) => void) {
-      startResourceObserver()
       resourceHandlers.push(handler)
+      startResourceObserver()
       return () => {
         const idx = resourceHandlers.indexOf(handler)
         if (idx > -1)

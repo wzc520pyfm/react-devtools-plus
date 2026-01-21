@@ -56,22 +56,19 @@ module.exports = {
       launchEditor: 'cursor',
       // enabledEnvironments: ['development', 'test'],
       plugins: [
-        // ✨ 独立打包的插件（推荐用于发布）
-        // 插件使用 defineDevToolsPlugin() 定义，包含 __devtools_source__ 元数据
-        {
-          name: 'sample-plugin',
-          title: 'Sample Plugin',
-          icon: 'ph:puzzle-piece-fill',
-          view: { src: SamplePlugin },
-        },
-        // ✨ 本地插件（推荐用于开发）
-        // 使用字符串路径，由 Webpack 处理热更新
+        // ✨ 新 API：可调用格式（推荐）
+        // 所有配置内置于插件中，用户只需调用即可
+        SamplePlugin(),
+
+        // ✨ 旧 API：对象格式（仍然支持）
+        // 本地插件使用字符串路径，由 Webpack 处理热更新
         {
           name: 'my-plugin',
           title: 'My Plugin',
           icon: 'lucide:puzzle',
           view: { src: './src/plugins/MyPlugin.jsx' },
         },
+
         // ✨ Iframe 插件
         // type 可省略，会自动检测 http/https URL
         {

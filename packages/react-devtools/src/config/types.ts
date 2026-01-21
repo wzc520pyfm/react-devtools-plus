@@ -3,6 +3,10 @@
  * 插件配置类型定义
  */
 
+import type {
+  DevToolsPluginInstance as ApiPluginInstance,
+  ResolvedPluginConfig as ApiResolvedConfig,
+} from '@react-devtools-plus/api'
 import type { ReactDevtoolsScanOptions } from '@react-devtools-plus/scan'
 import type { ComponentType } from 'react'
 
@@ -270,8 +274,19 @@ export interface ResolvedInstanceConfig {
 /**
  * User Plugin - supports new callable API, object format, and legacy formats
  * 用户插件 - 支持新的可调用 API、对象格式和旧格式
+ *
+ * - ApiPluginInstance / DevToolsPluginInstance: callable plugin factory (e.g., SamplePlugin)
+ * - ApiResolvedConfig / ResolvedInstanceConfig: result of calling plugin factory (e.g., SamplePlugin())
+ * - DevToolsPlugin: object format with name, title, view
+ * - LegacyUserPlugin: old format with view.title
  */
-export type UserPlugin = DevToolsPluginInstance | DevToolsPlugin | LegacyUserPlugin
+export type UserPlugin
+  = | ApiPluginInstance
+    | ApiResolvedConfig
+    | DevToolsPluginInstance
+    | ResolvedInstanceConfig
+    | DevToolsPlugin
+    | LegacyUserPlugin
 
 // ============================================================================
 // Serialized Plugin Types (for transmission to browser)

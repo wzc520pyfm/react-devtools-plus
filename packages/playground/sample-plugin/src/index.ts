@@ -2,12 +2,15 @@
  * Sample DevTools Plugin
  * 示例 DevTools 插件
  *
- * 这个插件展示了如何使用新的插件 API 创建独立打包的插件
+ * 这个插件展示了如何使用新的插件 API 创建完整的插件：
+ * - View (UI): 显示插件面板
+ * - Host Script: 在宿主应用中运行，提供 RPC 方法和事件
  *
  * 新 API 特性：
  * - 可调用格式：plugins: [SamplePlugin()]
  * - 支持选项：plugins: [SamplePlugin({ showDebug: true })]
  * - 所有配置内置于插件中
+ * - Host Script 支持 RPC 通信
  */
 
 import { defineDevToolsPlugin } from '@react-devtools-plus/api'
@@ -47,13 +50,16 @@ export const SamplePlugin = defineDevToolsPlugin<SamplePluginOptions>({
   view: {
     src: SamplePanel,
   },
+  // 宿主脚本配置
+  // 在宿主应用主线程中运行，提供 RPC 方法和事件
+  host: {
+    src: './src/host.ts',
+    inject: 'body', // 在 body 末尾注入
+  },
   // 默认选项
   defaultOptions: {
     showDebug: false,
   },
-  // 未来可以添加：
-  // host: { src: './src/host.ts' },
-  // server: { middleware: './src/server.ts' },
 })
 
 // 同时作为默认导出

@@ -8,6 +8,10 @@ import type { ResolvedPluginConfig } from '../config/types'
 /**
  * Generate script tag for host plugin injection
  * 生成宿主插件注入的 script 标签
+ *
+ * For network interception to work properly, host scripts need to be injected
+ * as early as possible. We use 'head-prepend' for 'head' inject mode to ensure
+ * the script runs before other scripts and network requests.
  */
 export function generateHostScriptTags(
   config: ResolvedPluginConfig,
@@ -30,7 +34,7 @@ export function generateHostScriptTags(
     return tags
   }
 
-  // Generate plugin options injection script
+  // Generate plugin options injection script (must be first)
   const optionsScript = generatePluginOptionsScript(config)
   if (optionsScript) {
     tags.push({
@@ -42,8 +46,12 @@ export function generateHostScriptTags(
 
   // Generate host script loaders for each plugin
   for (const hostPlugin of config.hostPlugins) {
+    // Determine injection position:
+    // - 'head' -> 'head-prepend' for earliest execution (network interception)
+    // - 'body' -> 'body' for DOM access
+    // - 'idle' -> 'body' with requestIdleCallback
     const injectTo = hostPlugin.inject === 'head'
-      ? 'head' as const
+      ? 'head-prepend' as const // Use head-prepend for earliest execution
       : hostPlugin.inject === 'body'
         ? 'body' as const
         : 'body' as const // 'idle' also goes to body
@@ -74,7 +82,18 @@ export function generateHostScriptTags(
         })
       }
       else {
-        // Direct injection
+        // Direct injection with module type
+        // Note: type="module" scripts are deferred, so for network interception
+        // we also inject a synchronous loader that patches fetch/XHR immediately
+        if (hostPlugin.inject === 'head') {
+          // For head injection, add early network patch script
+          tags.push({
+            tag: 'script',
+            children: generateEarlyNetworkPatchScript(),
+            injectTo: 'head-prepend',
+          })
+        }
+
         tags.push({
           tag: 'script',
           attrs: {
@@ -89,6 +108,61 @@ export function generateHostScriptTags(
   }
 
   return tags
+}
+
+/**
+ * Generate early network patch script
+ * 生成早期网络补丁脚本
+ *
+ * This script patches fetch and XHR immediately (synchronously) to ensure
+ * no requests are missed before the module-based host script loads.
+ */
+function generateEarlyNetworkPatchScript(): string {
+  return `
+(function() {
+  // Store original functions for later use by host scripts
+  if (typeof window !== 'undefined') {
+    window.__DEVTOOLS_ORIGINAL_FETCH__ = window.fetch;
+    window.__DEVTOOLS_ORIGINAL_XHR__ = window.XMLHttpRequest;
+
+    // Queue to store early requests before host script initializes
+    window.__DEVTOOLS_EARLY_REQUESTS__ = [];
+
+    // Patch fetch early
+    var originalFetch = window.fetch;
+    window.fetch = function(input, init) {
+      var request = { input: input, init: init, time: Date.now(), type: 'fetch' };
+      window.__DEVTOOLS_EARLY_REQUESTS__.push(request);
+      return originalFetch.apply(this, arguments);
+    };
+
+    // Patch XHR early
+    var OriginalXHR = window.XMLHttpRequest;
+    window.XMLHttpRequest = function() {
+      var xhr = new OriginalXHR();
+      var originalOpen = xhr.open;
+      xhr.open = function(method, url) {
+        window.__DEVTOOLS_EARLY_REQUESTS__.push({
+          method: method,
+          url: url,
+          time: Date.now(),
+          type: 'xhr',
+          xhr: xhr
+        });
+        return originalOpen.apply(this, arguments);
+      };
+      return xhr;
+    };
+    // Copy static properties
+    for (var prop in OriginalXHR) {
+      if (OriginalXHR.hasOwnProperty(prop)) {
+        try { window.XMLHttpRequest[prop] = OriginalXHR[prop]; } catch(e) {}
+      }
+    }
+    window.XMLHttpRequest.prototype = OriginalXHR.prototype;
+  }
+})();
+`.trim()
 }
 
 /**

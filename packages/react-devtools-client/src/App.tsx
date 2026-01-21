@@ -82,7 +82,8 @@ export function App() {
               if (typeof componentView.src === 'object') {
                 // src is package metadata: { packageName, exportName, bundlePath }
                 // Build URL to DevTools server proxy
-                const bundleUrl = `${basePath}/plugins/${componentView.src.packageName}/${componentView.src.bundlePath}`
+                // Add timestamp to bust browser cache in development
+                const bundleUrl = `${basePath}/plugins/${componentView.src.packageName}/${componentView.src.bundlePath}?t=${Date.now()}`
 
                 // @ts-expect-error vite-ignore
                 const module = await import(/* @vite-ignore */ bundleUrl)

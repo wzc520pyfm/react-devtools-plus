@@ -104,17 +104,17 @@ function resolveViewConfig(
  * })
  *
  * // Full plugin (view + host + server)
- * export const NetworkPlugin = defineDevToolsPlugin({
+ * export const FullPlugin = defineDevToolsPlugin({
  *   meta: {
- *     name: 'network-inspector',
- *     title: 'Network',
- *     icon: 'lucide:network',
- *     packageName: '@react-devtools-plus/plugin-network',
- *     exportName: 'NetworkPlugin',
+ *     name: 'full-plugin',
+ *     title: 'Full Plugin',
+ *     icon: 'lucide:layers',
+ *     packageName: '@my-org/devtools-full-plugin',
+ *     exportName: 'FullPlugin',
  *     bundlePath: 'dist/index.mjs',
  *   },
  *   view: {
- *     src: NetworkPanel,
+ *     src: FullPanel,
  *   },
  *   host: {
  *     src: './src/host.ts',
@@ -124,7 +124,7 @@ function resolveViewConfig(
  *     middleware: './src/server.ts',
  *   },
  *   defaultOptions: {
- *     maxRequests: 500,
+ *     enabled: true,
  *   },
  * })
  *
@@ -133,7 +133,7 @@ function resolveViewConfig(
  *   reactDevToolsPlus({
  *     plugins: [
  *       MyPlugin(),
- *       NetworkPlugin({ maxRequests: 1000 }),
+ *       FullPlugin({ enabled: true }),
  *     ],
  *   }),
  * ]

@@ -26,6 +26,24 @@ function isPluginInstance(plugin: UserPlugin): plugin is DevToolsPluginInstance 
 }
 
 /**
+ * Check if a value is a resolved instance config (result of calling plugin factory)
+ * 检查值是否为已解析的插件配置（调用插件工厂的结果）
+ *
+ * ResolvedInstanceConfig has view.type and view.src as object or string
+ */
+function isResolvedInstanceConfig(plugin: UserPlugin): plugin is ResolvedInstanceConfig {
+  if (typeof plugin !== 'object' || plugin === null)
+    return false
+  const p = plugin as any
+  // Must have name, title, view with type
+  return typeof p.name === 'string'
+    && typeof p.title === 'string'
+    && p.view
+    && typeof p.view.type === 'string'
+    && (p.view.type === 'component' || p.view.type === 'iframe')
+}
+
+/**
  * Normalize base path
  * 规范化基础路径
  */
@@ -290,11 +308,74 @@ function normalizePluginInstance(instance: DevToolsPluginInstance, projectRoot: 
 }
 
 /**
+ * Normalize a resolved instance config to serialized format
+ * 将已解析的插件配置规范化为序列化格式
+ */
+function normalizeResolvedConfig(resolved: ResolvedInstanceConfig, projectRoot: string): SerializedPlugin {
+  // Process view
+  let serializedView: SerializedView
+  if (resolved.view.type === 'iframe') {
+    serializedView = {
+      type: 'iframe',
+      src: resolved.view.src as string,
+    }
+  }
+  else {
+    // Component view
+    if (typeof resolved.view.src === 'object') {
+      // Package metadata
+      serializedView = {
+        type: 'component',
+        src: resolved.view.src,
+      }
+    }
+    else {
+      // String path - resolve it
+      serializedView = {
+        type: 'component',
+        src: resolvePluginPath(resolved.view.src, projectRoot),
+      }
+    }
+  }
+
+  // Build serialized plugin
+  const serialized: SerializedPlugin = {
+    name: resolved.name,
+    title: resolved.title,
+    icon: resolved.icon,
+    view: serializedView,
+  }
+
+  // Add host config if present
+  if (resolved.host) {
+    serialized.host = {
+      src: resolvePluginPath(resolved.host.src, projectRoot),
+      inject: resolved.host.inject,
+    }
+  }
+
+  // Add server config if present
+  if (resolved.server?.middleware) {
+    serialized.server = {
+      middleware: resolvePluginPath(resolved.server.middleware, projectRoot),
+    }
+  }
+
+  // Add options if present
+  if (resolved.options) {
+    serialized.options = resolved.options
+  }
+
+  return serialized
+}
+
+/**
  * Normalize a single plugin to serialized format
  * 将单个插件规范化为序列化格式
  *
  * Handles:
  * - New callable API: SamplePlugin() - function with __isDevToolsPlugin
+ * - Resolved config: SamplePlugin() result - object with view.type
  * - Object format: { name, title, icon, view: { type?, src } }
  * - Legacy format: { name, view: { title, icon, src } }
  */
@@ -302,6 +383,11 @@ export function normalizePlugin(plugin: UserPlugin, projectRoot: string): Serial
   // New callable API: SamplePlugin()
   if (isPluginInstance(plugin)) {
     return normalizePluginInstance(plugin, projectRoot)
+  }
+
+  // Resolved config: result of calling plugin factory like SamplePlugin()
+  if (isResolvedInstanceConfig(plugin)) {
+    return normalizeResolvedConfig(plugin, projectRoot)
   }
 
   // Legacy format: { name, view: { title, icon, src } }
