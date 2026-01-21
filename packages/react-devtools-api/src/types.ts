@@ -328,8 +328,11 @@ export interface HostPluginConfig {
   /**
    * Plugin initialization
    * 插件初始化
+   *
+   * Can return a cleanup function that will be called when the plugin is unregistered.
+   * 可以返回一个清理函数，在插件注销时调用。
    */
-  setup?: (ctx: HostPluginContext) => void | Promise<void>
+  setup?: (ctx: HostPluginContext) => void | (() => void) | Promise<void | (() => void)>
 
   /**
    * Plugin teardown

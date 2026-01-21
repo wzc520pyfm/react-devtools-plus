@@ -568,11 +568,21 @@ export function defineHostPlugin(config: HostPluginConfig): void {
   if (setup) {
     try {
       const result = setup(ctx)
-      // Handle async setup
+      // Handle async setup or cleanup function
       if (result instanceof Promise) {
-        result.catch((error) => {
-          console.error(`[DevTools Plugin] Setup error in plugin "${name}":`, error)
-        })
+        result
+          .then((cleanupFn) => {
+            if (typeof cleanupFn === 'function') {
+              cleanup.push(cleanupFn)
+            }
+          })
+          .catch((error) => {
+            console.error(`[DevTools Plugin] Setup error in plugin "${name}":`, error)
+          })
+      }
+      else if (typeof result === 'function') {
+        // Sync setup returned a cleanup function
+        cleanup.push(result)
       }
     }
     catch (error) {
