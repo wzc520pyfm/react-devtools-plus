@@ -487,6 +487,121 @@ export interface DevToolsPluginInstance<TOptions = Record<string, any>> {
 }
 
 // ============================================================================
+// Plugin Extend Config (for user customization)
+// 插件扩展配置（用于用户自定义）
+// ============================================================================
+
+/**
+ * Plugin extend configuration
+ * 插件扩展配置
+ *
+ * Allows users to extend an existing plugin with custom overrides.
+ * This is useful for:
+ * - Avoiding name conflicts when using multiple instances of the same plugin
+ * - Customizing the injection position of host scripts
+ * - Overriding plugin title, icon, or other options
+ *
+ * 允许用户使用自定义覆盖来扩展现有插件。
+ * 这对于以下场景很有用：
+ * - 使用同一插件的多个实例时避免名称冲突
+ * - 自定义宿主脚本的注入位置
+ * - 覆盖插件标题、图标或其他选项
+ *
+ * @example
+ * ```typescript
+ * // Basic usage - override name to avoid conflicts
+ * plugins: [
+ *   { extend: SamplePlugin, name: 'sample-plugin-1' },
+ *   { extend: SamplePlugin, name: 'sample-plugin-2' },
+ * ]
+ *
+ * // Override host injection position
+ * plugins: [
+ *   {
+ *     extend: NetworkPlugin,
+ *     name: 'my-network',
+ *     host: { inject: 'head-prepend' },
+ *   },
+ * ]
+ *
+ * // Full customization
+ * plugins: [
+ *   {
+ *     extend: SamplePlugin,
+ *     name: 'custom-sample',
+ *     title: 'My Custom Plugin',
+ *     icon: 'lucide:star',
+ *     host: { inject: 'body' },
+ *     options: { showDebug: true },
+ *   },
+ * ]
+ * ```
+ */
+export interface PluginExtendConfig<TOptions = Record<string, any>> {
+  /**
+   * The base plugin to extend
+   * 要扩展的基础插件
+   *
+   * This should be a plugin instance created by `defineDevToolsPlugin`.
+   * You can pass it directly (not called) or call it with base options.
+   *
+   * @example
+   * ```typescript
+   * // Pass plugin instance directly
+   * { extend: SamplePlugin, name: 'custom' }
+   *
+   * // Or call it with base options first
+   * { extend: SamplePlugin({ debug: true }), name: 'custom' }
+   * ```
+   */
+  extend: DevToolsPluginInstance<TOptions> | ResolvedPluginConfig
+
+  /**
+   * Override plugin name (identifier)
+   * 覆盖插件名称（标识符）
+   *
+   * This is required when you need to use the same plugin multiple times
+   * to avoid name conflicts.
+   */
+  name?: string
+
+  /**
+   * Override plugin display title
+   * 覆盖插件显示标题
+   */
+  title?: string
+
+  /**
+   * Override plugin icon (Iconify format)
+   * 覆盖插件图标（Iconify 格式）
+   */
+  icon?: string
+
+  /**
+   * Override host script configuration
+   * 覆盖宿主脚本配置
+   *
+   * Only the properties you specify will be overridden.
+   * For example, if you only set `inject`, the `src` will remain unchanged.
+   */
+  host?: {
+    /**
+     * Override injection position
+     * 覆盖注入位置
+     */
+    inject?: InjectPosition
+  }
+
+  /**
+   * Merge additional options with the plugin's default options
+   * 将附加选项与插件的默认选项合并
+   *
+   * These options will be merged with any base options passed to `extend`.
+   */
+  options?: Partial<TOptions>
+}
+
+// ============================================================================
 // Legacy API Types (for backward compatibility)
 // 旧 API 类型（向后兼容）
 // ============================================================================

@@ -110,6 +110,8 @@ export type {
 
   NormalizedInjectConfig,
 
+  // Plugin extend config (for user customization)
+  PluginExtendConfig,
   PluginHostConfig,
   // Plugin definition types (new API)
   PluginMeta,

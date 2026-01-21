@@ -4,6 +4,7 @@
  */
 
 import type {
+  PluginExtendConfig as ApiPluginExtendConfig,
   DevToolsPluginInstance as ApiPluginInstance,
   ResolvedPluginConfig as ApiResolvedConfig,
 } from '@react-devtools-plus/api'
@@ -297,11 +298,18 @@ export interface ResolvedInstanceConfig {
 }
 
 /**
- * User Plugin - supports new callable API, object format, and legacy formats
- * 用户插件 - 支持新的可调用 API、对象格式和旧格式
+ * Plugin extend configuration (local alias)
+ * 插件扩展配置（本地别名）
+ */
+export type PluginExtendConfig<TOptions = Record<string, any>> = ApiPluginExtendConfig<TOptions>
+
+/**
+ * User Plugin - supports new callable API, object format, extend format, and legacy formats
+ * 用户插件 - 支持新的可调用 API、对象格式、扩展格式和旧格式
  *
  * - ApiPluginInstance / DevToolsPluginInstance: callable plugin factory (e.g., SamplePlugin)
  * - ApiResolvedConfig / ResolvedInstanceConfig: result of calling plugin factory (e.g., SamplePlugin())
+ * - PluginExtendConfig: extend format with overrides (e.g., { extend: SamplePlugin, name: 'custom' })
  * - DevToolsPlugin: object format with name, title, view
  * - LegacyUserPlugin: old format with view.title
  */
@@ -310,6 +318,7 @@ export type UserPlugin
     | ApiResolvedConfig
     | DevToolsPluginInstance
     | ResolvedInstanceConfig
+    | PluginExtendConfig
     | DevToolsPlugin
     | LegacyUserPlugin
 

@@ -7,6 +7,7 @@ import type {
   DevToolsPlugin,
   DevToolsPluginInstance,
   LegacyUserPlugin,
+  PluginExtendConfig,
   ReactDevToolsPluginOptions,
   ResolvedInstanceConfig,
   ResolvedPluginConfig,
@@ -152,6 +153,36 @@ function isResolvedInstanceConfig(plugin: UserPlugin): plugin is ResolvedInstanc
     && p.view
     && typeof p.view.type === 'string'
     && (p.view.type === 'component' || p.view.type === 'iframe')
+}
+
+/**
+ * Check if a value is a plugin extend config
+ * 检查值是否为插件扩展配置
+ *
+ * PluginExtendConfig has an `extend` property that is either:
+ * - A plugin instance (function with __isDevToolsPlugin)
+ * - A resolved config (object with name, title, view.type)
+ */
+function isPluginExtendConfig(plugin: UserPlugin): plugin is PluginExtendConfig {
+  if (typeof plugin !== 'object' || plugin === null)
+    return false
+  const p = plugin as any
+  if (!('extend' in p))
+    return false
+
+  // extend must be a plugin instance or resolved config
+  const extend = p.extend
+  if (typeof extend === 'function' && extend.__isDevToolsPlugin === true) {
+    return true
+  }
+  // Check if extend is a resolved config
+  if (typeof extend === 'object' && extend !== null) {
+    return typeof extend.name === 'string'
+      && typeof extend.title === 'string'
+      && extend.view
+      && typeof extend.view.type === 'string'
+  }
+  return false
 }
 
 /**
@@ -495,12 +526,71 @@ function normalizeResolvedConfig(resolved: ResolvedInstanceConfig, projectRoot: 
 }
 
 /**
+ * Normalize a plugin extend config to serialized format
+ * 将插件扩展配置规范化为序列化格式
+ *
+ * This allows users to override plugin properties like name, title, icon, host, and options.
+ * 这允许用户覆盖插件属性，如 name、title、icon、host 和 options。
+ */
+function normalizePluginExtend(extendConfig: PluginExtendConfig, projectRoot: string): SerializedPlugin {
+  const { extend, name, title, icon, host, options } = extendConfig
+
+  // Get the base resolved config
+  let baseResolved: ResolvedInstanceConfig
+  if (typeof extend === 'function' && (extend as any).__isDevToolsPlugin === true) {
+    // It's a plugin instance - call it to get resolved config
+    baseResolved = (extend as DevToolsPluginInstance)()
+  }
+  else {
+    // It's already a resolved config
+    baseResolved = extend as ResolvedInstanceConfig
+  }
+
+  // Process base config first (using existing normalization)
+  const baseSerialized = normalizeResolvedConfig(baseResolved, projectRoot)
+
+  // Apply overrides
+  if (name !== undefined) {
+    baseSerialized.name = name
+  }
+  if (title !== undefined) {
+    baseSerialized.title = title
+  }
+  if (icon !== undefined) {
+    baseSerialized.icon = icon
+  }
+
+  // Apply host overrides
+  if (host && baseSerialized.host) {
+    if (host.inject !== undefined) {
+      const injectConfig = normalizeInjectConfig(host.inject)
+      baseSerialized.host = {
+        ...baseSerialized.host,
+        inject: getSimpleInject(injectConfig),
+        injectConfig,
+      }
+    }
+  }
+
+  // Merge options
+  if (options !== undefined) {
+    baseSerialized.options = {
+      ...baseSerialized.options,
+      ...options,
+    }
+  }
+
+  return baseSerialized
+}
+
+/**
  * Normalize a single plugin to serialized format
  * 将单个插件规范化为序列化格式
  *
  * Handles:
  * - New callable API: SamplePlugin() - function with __isDevToolsPlugin
  * - Resolved config: SamplePlugin() result - object with view.type
+ * - Plugin extend config: { extend: SamplePlugin, name: 'custom' } - override format
  * - Object format: { name, title, icon, view: { type?, src } }
  * - Legacy format: { name, view: { title, icon, src } }
  */
@@ -513,6 +603,11 @@ export function normalizePlugin(plugin: UserPlugin, projectRoot: string): Serial
   // Resolved config: result of calling plugin factory like SamplePlugin()
   if (isResolvedInstanceConfig(plugin)) {
     return normalizeResolvedConfig(plugin, projectRoot)
+  }
+
+  // Plugin extend config: { extend: SamplePlugin, name: 'custom' }
+  if (isPluginExtendConfig(plugin)) {
+    return normalizePluginExtend(plugin, projectRoot)
   }
 
   // Legacy format: { name, view: { title, icon, src } }

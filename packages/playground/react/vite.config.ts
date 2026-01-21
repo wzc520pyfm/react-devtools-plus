@@ -16,6 +16,16 @@ export default defineConfig({
         // 也可以传入选项覆盖默认值
         // SamplePlugin({ showDebug: true }),
 
+        // ✨ 扩展配置：覆盖插件选项
+        // 使用 extend 格式可以覆盖名称、标题、注入位置等
+        // {
+        //   extend: SamplePlugin,
+        //   name: 'custom-sample',        // 覆盖名称（避免冲突）
+        //   title: 'Custom Sample',       // 覆盖标题
+        //   host: { inject: 'head-prepend' },  // 覆盖注入位置
+        //   options: { showDebug: true }, // 覆盖选项
+        // },
+
         // ✨ 旧 API：对象格式（仍然支持）
         // 本地插件使用字符串路径，由 Vite 处理热更新
         {
