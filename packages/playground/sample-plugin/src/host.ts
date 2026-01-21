@@ -150,9 +150,11 @@ export default defineHostPlugin({
     const handleClick = (e: MouseEvent) => {
       clickCount++
       const target = e.target as HTMLElement
-      const tagName = target.tagName.toLowerCase()
+      const tagName = target.tagName?.toLowerCase() || 'unknown'
       const id = target.id ? `#${target.id}` : ''
-      const className = target.className ? `.${target.className.split(' ')[0]}` : ''
+      // Use getAttribute('class') to handle SVG elements where className is SVGAnimatedString
+      const classAttr = target.getAttribute?.('class')
+      const className = classAttr ? `.${classAttr.split(' ')[0]}` : ''
 
       addLog(`🖱️ Click: <${tagName}${id}${className}> (total: ${clickCount})`)
       ctx.emit('click:count', clickCount)
