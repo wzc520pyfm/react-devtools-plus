@@ -86,11 +86,41 @@ export default defineHostPlugin({
      * 闪烁页面背景（演示 DOM 操作）
      */
     flashBackground() {
-      const originalBg = document.body.style.backgroundColor
+      // 使用闭包变量跟踪闪烁状态，防止重复触发
+      const flashKey = '__devtools_flash_bg__'
+      const win = window as any
+
+      // 如果正在闪烁中，忽略此次调用
+      if (win[flashKey]) {
+        return false
+      }
+
+      // 标记正在闪烁，并保存真正的原始样式
+      win[flashKey] = {
+        flashing: true,
+        originalStyle: document.body.style.backgroundColor,
+      }
+
       document.body.style.backgroundColor = '#ffeb3b'
+
       setTimeout(() => {
-        document.body.style.backgroundColor = originalBg
+        const state = win[flashKey]
+        if (!state)
+          return
+
+        // 如果原本没有内联样式，则移除内联样式让 CSS 类生效
+        // 如果原本有内联样式，则恢复原值
+        if (state.originalStyle === '') {
+          document.body.style.removeProperty('background-color')
+        }
+        else {
+          document.body.style.backgroundColor = state.originalStyle
+        }
+
+        // 清除闪烁状态
+        delete win[flashKey]
       }, 200)
+
       return true
     },
   },
