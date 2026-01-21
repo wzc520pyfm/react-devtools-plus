@@ -172,6 +172,145 @@ export interface PluginViewConfig {
 }
 
 /**
+ * Simple injection position
+ * 简单注入位置
+ */
+export type SimpleInjectPosition = 'head' | 'head-prepend' | 'body' | 'body-prepend' | 'idle'
+
+/**
+ * Injection function for custom positioning
+ * 自定义定位的注入函数
+ *
+ * Receives the HTML string and the content to inject (script tag, importmap, etc.)
+ * Returns the modified HTML string
+ *
+ * @param html - The original HTML string
+ * @param content - The content to inject (e.g., `<script src="..."></script>`)
+ * @returns The modified HTML string with content injected
+ *
+ * @example
+ * ```typescript
+ * // Inject after a specific script
+ * inject: (html, content) => {
+ *   return html.replace(
+ *     /(<script[^>]*src="[^"]*react[^"]*"[^>]*><\/script>)/i,
+ *     `$1\n${content}`
+ *   )
+ * }
+ *
+ * // Inject before importmap
+ * inject: (html, content) => {
+ *   return html.replace(
+ *     /(<script[^>]*type="importmap")/i,
+ *     `${content}\n$1`
+ *   )
+ * }
+ * ```
+ */
+export type InjectFunction = (html: string, content: string) => string
+
+/**
+ * Injection position - can be simple string or custom function
+ * 注入位置 - 可以是简单字符串或自定义函数
+ *
+ * Simple positions (backward compatible):
+ * - 'head': Inject at end of <head>
+ * - 'head-prepend': Inject at start of <head> (earliest execution)
+ * - 'body': Inject at end of <body>
+ * - 'body-prepend': Inject at start of <body>
+ * - 'idle': Inject with requestIdleCallback
+ *
+ * Custom function for precise control:
+ * - Receives (html: string, content: string) and returns modified HTML
+ */
+export type InjectPosition = SimpleInjectPosition | InjectFunction
+
+// ============================================================================
+// HTML Inject Types (for importmap, link, meta, etc.)
+// HTML 注入类型（用于 importmap、link、meta 等）
+// ============================================================================
+
+/**
+ * HTML content injection configuration
+ * HTML 内容注入配置
+ *
+ * Allows injecting arbitrary HTML content like importmap, link, meta, style, etc.
+ * 允许注入任意 HTML 内容，如 importmap、link、meta、style 等。
+ *
+ * @example
+ * ```typescript
+ * // Inject an importmap
+ * {
+ *   tag: 'script',
+ *   attrs: { type: 'importmap' },
+ *   children: JSON.stringify({ imports: { 'lodash': '/lodash.js' } }),
+ *   inject: 'head-prepend'
+ * }
+ *
+ * // Inject a stylesheet link
+ * {
+ *   tag: 'link',
+ *   attrs: { rel: 'stylesheet', href: '/my-plugin.css' },
+ *   inject: 'head'
+ * }
+ *
+ * // Inject using custom function
+ * {
+ *   tag: 'meta',
+ *   attrs: { name: 'my-plugin', content: 'v1.0' },
+ *   inject: (html, content) => html.replace('</head>', `${content}\n</head>`)
+ * }
+ * ```
+ */
+export interface HtmlInjectConfig {
+  /**
+   * HTML tag name
+   * HTML 标签名
+   *
+   * @example 'script', 'link', 'meta', 'style'
+   */
+  tag: string
+
+  /**
+   * Tag attributes
+   * 标签属性
+   *
+   * @example { type: 'importmap' }, { rel: 'stylesheet', href: '/style.css' }
+   */
+  attrs?: Record<string, string | boolean>
+
+  /**
+   * Tag inner content (for non-self-closing tags)
+   * 标签内部内容（用于非自闭合标签）
+   *
+   * @example JSON.stringify({ imports: {...} }) for importmap
+   */
+  children?: string
+
+  /**
+   * Injection position - simple string or custom function
+   * 注入位置 - 简单字符串或自定义函数
+   *
+   * @default 'head'
+   */
+  inject?: InjectPosition
+}
+
+// Keep for internal use and backward compatibility
+/**
+ * Advanced injection configuration (internal normalized format)
+ * @internal
+ */
+export interface AdvancedInjectConfig {
+  target: 'head' | 'body'
+  position?: 'before' | 'after' | 'prepend' | 'append'
+  selector?: string
+  selectLast?: boolean
+  idle?: boolean
+  fallback?: 'prepend' | 'append'
+}
+
+/**
  * Plugin host script configuration
  * 插件宿主脚本配置
  *
@@ -187,16 +326,28 @@ export interface PluginHostConfig {
    */
   src: string
   /**
-   * Injection timing
-   * 注入时机
+   * Injection position and timing
+   * 注入位置和时机
    *
-   * - 'head': Inject early in <head> (good for intercepting requests)
+   * Simple values (backward compatible):
+   * - 'head': Inject at end of <head>
+   * - 'head-prepend': Inject at start of <head> (earliest, good for network interception)
    * - 'body': Inject at end of <body> (good for DOM manipulation)
+   * - 'body-prepend': Inject at start of <body>
    * - 'idle': Inject during requestIdleCallback
+   *
+   * Advanced configuration for precise control:
+   * ```typescript
+   * inject: {
+   *   target: 'head',
+   *   position: 'after',
+   *   selector: 'script[src*="react"]'
+   * }
+   * ```
    *
    * @default 'head'
    */
-  inject?: 'head' | 'body' | 'idle'
+  inject?: InjectPosition
 }
 
 /**
@@ -232,6 +383,30 @@ export interface DefinePluginConfig<TOptions = Record<string, any>> {
   /** Server configuration (optional) / 服务端配置（可选） */
   server?: PluginServerConfig
   /**
+   * Additional HTML content to inject (importmap, link, meta, style, etc.)
+   * 额外的 HTML 内容注入（importmap、link、meta、style 等）
+   *
+   * @example
+   * ```typescript
+   * htmlInject: [
+   *   // Inject importmap
+   *   {
+   *     tag: 'script',
+   *     attrs: { type: 'importmap' },
+   *     children: JSON.stringify({ imports: { 'lodash': '/lodash.js' } }),
+   *     inject: 'head-prepend'
+   *   },
+   *   // Inject stylesheet
+   *   {
+   *     tag: 'link',
+   *     attrs: { rel: 'stylesheet', href: '/plugin.css' },
+   *     inject: 'head'
+   *   }
+   * ]
+   * ```
+   */
+  htmlInject?: HtmlInjectConfig[]
+  /**
    * Default options / 默认选项
    * Will be merged with user-provided options
    */
@@ -242,6 +417,27 @@ export interface DefinePluginConfig<TOptions = Record<string, any>> {
  * Resolved plugin configuration (internal use)
  * 解析后的插件配置（内部使用）
  */
+/**
+ * Normalized inject config (internal format)
+ * 规范化的注入配置（内部格式）
+ */
+export interface NormalizedInjectConfig {
+  /** Target container */
+  target: 'head' | 'body'
+  /** Position within target */
+  position: 'before' | 'after' | 'prepend' | 'append'
+  /** CSS selector (deprecated, prefer injectFn) */
+  selector?: string
+  /** Use last match if multiple */
+  selectLast?: boolean
+  /** Use requestIdleCallback */
+  idle?: boolean
+  /** Fallback position */
+  fallback: 'prepend' | 'append'
+  /** Custom injection function (takes precedence over other options) */
+  injectFn?: InjectFunction
+}
+
 export interface ResolvedPluginConfig {
   name: string
   title: string
@@ -256,11 +452,22 @@ export interface ResolvedPluginConfig {
   }
   host?: {
     src: string
-    inject: 'head' | 'body' | 'idle'
+    /**
+     * Injection position (simple or function)
+     * Will be normalized to injectConfig by the plugin system
+     */
+    inject?: InjectPosition
+    /**
+     * Normalized inject configuration (computed by plugin system)
+     * @internal
+     */
+    injectConfig?: NormalizedInjectConfig
   }
   server?: {
     middleware?: string
   }
+  /** HTML content to inject (importmap, link, meta, etc.) */
+  htmlInject?: HtmlInjectConfig[]
   options?: Record<string, any>
 }
 

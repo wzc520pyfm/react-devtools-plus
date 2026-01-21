@@ -80,6 +80,8 @@ export {
 // ============================================================================
 
 export type {
+  // Inject position types
+  AdvancedInjectConfig,
   ColorPalette,
   // Component tree types
   ComponentTreeNode,
@@ -96,11 +98,17 @@ export type {
   // Host plugin types
   HostPluginConfig,
   HostPluginContext,
+  // HTML inject types (new)
+  HtmlInjectConfig,
+  InjectFunction,
+  InjectPosition,
   LegacyPluginComponent,
   // Legacy types (backward compatibility)
   LegacyPluginMeta,
   // Network interceptor types
   NetworkInterceptor,
+
+  NormalizedInjectConfig,
 
   PluginHostConfig,
   // Plugin definition types (new API)
@@ -112,6 +120,7 @@ export type {
 
   PluginViewConfig,
   ResolvedPluginConfig,
+  SimpleInjectPosition,
   // Theme types
   ThemeMode,
 

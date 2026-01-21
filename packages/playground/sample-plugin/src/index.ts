@@ -54,8 +54,73 @@ export const SamplePlugin = defineDevToolsPlugin<SamplePluginOptions>({
   // 在宿主应用主线程中运行，提供 RPC 方法和事件
   host: {
     src: './src/host.ts',
-    inject: 'body', // 在 body 末尾注入
+    // ========================================
+    // 简单注入位置:
+    // ========================================
+    // inject: 'body',           // 在 body 末尾注入
+    // inject: 'head',           // 在 head 末尾注入
+    // inject: 'head-prepend',   // 在 head 开头注入（最早执行，适合网络拦截）
+    // inject: 'body-prepend',   // 在 body 开头注入
+    // inject: 'idle',           // 使用 requestIdleCallback 延迟注入
+
+    // ========================================
+    // 函数式注入（精确控制）:
+    // ========================================
+    // inject: (html, scriptTag) => {
+    //   // 在 React 脚本之后注入
+    //   return html.replace(
+    //     /(<script[^>]*src="[^"]*react[^"]*"[^>]*><\/script>)/i,
+    //     `$1\n${scriptTag}`
+    //   )
+    // },
+    //
+    // inject: (html, scriptTag) => {
+    //   // 在 importmap 之前注入
+    //   return html.replace(
+    //     /(<script[^>]*type="importmap")/i,
+    //     `${scriptTag}\n$1`
+    //   )
+    // },
+
+    inject: 'body', // 默认在 body 末尾注入
   },
+
+  // ========================================
+  // HTML 内容注入（importmap、link、meta 等）
+  // ========================================
+  // htmlInject: [
+  //   // 注入 importmap
+  //   {
+  //     tag: 'script',
+  //     attrs: { type: 'importmap' },
+  //     children: JSON.stringify({
+  //       imports: {
+  //         'lodash': 'https://cdn.jsdelivr.net/npm/lodash-es/+esm',
+  //       }
+  //     }),
+  //     inject: 'head-prepend',
+  //   },
+  //
+  //   // 注入样式表
+  //   {
+  //     tag: 'link',
+  //     attrs: { rel: 'stylesheet', href: '/my-plugin.css' },
+  //     inject: 'head',
+  //   },
+  //
+  //   // 使用函数精确定位
+  //   {
+  //     tag: 'meta',
+  //     attrs: { name: 'my-plugin-version', content: '1.0.0' },
+  //     inject: (html, content) => {
+  //       // 在 viewport meta 之后注入
+  //       return html.replace(
+  //         /(<meta[^>]*name="viewport"[^>]*>)/i,
+  //         `$1\n${content}`
+  //       )
+  //     },
+  //   },
+  // ],
   // 默认选项
   defaultOptions: {
     showDebug: false,

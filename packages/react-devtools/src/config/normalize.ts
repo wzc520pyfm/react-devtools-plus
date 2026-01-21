@@ -17,6 +17,117 @@ import type {
 } from './types'
 import path from 'node:path'
 
+// Type definitions (inline to avoid circular dependency during build)
+type InjectFunction = (html: string, content: string) => string
+type InjectPosition = 'head' | 'head-prepend' | 'body' | 'body-prepend' | 'idle' | InjectFunction
+
+interface NormalizedInjectConfig {
+  target: 'head' | 'body'
+  position: 'before' | 'after' | 'prepend' | 'append'
+  selector?: string
+  selectLast?: boolean
+  idle?: boolean
+  fallback: 'prepend' | 'append'
+  injectFn?: InjectFunction
+}
+
+/**
+ * Normalize inject position to full config object
+ * 将注入位置规范化为完整配置对象
+ *
+ * Converts simple string positions to normalized format.
+ * Function-based inject is preserved and handled separately during HTML transformation.
+ *
+ * @example
+ * ```typescript
+ * // Simple string
+ * normalizeInjectConfig('head')
+ * // => { target: 'head', position: 'append', fallback: 'append' }
+ *
+ * // Function (preserved as-is)
+ * normalizeInjectConfig((html, content) => html.replace('</head>', content + '</head>'))
+ * // => { target: 'head', position: 'append', fallback: 'append', injectFn: [Function] }
+ * ```
+ */
+export function normalizeInjectConfig(inject: InjectPosition | undefined): NormalizedInjectConfig {
+  // Default to head for earliest execution
+  if (!inject) {
+    return {
+      target: 'head',
+      position: 'append',
+      fallback: 'append',
+    }
+  }
+
+  // Function-based inject - store the function and use default position as fallback
+  if (typeof inject === 'function') {
+    return {
+      target: 'head',
+      position: 'append',
+      fallback: 'append',
+      injectFn: inject,
+    }
+  }
+
+  // Simple string positions
+  switch (inject) {
+    case 'head':
+      // 'head' means append to head (end of head)
+      return {
+        target: 'head',
+        position: 'append',
+        fallback: 'append',
+      }
+    case 'head-prepend':
+      // 'head-prepend' means prepend to head (start of head, earliest execution)
+      return {
+        target: 'head',
+        position: 'prepend',
+        fallback: 'prepend',
+      }
+    case 'body':
+      // 'body' means append to body (end of body)
+      return {
+        target: 'body',
+        position: 'append',
+        fallback: 'append',
+      }
+    case 'body-prepend':
+      // 'body-prepend' means prepend to body (start of body)
+      return {
+        target: 'body',
+        position: 'prepend',
+        fallback: 'prepend',
+      }
+    case 'idle':
+      // 'idle' goes to body with idle flag
+      return {
+        target: 'body',
+        position: 'append',
+        idle: true,
+        fallback: 'append',
+      }
+    default:
+      // Fallback for unknown values
+      return {
+        target: 'head',
+        position: 'append',
+        fallback: 'append',
+      }
+  }
+}
+
+/**
+ * Get simple inject value for backward compatibility
+ * 获取简单的注入值以保持向后兼容
+ */
+function getSimpleInject(config: NormalizedInjectConfig): 'head' | 'body' | 'idle' {
+  if (config.idle) {
+    return 'idle'
+  }
+  return config.target
+}
+
 /**
  * Check if a value is a new plugin instance (callable function with __isDevToolsPlugin)
  * 检查值是否为新的插件实例（带 __isDevToolsPlugin 的可调用函数）
@@ -199,7 +310,7 @@ export function normalizeScanConfig(
  */
 function isLegacyPlugin(plugin: UserPlugin): plugin is LegacyUserPlugin {
   // Legacy has view.title/view.icon/view.src, new API has top-level title
-  return 'view' in plugin && plugin.view && 'title' in plugin.view
+  return 'view' in plugin && !!plugin.view && 'title' in plugin.view
 }
 
 /**
@@ -286,9 +397,11 @@ function normalizePluginInstance(instance: DevToolsPluginInstance, projectRoot: 
 
   // Add host config if present
   if (resolved.host) {
+    const injectConfig = normalizeInjectConfig(resolved.host.inject)
     serialized.host = {
       src: resolvePluginPath(resolved.host.src, projectRoot),
-      inject: resolved.host.inject,
+      inject: getSimpleInject(injectConfig),
+      injectConfig,
     }
   }
 
@@ -297,6 +410,11 @@ function normalizePluginInstance(instance: DevToolsPluginInstance, projectRoot: 
     serialized.server = {
       middleware: resolvePluginPath(resolved.server.middleware, projectRoot),
     }
+  }
+
+  // Add htmlInject if present
+  if (resolved.htmlInject && resolved.htmlInject.length > 0) {
+    serialized.htmlInject = resolved.htmlInject
   }
 
   // Add options if present
@@ -348,9 +466,11 @@ function normalizeResolvedConfig(resolved: ResolvedInstanceConfig, projectRoot: 
 
   // Add host config if present
   if (resolved.host) {
+    const injectConfig = resolved.host.injectConfig || normalizeInjectConfig(resolved.host.inject)
     serialized.host = {
       src: resolvePluginPath(resolved.host.src, projectRoot),
-      inject: resolved.host.inject,
+      inject: getSimpleInject(injectConfig),
+      injectConfig,
     }
   }
 
@@ -359,6 +479,11 @@ function normalizeResolvedConfig(resolved: ResolvedInstanceConfig, projectRoot: 
     serialized.server = {
       middleware: resolvePluginPath(resolved.server.middleware, projectRoot),
     }
+  }
+
+  // Add htmlInject if present
+  if (resolved.htmlInject && resolved.htmlInject.length > 0) {
+    serialized.htmlInject = resolved.htmlInject
   }
 
   // Add options if present
@@ -533,6 +658,7 @@ export function resolvePluginConfig(
       name: p.name,
       src: p.host!.src,
       inject: p.host!.inject,
+      injectConfig: p.host!.injectConfig,
       options: p.options,
     }))
 

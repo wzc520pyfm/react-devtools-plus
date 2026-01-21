@@ -8,6 +8,7 @@ import type {
   DefinePluginConfig,
   DevToolsPluginInstance,
   DevToolsPluginProps,
+  InjectPosition,
   LegacyPluginComponent,
   LegacyPluginMeta,
   PluginMeta,
@@ -197,7 +198,7 @@ export function defineDevToolsPlugin<TOptions extends Record<string, any> = Reco
     const resolvedHost = host
       ? {
           src: resolvePluginPath(host.src, meta.packageName),
-          inject: host.inject || 'head' as const,
+          inject: host.inject || ('head' as InjectPosition),
         }
       : undefined
 
@@ -217,6 +218,7 @@ export function defineDevToolsPlugin<TOptions extends Record<string, any> = Reco
       view: resolvedView,
       host: resolvedHost,
       server: resolvedServer,
+      htmlInject: config.htmlInject,
       options: mergedOptions,
     }
   }

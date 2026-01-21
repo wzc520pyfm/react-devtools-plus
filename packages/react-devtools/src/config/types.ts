@@ -10,6 +10,28 @@ import type {
 import type { ReactDevtoolsScanOptions } from '@react-devtools-plus/scan'
 import type { ComponentType } from 'react'
 
+// Local type definitions (to avoid circular dependency during build)
+// These match the types in @react-devtools-plus/api
+type InjectFunction = (html: string, content: string) => string
+type InjectPosition = 'head' | 'head-prepend' | 'body' | 'body-prepend' | 'idle' | InjectFunction
+
+interface NormalizedInjectConfig {
+  target: 'head' | 'body'
+  position: 'before' | 'after' | 'prepend' | 'append'
+  selector?: string
+  selectLast?: boolean
+  idle?: boolean
+  fallback: 'prepend' | 'append'
+  injectFn?: InjectFunction
+}
+
+interface HtmlInjectConfig {
+  tag: string
+  attrs?: Record<string, string | boolean>
+  children?: string
+  inject?: InjectPosition
+}
+
 /**
  * Source path mode for code location injection
  * 源码路径模式
@@ -263,11 +285,14 @@ export interface ResolvedInstanceConfig {
   }
   host?: {
     src: string
-    inject: 'head' | 'body' | 'idle'
+    inject?: InjectPosition
+    injectConfig?: NormalizedInjectConfig
   }
   server?: {
     middleware?: string
   }
+  /** HTML content to inject (importmap, link, meta, etc.) */
+  htmlInject?: HtmlInjectConfig[]
   options?: Record<string, any>
 }
 
@@ -333,7 +358,16 @@ export type SerializedView = SerializedComponentView | SerializedIframeView
  */
 export interface SerializedHostConfig {
   src: string
+  /**
+   * Simple inject position for backward compatibility
+   * 简单注入位置，用于向后兼容
+   */
   inject: 'head' | 'body' | 'idle'
+  /**
+   * Full injection configuration (computed during normalization)
+   * 完整的注入配置（在规范化期间计算）
+   */
+  injectConfig: NormalizedInjectConfig
 }
 
 /**
@@ -357,6 +391,8 @@ export interface SerializedPlugin {
   host?: SerializedHostConfig
   /** Server middleware configuration (for dev server) */
   server?: SerializedServerConfig
+  /** HTML content to inject (importmap, link, meta, etc.) */
+  htmlInject?: HtmlInjectConfig[]
   /** Plugin options (passed by user) */
   options?: Record<string, any>
 }
@@ -574,7 +610,10 @@ export interface ResolvedPluginConfig {
   hostPlugins: Array<{
     name: string
     src: string
+    /** @deprecated Use injectConfig for full control */
     inject: 'head' | 'body' | 'idle'
+    /** Full injection configuration */
+    injectConfig: NormalizedInjectConfig
     options?: Record<string, any>
   }>
   /**
