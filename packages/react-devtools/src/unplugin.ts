@@ -594,6 +594,7 @@ export const hydrateRoot = undefined;
           pluginConfig.theme,
           pluginConfig.assets,
           pluginConfig.launchEditor,
+          pluginConfig.hostPlugins,
         )
 
         // Inject Babel plugin (for data-source-path)

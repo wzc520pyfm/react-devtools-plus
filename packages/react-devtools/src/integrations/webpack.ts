@@ -8,7 +8,7 @@
 import type { ResolvedPluginConfig, SourcePathMode } from '../config/types'
 import fs from 'node:fs'
 import path from 'node:path'
-import { generateConfigInjectionCode, generateGlobalsWithCSSCode } from '../codegen'
+import { generateConfigInjectionCode, generateGlobalsWithCSSCode, generateHostScriptEntryCode } from '../codegen'
 import {
   DevServerMiddlewareAdapter,
   isDevServerV3,
@@ -166,8 +166,9 @@ function writeInitFile(cacheDir: string, filename: string, content: string): str
  * Injection order (critical for proper functioning):
  * 1. React Scan init (must be before React runs)
  * 2. React globals init (setup window.React/ReactDOM)
- * 3. Overlay
- * 4. User's app entry
+ * 3. Host scripts (for plugins with host layer)
+ * 4. Overlay
+ * 5. User's app entry
  */
 export function injectDevToolsEntries(
   compiler: Compiler,
@@ -181,6 +182,7 @@ export function injectDevToolsEntries(
   theme?: { mode?: 'auto' | 'light' | 'dark', primaryColor?: string },
   assets?: { files?: string[] },
   launchEditor?: string,
+  hostPlugins?: ResolvedPluginConfig['hostPlugins'],
 ) {
   const cacheDir = ensureCacheDir(projectRoot)
   const filesToInject: string[] = []
@@ -203,7 +205,16 @@ export function injectDevToolsEntries(
   const globalsInitPath = writeInitFile(cacheDir, 'react-globals-init.js', globalsInitCode)
   filesToInject.push(globalsInitPath)
 
-  // 4. Overlay
+  // 4. Host scripts (for plugins with host layer like network interception)
+  if (hostPlugins && hostPlugins.length > 0) {
+    const hostScriptCode = generateHostScriptEntryCode(hostPlugins)
+    if (hostScriptCode) {
+      const hostScriptPath = writeInitFile(cacheDir, 'plugin-host-scripts.js', hostScriptCode)
+      filesToInject.push(hostScriptPath)
+    }
+  }
+
+  // 5. Overlay
   filesToInject.push(overlayPath)
 
   // Modify webpack entry
