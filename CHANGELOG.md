@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.9.4...main
+
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.9.4...main)
+
+### 🐛 Bug Fixes
+
+- Revert v0.9.3 ([c617009](https://github.com/wzc520pyfm/react-devtools-plus/commit/c617009))
+
+### ❤️ Contributors
+
+- Wzc520pyfm ([@wzc520pyfm](https://github.com/wzc520pyfm))
+
 ## v0.9.3...main
 
 [compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.9.3...main)
