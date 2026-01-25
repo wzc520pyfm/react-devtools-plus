@@ -1,7 +1,7 @@
 {
   "name": "@react-devtools-plus/ui",
   "type": "module",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "description": "UI components library for React DevTools",
   "author": "wzc520pyfm",
   "license": "MIT",

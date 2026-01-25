@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.9.2...main
+
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.9.2...main)
+
+### 🚀 Features
+
+- Refactor MyPlugin to TypeScript and implement host script for enhanced RPC communication ([8aa0e0b](https://github.com/wzc520pyfm/react-devtools-plus/commit/8aa0e0b))
+
+### 📖 Documentation
+
+- Add plugin document ([#20](https://github.com/wzc520pyfm/react-devtools-plus/pull/20))
+
+### ❤️ Contributors
+
+- Wzc520pyfm ([@wzc520pyfm](https://github.com/wzc520pyfm))
+
 ## v0.9.1...main
 
 [compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.9.1...main)

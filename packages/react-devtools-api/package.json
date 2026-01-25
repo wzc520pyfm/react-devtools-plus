@@ -1,7 +1,7 @@
 {
   "name": "@react-devtools-plus/api",
   "type": "module",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "description": "Public API for React DevTools Plus plugins",
   "author": {
     "name": "wzc520pyfm",
