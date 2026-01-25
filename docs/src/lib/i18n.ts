@@ -336,6 +336,7 @@ const resources = {
           openInEditor: 'Open in Editor',
           scan: 'React Scan',
           moduleGraph: 'Module Graph',
+          plugins: 'Plugin System',
           integration: 'Integration',
           viteSetup: 'Vite Setup',
           webpackSetup: 'Webpack Setup',
@@ -826,6 +827,74 @@ const resources = {
             content: 'Use the module graph to identify tightly coupled modules. Consider refactoring if you see too many connections between unrelated parts of your codebase.',
           },
         },
+        plugins: {
+          title: 'Plugin System',
+          description: 'Extend React DevTools Plus with custom plugins. Create powerful debugging tools with host scripts, RPC communication, and custom UI panels.',
+          whatIs: {
+            title: 'What is the Plugin System?',
+            description: 'The plugin system allows you to create custom DevTools extensions. Plugins can intercept network requests, manipulate DOM, communicate between the host application and DevTools UI, and add new panels to the DevTools interface.',
+          },
+          features: {
+            title: 'Key Features',
+            items: [
+              'Define custom DevTools panels with React components',
+              'Run host scripts in the main application thread',
+              'Bi-directional RPC communication between host and view',
+              'Intercept and monitor network requests (fetch/XHR)',
+              'Access React component tree and selected node',
+              'Inject custom HTML, CSS, and JavaScript',
+              'Full TypeScript support with type safety',
+            ],
+          },
+          install: {
+            title: 'Installation',
+            description: 'Install the API package to start building plugins:',
+          },
+          definePlugin: {
+            title: 'Define a Plugin',
+            description: 'Use defineDevToolsPlugin to create a new plugin. Provide metadata, a view component, and optional configuration:',
+          },
+          usage: {
+            title: 'Using Your Plugin',
+            description: 'Register your plugin in the Vite or Webpack configuration:',
+          },
+          hostPlugin: {
+            title: 'Host Scripts',
+            description: 'Host scripts run in the main application thread. They can intercept network requests, manipulate DOM, and communicate with the DevTools UI via RPC and events:',
+          },
+          context: {
+            title: 'Host Plugin Context',
+            description: 'The setup function receives a context object with these methods:',
+            emit: 'Send events to the View layer',
+            getOptions: 'Get plugin configuration options',
+            onFetch: 'Intercept fetch requests',
+            onXHR: 'Intercept XHR requests',
+            onResource: 'Monitor resource loading',
+            getTree: 'Get the React component tree',
+            highlightNode: 'Highlight a component in the page',
+          },
+          viewHooks: {
+            title: 'View Layer Hooks',
+            description: 'Use these React hooks in your plugin panel to communicate with the host script:',
+          },
+          inject: {
+            title: 'Injection Positions',
+            description: 'Control where scripts and HTML content are injected:',
+            head: 'Inject at the end of <head>',
+            headPrepend: 'Inject at the beginning of <head> (earliest execution)',
+            body: 'Inject at the end of <body>',
+            bodyPrepend: 'Inject at the beginning of <body>',
+            idle: 'Inject using requestIdleCallback (delayed)',
+          },
+          fullExample: {
+            title: 'Complete Plugin Example',
+            description: 'Here\'s a complete example showing all the pieces together:',
+          },
+          tip: {
+            title: 'Pro Tip',
+            content: 'Check out the sample-plugin in the playground directory for a working example. It demonstrates network interception, RPC communication, and custom UI rendering.',
+          },
+        },
         contributing: {
           title: 'Contributing',
           description: 'We welcome contributions from everyone! Here\'s how you can help improve React DevTools Plus.',
@@ -1292,6 +1361,7 @@ const resources = {
           openInEditor: '在编辑器中打开',
           scan: 'React 扫描',
           moduleGraph: '模块关系图',
+          plugins: '插件系统',
           integration: '集成',
           viteSetup: 'Vite 设置',
           webpackSetup: 'Webpack 设置',
@@ -1780,6 +1850,74 @@ const resources = {
           tip: {
             title: '架构提示',
             content: '使用模块关系图识别紧密耦合的模块。如果看到代码库中不相关部分之间存在过多连接，请考虑重构。',
+          },
+        },
+        plugins: {
+          title: '插件系统',
+          description: '使用自定义插件扩展 React DevTools Plus。创建强大的调试工具，支持宿主脚本、RPC 通信和自定义 UI 面板。',
+          whatIs: {
+            title: '什么是插件系统？',
+            description: '插件系统允许你创建自定义的 DevTools 扩展。插件可以拦截网络请求、操作 DOM、在宿主应用和 DevTools UI 之间通信，并向 DevTools 界面添加新面板。',
+          },
+          features: {
+            title: '核心功能',
+            items: [
+              '使用 React 组件定义自定义 DevTools 面板',
+              '在主应用线程中运行宿主脚本',
+              '宿主与视图之间的双向 RPC 通信',
+              '拦截和监控网络请求（fetch/XHR）',
+              '访问 React 组件树和选中的节点',
+              '注入自定义 HTML、CSS 和 JavaScript',
+              '完整的 TypeScript 支持和类型安全',
+            ],
+          },
+          install: {
+            title: '安装',
+            description: '安装 API 包以开始构建插件：',
+          },
+          definePlugin: {
+            title: '定义插件',
+            description: '使用 defineDevToolsPlugin 创建新插件。提供元数据、视图组件和可选配置：',
+          },
+          usage: {
+            title: '使用你的插件',
+            description: '在 Vite 或 Webpack 配置中注册你的插件：',
+          },
+          hostPlugin: {
+            title: '宿主脚本',
+            description: '宿主脚本运行在主应用线程中。它们可以拦截网络请求、操作 DOM，并通过 RPC 和事件与 DevTools UI 通信：',
+          },
+          context: {
+            title: '宿主插件上下文',
+            description: 'setup 函数接收一个包含以下方法的上下文对象：',
+            emit: '向视图层发送事件',
+            getOptions: '获取插件配置选项',
+            onFetch: '拦截 fetch 请求',
+            onXHR: '拦截 XHR 请求',
+            onResource: '监控资源加载',
+            getTree: '获取 React 组件树',
+            highlightNode: '在页面中高亮显示组件',
+          },
+          viewHooks: {
+            title: '视图层 Hooks',
+            description: '在插件面板中使用这些 React hooks 与宿主脚本通信：',
+          },
+          inject: {
+            title: '注入位置',
+            description: '控制脚本和 HTML 内容的注入位置：',
+            head: '在 <head> 末尾注入',
+            headPrepend: '在 <head> 开头注入（最早执行）',
+            body: '在 <body> 末尾注入',
+            bodyPrepend: '在 <body> 开头注入',
+            idle: '使用 requestIdleCallback 延迟注入',
+          },
+          fullExample: {
+            title: '完整插件示例',
+            description: '这是一个展示所有部分组合在一起的完整示例：',
+          },
+          tip: {
+            title: '专业提示',
+            content: '查看 playground 目录中的 sample-plugin 获取可运行的示例。它演示了网络拦截、RPC 通信和自定义 UI 渲染。',
           },
         },
         contributing: {

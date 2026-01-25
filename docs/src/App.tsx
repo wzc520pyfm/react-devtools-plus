@@ -22,6 +22,7 @@ import {
   Introduction,
   ModuleGraph,
   OpenInEditor,
+  Plugins,
   QuickStart,
   Scan,
   Timeline,
@@ -74,6 +75,7 @@ function App() {
           <Route path="features/open-in-editor" element={<OpenInEditor />} />
           <Route path="features/scan" element={<Scan />} />
           <Route path="features/module-graph" element={<ModuleGraph />} />
+          <Route path="features/plugins" element={<Plugins />} />
 
           {/* Integration */}
           <Route path="integration/vite" element={<ViteSetup />} />

@@ -12,6 +12,7 @@ import {
   Keyboard,
   Layers,
   Menu,
+  Puzzle,
   Settings,
   Timer,
   X,
@@ -66,6 +67,7 @@ export const DocsLayout: React.FC = () => {
         { title: t('docs.nav.openInEditor'), href: '/docs/features/open-in-editor', icon: Keyboard },
         { title: t('docs.nav.scan'), href: '/docs/features/scan', icon: Eye },
         { title: t('docs.nav.moduleGraph'), href: '/docs/features/module-graph', icon: GitBranch },
+        { title: t('docs.nav.plugins'), href: '/docs/features/plugins', icon: Puzzle },
       ],
     },
     {
