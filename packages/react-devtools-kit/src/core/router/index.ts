@@ -20,6 +20,10 @@ export interface RouteInfo {
   hasErrorBoundary?: boolean
   /** Dynamic segments in the path (e.g., :id, :userId) */
   params?: string[]
+  /** Whether this route requires exact match (React Router v5) */
+  exact?: boolean
+  /** Whether this route uses strict matching (React Router v5) */
+  strict?: boolean
 }
 
 export interface MatchedRoute {
@@ -201,7 +205,7 @@ function extractRouteFromElement(element: any, parentPath: string = ''): RouteIn
 }
 
 /**
- * Extract routes from Routes component's children prop
+ * Extract routes from Routes component's children prop (React Router v6)
  */
 function extractRoutesFromProps(props: any): RouteInfo[] {
   const routes: RouteInfo[] = []
@@ -216,6 +220,118 @@ function extractRoutesFromProps(props: any): RouteInfo[] {
       const route = extractRouteFromElement(child)
       if (route) {
         routes.push(route)
+      }
+    }
+  }
+
+  return routes
+}
+
+/**
+ * Get component name from React Router v5 Route props
+ */
+function getV5ComponentName(props: any): string | undefined {
+  // v5 uses component, render, or children props
+  if (props.component) {
+    return props.component.name || props.component.displayName
+  }
+  if (props.render) {
+    return 'render()'
+  }
+  if (typeof props.children === 'function') {
+    return 'children()'
+  }
+  return undefined
+}
+
+/**
+ * Extract route info from a React Router v5 Route element (JSX props)
+ */
+function extractRouteFromElementV5(element: any, parentPath: string = ''): RouteInfo | null {
+  if (!element || !element.props)
+    return null
+
+  const props = element.props
+
+  // v5 Route must have a path (unless it's a fallback route)
+  const path = props.path || '*'
+
+  // Calculate full path
+  let fullPath = path
+  if (path !== '*' && !path.startsWith('/') && parentPath) {
+    fullPath = `${parentPath}/${path}`.replace(/\/+/g, '/')
+  }
+
+  // Extract dynamic params from the path
+  const params = extractParamsFromPath(path)
+
+  // Extract nested routes from children (if children is an element, not a function)
+  const childRoutes: RouteInfo[] = []
+  if (props.children && typeof props.children !== 'function') {
+    const children = Array.isArray(props.children) ? props.children : [props.children]
+
+    for (const child of children) {
+      if (child && child.type && (child.type.name === 'Route' || child.type?.displayName === 'Route')) {
+        const childRoute = extractRouteFromElementV5(child, fullPath)
+        if (childRoute) {
+          childRoutes.push(childRoute)
+        }
+      }
+      // Also check for nested Switch
+      if (child && child.type && (child.type.name === 'Switch' || child.type?.displayName === 'Switch')) {
+        const switchChildren = extractRoutesFromSwitchProps(child.props, fullPath)
+        childRoutes.push(...switchChildren)
+      }
+    }
+  }
+
+  const hasChildren = childRoutes.length > 0
+
+  const routeInfo: RouteInfo = {
+    path: fullPath,
+    element: getV5ComponentName(props),
+    exact: props.exact === true,
+    strict: props.strict === true,
+    isLayout: hasChildren,
+    isLazy: isLazyElement(props.component),
+    params: params.length > 0 ? params : undefined,
+  }
+
+  if (hasChildren) {
+    routeInfo.children = childRoutes
+  }
+
+  return routeInfo
+}
+
+/**
+ * Extract routes from Switch component's children prop (React Router v5)
+ */
+function extractRoutesFromSwitchProps(props: any, parentPath: string = ''): RouteInfo[] {
+  const routes: RouteInfo[] = []
+
+  if (!props?.children)
+    return routes
+
+  const children = Array.isArray(props.children) ? props.children : [props.children]
+
+  for (const child of children) {
+    if (child && child.type) {
+      const typeName = child.type.name || child.type.displayName
+      if (typeName === 'Route') {
+        const route = extractRouteFromElementV5(child, parentPath)
+        if (route) {
+          routes.push(route)
+        }
+      }
+      // Handle Redirect (v5)
+      if (typeName === 'Redirect') {
+        const redirectInfo: RouteInfo = {
+          path: child.props?.from || '*',
+          element: `Redirect → ${child.props?.to || 'unknown'}`,
+          exact: child.props?.exact === true,
+        }
+        routes.push(redirectInfo)
       }
     }
   }
@@ -280,7 +396,7 @@ function extractRoutesFromFiber(fiber: FiberNode): RouteInfo[] {
 }
 
 /**
- * Find Routes component and extract route configuration
+ * Find Routes/Switch component and extract route configuration
  */
 function findAndExtractRoutes(fiber: FiberNode | null): RouteInfo[] {
   if (!fiber)
@@ -308,6 +424,15 @@ function findAndExtractRoutes(fiber: FiberNode | null): RouteInfo[] {
       }
     }
 
+    // Look for Switch component (React Router v5)
+    if (name === 'Switch') {
+      const switchRoutes = extractRoutesFromSwitchProps(props)
+      if (switchRoutes.length > 0) {
+        routes = switchRoutes
+        return // Found routes, no need to continue
+      }
+    }
+
     // Look for Router context or DataRoutes
     if (name === 'DataRoutes' || name === 'RoutesRenderer') {
       const fiberRoutes = extractRoutesFromFiber(node)
@@ -316,7 +441,7 @@ function findAndExtractRoutes(fiber: FiberNode | null): RouteInfo[] {
       }
     }
 
-    // Continue traversing to find Routes/Router components
+    // Continue traversing to find Routes/Switch/Router components
     if (node.child) {
       traverse(node.child)
     }
@@ -481,7 +606,8 @@ function detectRouterType(fiber: FiberNode | null): 'react-router' | 'unknown' |
       || name === 'BrowserRouter'
       || name === 'HashRouter'
       || name === 'MemoryRouter'
-      || name === 'Routes'
+      || name === 'Routes' // React Router v6
+      || name === 'Switch' // React Router v5
       || name === 'Route'
     ) {
       return 'react-router'

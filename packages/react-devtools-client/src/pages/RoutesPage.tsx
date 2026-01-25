@@ -14,6 +14,10 @@ interface RouteInfo {
   isLazy?: boolean
   hasErrorBoundary?: boolean
   params?: string[]
+  /** Whether this route requires exact match (React Router v5) */
+  exact?: boolean
+  /** Whether this route uses strict matching (React Router v5) */
+  strict?: boolean
 }
 
 interface MatchedRoute {
@@ -312,6 +316,16 @@ function RouteTreeItem({
           {route.hasErrorBoundary && (
             <Tag size="sm" color="error" variant="outline" className="shrink-0" style={smallTagStyle}>
               error
+            </Tag>
+          )}
+          {route.exact && (
+            <Tag size="sm" color="secondary" variant="outline" className="shrink-0" style={smallTagStyle}>
+              exact
+            </Tag>
+          )}
+          {route.strict && (
+            <Tag size="sm" color="secondary" variant="outline" className="shrink-0" style={smallTagStyle}>
+              strict
             </Tag>
           )}
         </div>
