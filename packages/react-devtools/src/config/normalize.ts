@@ -711,12 +711,37 @@ export function normalizePlugin(plugin: UserPlugin, projectRoot: string): Serial
     }
   }
 
-  return {
+  const serialized: SerializedPlugin = {
     name: newPlugin.name,
     title: newPlugin.title,
     icon: newPlugin.icon,
     view: serializedView,
   }
+
+  // Handle host config for object format plugins
+  if (newPlugin.host) {
+    const hostSrc = typeof newPlugin.host === 'string' ? newPlugin.host : newPlugin.host.src
+    const hostInject = typeof newPlugin.host === 'string' ? 'body' : (newPlugin.host.inject || 'body')
+
+    let resolvedHostSrc = hostSrc
+    if (resolvedHostSrc.startsWith('./') || resolvedHostSrc.startsWith('../')) {
+      resolvedHostSrc = path.resolve(projectRoot, resolvedHostSrc)
+    }
+
+    const injectConfig = normalizeInjectConfig(hostInject)
+    serialized.host = {
+      src: resolvedHostSrc,
+      inject: getSimpleInject(injectConfig),
+      injectConfig,
+    }
+  }
+
+  // Handle options for object format plugins
+  if (newPlugin.options) {
+    serialized.options = newPlugin.options
+  }
+
+  return serialized
 }
 
 /**

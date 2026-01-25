@@ -1,73 +1,302 @@
-import React from 'react'
-import { defineDevToolsPlugin } from 'react-devtools-plus/api'
+/**
+ * My Plugin Panel Component
+ * 本地插件面板组件
+ *
+ * 演示插件新能力（不打包模式）：
+ * - usePluginRpc: 调用宿主脚本的 RPC 方法
+ * - usePluginEvent: 监听宿主脚本发送的事件
+ * - usePluginOptions: 获取用户传入的插件选项
+ *
+ * 注意：本地插件必须使用 window.React，因为插件在 DevTools 客户端 iframe 中渲染，
+ * 需要使用与客户端相同的 React 实例。
+ */
 
-export const MyPlugin = defineDevToolsPlugin((props) => {
-  const { tree, selectedNodeId, theme } = props
+import type { Dispatch, EffectCallback, SetStateAction } from 'react'
+import type { DevToolsPluginProps } from 'react-devtools-plus/api'
+import { usePluginEvent, usePluginOptions, usePluginRpc } from 'react-devtools-plus/api'
+
+// 使用 DevTools 客户端的 React 实例，避免多 React 实例问题
+const React = (window as any).React as typeof import('react')
+const useState: <S>(initialState: S | (() => S)) => [S, Dispatch<SetStateAction<S>>] = React.useState
+const useEffect: (effect: EffectCallback, deps?: readonly unknown[]) => void = React.useEffect
+
+interface HostInfo {
+  url: string
+  title: string
+  userAgent: string
+  screenWidth: number
+  screenHeight: number
+  timestamp: number
+}
+
+interface LogEntry {
+  time: number
+  message: string
+}
+
+export interface MyPluginOptions {
+  /** 是否显示调试信息 */
+  showDebug?: boolean
+}
+
+export default function MyPlugin({ tree, selectedNodeId, theme }: DevToolsPluginProps) {
+  const [hostInfo, setHostInfo] = useState<HostInfo | null>(null)
+  const [clickCount, setClickCount] = useState(0)
+  const [logs, setLogs] = useState<LogEntry[]>([])
+  const [queryResult, setQueryResult] = useState<any>(null)
+  const [queryInput, setQueryInput] = useState('button')
+
+  const rpc = usePluginRpc('my-plugin')
+  const options = usePluginOptions<MyPluginOptions>('my-plugin')
+  const isDark = theme?.mode === 'dark'
+
+  // 初始加载
+  useEffect(() => {
+    rpc.call<HostInfo>('getHostInfo').then(setHostInfo).catch(() => {})
+    rpc.call<number>('getClickCount').then(setClickCount).catch(() => {})
+    rpc.call<LogEntry[]>('getLogs').then(setLogs).catch(() => {})
+  }, [rpc])
+
+  // 监听点击事件
+  usePluginEvent('click:count', (count: number) => {
+    setClickCount(count)
+  })
+
+  // 监听日志事件
+  usePluginEvent('log:add', (log: LogEntry) => {
+    setLogs(prev => [...prev.slice(-49), log])
+  })
+
+  // 监听心跳
+  usePluginEvent('heartbeat', () => {
+    // 可以在这里更新某些状态
+  })
+
+  const handleRefreshInfo = async () => {
+    const info = await rpc.call<HostInfo>('getHostInfo')
+    setHostInfo(info)
+  }
+
+  const handleResetCount = async () => {
+    const count = await rpc.call<number>('resetClickCount')
+    setClickCount(count)
+  }
+
+  const handleClearLogs = async () => {
+    await rpc.call('clearLogs')
+    setLogs([])
+  }
+
+  const handleQuery = async () => {
+    const result = await rpc.call('queryElements', queryInput)
+    setQueryResult(result)
+  }
+
+  const handleFlash = async () => {
+    await rpc.call('flashBackground')
+  }
 
   return (
-    <div className="h-full flex flex-col overflow-auto p-4">
-      <h1 className="mb-4 text-xl font-bold">My Custom Plugin</h1>
+    <div
+      className="h-full flex flex-col overflow-auto p-4"
+      style={{ background: isDark ? '#1a1a1a' : '#fafafa', color: isDark ? '#e5e5e5' : '#171717' }}
+    >
+      <h1 className="mb-2 text-xl font-bold">🧩 My Plugin (Local)</h1>
+      <p className="mb-4 text-sm text-gray-500">
+        演示本地插件（不打包模式）：Host Script + RPC 通信
+      </p>
 
-      <div className="grid grid-cols-1 gap-4">
-        {/* Theme Info */}
-        <div className="rounded bg-white p-4 shadow dark:bg-gray-800">
-          <h2 className="mb-2 font-semibold">Theme Context</h2>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Mode:</span>
-            <span className="rounded bg-gray-100 px-2 py-1 text-sm font-mono dark:bg-gray-700">
-              {theme?.mode || 'unknown'}
-            </span>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* Host Info Card */}
+        <div className="rounded-lg p-4 shadow" style={{ background: isDark ? '#262626' : '#fff' }}>
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="font-semibold" style={{ color: theme?.colors?.primary?.[500] || '#3b82f6' }}>
+              🖥️ 宿主信息 (RPC)
+            </h2>
+            <button
+              type="button"
+              onClick={handleRefreshInfo}
+              className="rounded px-2 py-1 text-xs"
+              style={{ background: isDark ? '#333' : '#e5e5e5' }}
+            >
+              刷新
+            </button>
           </div>
-        </div>
-
-        {/* Selection Info */}
-        <div className="rounded bg-white p-4 shadow dark:bg-gray-800">
-          <h2 className="mb-2 font-semibold">Selected Node</h2>
-          {selectedNodeId
+          {hostInfo
             ? (
-                <div>
-                  <div className="mb-1 text-sm text-gray-500">
-                    ID:
+                <div className="text-sm space-y-1">
+                  <div>
+                    <span className="text-gray-500">Title:</span>
                     {' '}
-                    <span className="text-black font-mono dark:text-white">{selectedNodeId}</span>
+                    {hostInfo.title}
                   </div>
-                  <p className="text-xs text-gray-400">Select components in the tree to see updates here.</p>
+                  <div>
+                    <span className="text-gray-500">URL:</span>
+                    {' '}
+                    <code className="text-xs">{hostInfo.url}</code>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Screen:</span>
+                    {' '}
+                    {hostInfo.screenWidth}
+                    x
+                    {hostInfo.screenHeight}
+                  </div>
                 </div>
               )
             : (
-                <p className="text-sm text-gray-400 italic">No component selected</p>
+                <p className="text-sm text-gray-400 italic">加载中...</p>
               )}
         </div>
 
-        {/* Tree Info */}
-        <div className="rounded bg-white p-4 shadow dark:bg-gray-800">
-          <h2 className="mb-2 font-semibold">Tree Stats</h2>
-          <div className="text-sm">
-            {tree
+        {/* Click Counter Card */}
+        <div className="rounded-lg p-4 shadow" style={{ background: isDark ? '#262626' : '#fff' }}>
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="font-semibold" style={{ color: theme?.colors?.primary?.[500] || '#3b82f6' }}>
+              🖱️ 点击计数 (Event)
+            </h2>
+            <button
+              type="button"
+              onClick={handleResetCount}
+              className="rounded px-2 py-1 text-xs"
+              style={{ background: isDark ? '#333' : '#e5e5e5' }}
+            >
+              重置
+            </button>
+          </div>
+          <div className="text-center">
+            <span className="text-4xl font-bold" style={{ color: theme?.colors?.primary?.[500] || '#3b82f6' }}>
+              {clickCount}
+            </span>
+            <p className="mt-1 text-xs text-gray-500">在宿主页面点击任意位置</p>
+          </div>
+        </div>
+
+        {/* DOM Query Card */}
+        <div className="rounded-lg p-4 shadow" style={{ background: isDark ? '#262626' : '#fff' }}>
+          <h2 className="mb-2 font-semibold" style={{ color: theme?.colors?.primary?.[500] || '#3b82f6' }}>
+            🔍 DOM 查询 (RPC)
+          </h2>
+          <div className="mb-2 flex gap-2">
+            <input
+              type="text"
+              value={queryInput}
+              onChange={e => setQueryInput(e.target.value)}
+              placeholder="CSS selector"
+              className="flex-1 rounded px-2 py-1 text-sm"
+              style={{ background: isDark ? '#333' : '#e5e5e5' }}
+            />
+            <button
+              type="button"
+              onClick={handleQuery}
+              className="rounded px-3 py-1 text-sm text-white"
+              style={{ background: theme?.colors?.primary?.[500] || '#3b82f6' }}
+            >
+              查询
+            </button>
+          </div>
+          {queryResult && (
+            <pre
+              className="max-h-32 overflow-auto rounded p-2 text-xs"
+              style={{ background: isDark ? '#333' : '#f0f0f0' }}
+            >
+              {JSON.stringify(queryResult, null, 2)}
+            </pre>
+          )}
+        </div>
+
+        {/* DOM Actions Card */}
+        <div className="rounded-lg p-4 shadow" style={{ background: isDark ? '#262626' : '#fff' }}>
+          <h2 className="mb-2 font-semibold" style={{ color: theme?.colors?.primary?.[500] || '#3b82f6' }}>
+            ⚡ DOM 操作 (RPC)
+          </h2>
+          <p className="mb-3 text-sm text-gray-500">演示从插件控制宿主页面</p>
+          <button
+            type="button"
+            onClick={handleFlash}
+            className="rounded px-4 py-2 text-white"
+            style={{ background: '#f59e0b' }}
+          >
+            ✨ 闪烁背景
+          </button>
+        </div>
+
+        {/* Logs Card */}
+        <div className="rounded-lg p-4 shadow lg:col-span-2" style={{ background: isDark ? '#262626' : '#fff' }}>
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="font-semibold" style={{ color: theme?.colors?.primary?.[500] || '#3b82f6' }}>
+              📜 实时日志 (Event)
+            </h2>
+            <button
+              type="button"
+              onClick={handleClearLogs}
+              className="rounded px-2 py-1 text-xs"
+              style={{ background: isDark ? '#333' : '#e5e5e5' }}
+            >
+              清空
+            </button>
+          </div>
+          <div
+            className="max-h-40 overflow-auto rounded p-2 text-xs font-mono"
+            style={{ background: isDark ? '#333' : '#f0f0f0' }}
+          >
+            {logs.length === 0
               ? (
-                  <p>
-                    Tree data available (root ID:
-                    {' '}
-                    {tree.rootID || 'unknown'}
-                    )
-                  </p>
+                  <span className="text-gray-400">暂无日志，在宿主页面点击试试...</span>
                 )
               : (
-                  <p className="text-gray-400 italic">Waiting for tree data...</p>
+                  logs.map(log => (
+                    <div key={log.time} className="py-0.5">
+                      <span className="text-gray-400">
+                        [
+                        {new Date(log.time).toLocaleTimeString()}
+                        ]
+                      </span>
+                      {' '}
+                      {log.message}
+                    </div>
+                  ))
                 )}
           </div>
         </div>
 
-        {/* Raw Context JSON */}
-        <div className="rounded bg-white p-4 shadow dark:bg-gray-800">
-          <h2 className="mb-2 font-semibold">Raw Context Data</h2>
-          <pre className="mt-2 overflow-auto rounded bg-gray-100 p-2 text-xs dark:bg-gray-900" style={{ maxHeight: '350px' }}>
-            {JSON.stringify(props, null, 2)}
+        {/* Plugin Options Card */}
+        <div className="rounded-lg p-4 shadow" style={{ background: isDark ? '#262626' : '#fff' }}>
+          <h2 className="mb-2 font-semibold" style={{ color: theme?.colors?.primary?.[500] || '#3b82f6' }}>
+            ⚙️ 插件选项
+          </h2>
+          <pre
+            className="rounded p-2 text-xs"
+            style={{ background: isDark ? '#333' : '#f0f0f0' }}
+          >
+            {JSON.stringify(options, null, 2)}
           </pre>
+        </div>
+
+        {/* DevTools Props Card */}
+        <div className="rounded-lg p-4 shadow" style={{ background: isDark ? '#262626' : '#fff' }}>
+          <h2 className="mb-2 font-semibold" style={{ color: theme?.colors?.primary?.[500] || '#3b82f6' }}>
+            📊 DevTools Props
+          </h2>
+          <div className="text-sm space-y-1">
+            <div>
+              <span className="text-gray-500">Theme:</span>
+              {' '}
+              {theme?.mode}
+            </div>
+            <div>
+              <span className="text-gray-500">Selected:</span>
+              {' '}
+              <code className="text-xs">{selectedNodeId || 'none'}</code>
+            </div>
+            <div>
+              <span className="text-gray-500">Tree:</span>
+              {' '}
+              {tree ? `Root ID: ${(tree as any).rootID || 'N/A'}` : 'loading...'}
+            </div>
+          </div>
         </div>
       </div>
     </div>
   )
-})
-
-export default MyPlugin
+}

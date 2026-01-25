@@ -36,7 +36,7 @@ import {
   resolvePluginConfig,
   validatePluginOptions,
 } from './config/normalize.js'
-import { DIR_OVERLAY } from './dir.js'
+import { DIR_DIST, DIR_OVERLAY } from './dir.js'
 import {
   createOutputConfig,
   createRollupInput,
@@ -349,6 +349,27 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           }
           // Module doesn't exist (React 16/17), use fallback
           return '\0__react-devtools-react-dom-client-fallback__'
+        }
+
+        // Resolve react-devtools-plus/api and @react-devtools-plus/api imports
+        // This is needed for local (unbundled) plugin host scripts
+        if (id === 'react-devtools-plus/api' || id === '@react-devtools-plus/api') {
+          // Resolve to the actual API module in the package
+          const apiPath = path.join(DIR_DIST, 'api.js')
+          if (fs.existsSync(apiPath)) {
+            return apiPath
+          }
+          // Fallback: try to resolve from node_modules
+          try {
+            const projectRoot = viteConfig?.root || process.cwd()
+            const apiModulePath = path.join(projectRoot, 'node_modules', '@react-devtools-plus', 'api', 'dist', 'index.js')
+            if (fs.existsSync(apiModulePath)) {
+              return apiModulePath
+            }
+          }
+          catch {
+            // Ignore errors
+          }
         }
 
         const normalizedId = id.startsWith('@id/') ? id.replace('@id/', '') : id

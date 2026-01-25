@@ -11,7 +11,21 @@
  */
 
 export {
+  // Non-hook API
+  createRpcClient,
+  // Plugin definition
   defineDevToolsPlugin,
+  // Host plugin
+  defineHostPlugin,
+  // Types
   type DevToolsPluginComponent,
   type DevToolsPluginMeta,
+  type DevToolsPluginProps,
+  getPluginOptions,
+  type HostPluginConfig,
+  type HostPluginContext,
+  // View hooks
+  usePluginEvent,
+  usePluginOptions,
+  usePluginRpc,
 } from '@react-devtools-plus/api'
