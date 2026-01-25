@@ -237,10 +237,12 @@ function createPluginRpcClient(pluginName: string): PluginRpcClient {
  * ```
  */
 export function usePluginRpc(pluginName?: string): PluginRpcClient {
-  // Lazy import React to avoid bundling issues
-  const React = (globalThis as any).React
+  // Use window.React to ensure we get the DevTools client's React instance
+  // This is important in micro-frontend (singleSpa) environments where multiple
+  // React instances may exist. DevTools always sets window.React in its iframe.
+  const React = typeof window !== 'undefined' ? (window as any).React : undefined
   if (!React) {
-    throw new Error('usePluginRpc requires React to be available globally')
+    throw new Error('usePluginRpc requires React to be available on window')
   }
 
   const useRef = React.useRef as <T>(initialValue: T) => { current: T }
@@ -287,9 +289,10 @@ export function usePluginEvent(
   handler: (data: any) => void,
   deps: any[] = [],
 ): void {
-  const React = (globalThis as any).React
+  // Use window.React for micro-frontend compatibility (see usePluginRpc comment)
+  const React = typeof window !== 'undefined' ? (window as any).React : undefined
   if (!React) {
-    throw new Error('usePluginEvent requires React to be available globally')
+    throw new Error('usePluginEvent requires React to be available on window')
   }
 
   const useEffect = React.useEffect as (effect: () => void | (() => void), deps?: any[]) => void
@@ -330,9 +333,10 @@ export function usePluginEvent(
  * ```
  */
 export function usePluginOptions<T = Record<string, any>>(pluginName?: string): T {
-  const React = (globalThis as any).React
+  // Use window.React for micro-frontend compatibility (see usePluginRpc comment)
+  const React = typeof window !== 'undefined' ? (window as any).React : undefined
   if (!React) {
-    throw new Error('usePluginOptions requires React to be available globally')
+    throw new Error('usePluginOptions requires React to be available on window')
   }
 
   const useState = React.useState as <S>(initialState: S) => [S, (newState: S) => void]
