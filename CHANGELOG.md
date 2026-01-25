@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.9.3...main
+
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.9.3...main)
+
+### 🐛 Bug Fixes
+
+- Update usePluginRpc, usePluginEvent, and usePluginOptions to require React from window for micro-frontend compatibility ([3bf065d](https://github.com/wzc520pyfm/react-devtools-plus/commit/3bf065d))
+
+### ❤️ Contributors
+
+- Wzc520pyfm ([@wzc520pyfm](https://github.com/wzc520pyfm))
+
 ## v0.9.2...main
 
 [compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.9.2...main)
