@@ -1,6 +1,24 @@
 # Changelog
 
 
+## v0.9.5...main
+
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.9.5...main)
+
+### 🚀 Features
+
+- Support react-router v5 compatibility ([#21](https://github.com/wzc520pyfm/react-devtools-plus/pull/21))
+- Add warnings for filtered properties in context serialization ([#22](https://github.com/wzc520pyfm/react-devtools-plus/pull/22))
+
+### 🐛 Bug Fixes
+
+- Add dynamic tooltip positioning to NavItem in Sidebar component ([#23](https://github.com/wzc520pyfm/react-devtools-plus/pull/23))
+- Use window.location.origin directly to prevent cross-origin errors in GraphPage ([#24](https://github.com/wzc520pyfm/react-devtools-plus/pull/24))
+
+### ❤️ Contributors
+
+- Wzc520pyfm ([@wzc520pyfm](https://github.com/wzc520pyfm))
+
 ## v0.9.4...main
 
 [compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.9.4...main)
