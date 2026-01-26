@@ -1,5 +1,6 @@
 import type { LoadedPlugin } from '~/types/plugin'
 import { Icon } from '@iconify/react'
+import { useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import ReactLogo from '~/components/assets/ReactLogo'
 
@@ -141,19 +142,41 @@ function NavItem({ to, icon: Icon, label }: { to: string, icon: any, label: stri
   const location = useLocation()
   const isActive = location.pathname === to
   const navigate = useNavigate()
+  const itemRef = useRef<HTMLDivElement>(null)
+  const [tooltipTop, setTooltipTop] = useState(0)
+  const [isHovering, setIsHovering] = useState(false)
+
+  const handleMouseEnter = () => {
+    if (itemRef.current) {
+      const rect = itemRef.current.getBoundingClientRect()
+      // Center the tooltip vertically with the menu item
+      setTooltipTop(rect.top + rect.height / 2)
+    }
+    setIsHovering(true)
+  }
+
+  const handleMouseLeave = () => {
+    setIsHovering(false)
+  }
 
   return (
     <div
+      ref={itemRef}
       className={`group relative flex cursor-pointer items-center justify-center rounded-lg p-2 transition-colors ${isActive ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-400'}`}
       onClick={() => navigate(to)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <Icon className="h-6 w-6" />
-      {/* Tooltip using fixed positioning to escape overflow clipping */}
-      {/* We use a simpler approach: render outside the flow but position manually if needed, or just rely on group-hover + fixed */}
-      {/* Note: fixed positioning is relative to viewport, so left-14 works assuming sidebar is always on left edge */}
-      <div className="fixed left-14 z-[100] hidden whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 shadow-md transition-opacity group-hover:block group-hover:opacity-100">
-        {label}
-      </div>
+      {/* Tooltip using fixed positioning with dynamic top position to handle scrolling */}
+      {isHovering && (
+        <div
+          className="fixed left-14 z-[100] whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white shadow-md -translate-y-1/2"
+          style={{ top: tooltipTop }}
+        >
+          {label}
+        </div>
+      )}
     </div>
   )
 }
