@@ -4,6 +4,15 @@ import { Badge, Checkbox, Input } from '@react-devtools-plus/ui'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 /**
+ * Warning about filtered properties in context values
+ */
+interface ContextWarning {
+  type: 'filtered_property'
+  property: string
+  message: string
+}
+
+/**
  * Context Provider information (matches kit types)
  */
 interface ContextProviderInfo {
@@ -19,6 +28,7 @@ interface ContextProviderInfo {
     lineNumber: number
     columnNumber: number
   }
+  warnings?: ContextWarning[]
 }
 
 interface ContextConsumerInfo {
@@ -94,6 +104,16 @@ function RefreshIcon({ className }: { className?: string }) {
       <path d="M3 3v5h5" />
       <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
       <path d="M16 16h5v5" />
+    </svg>
+  )
+}
+
+function WarningIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+      <path d="M12 9v4" />
+      <path d="M12 17h.01" />
     </svg>
   )
 }
@@ -750,6 +770,32 @@ function ProviderCard({ provider, level = 0, onSelectConsumer, onValueChange }: 
       {/* Content */}
       {isExpanded && (
         <div className="p-4">
+          {/* Warnings section */}
+          {provider.warnings && provider.warnings.length > 0 && (
+            <div className="mb-3">
+              <div className="flex items-start gap-2 border border-amber-200 rounded-lg bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20">
+                <WarningIcon className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-500" />
+                <div className="flex-1">
+                  <div className="mb-1 text-xs text-amber-700 font-medium dark:text-amber-400">
+                    Some properties are hidden
+                  </div>
+                  <div className="text-xs text-amber-600 dark:text-amber-500">
+                    {provider.warnings.map(warning => (
+                      <div key={`${warning.type}-${warning.property}`} className="mb-1 last:mb-0">
+                        <code className="rounded bg-amber-100 px-1 py-0.5 text-amber-800 dark:bg-amber-800/50 dark:text-amber-300">
+                          {warning.property}
+                        </code>
+                        <span className="ml-1">
+                          was filtered to prevent serialization errors. This does not affect your application.
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Value section */}
           <div className="mb-3">
             <div className="mb-1 flex items-center gap-2 text-xs text-gray-500 font-medium tracking-wide uppercase dark:text-gray-400">

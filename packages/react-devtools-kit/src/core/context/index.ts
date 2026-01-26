@@ -8,6 +8,17 @@ import { REACT_TAGS } from '../../types'
 import { getDisplayName, getFiberId } from '../fiber/utils'
 
 /**
+ * Warning about filtered properties in context values
+ */
+export interface ContextWarning {
+  type: 'filtered_property'
+  /** The property name that was filtered */
+  property: string
+  /** Human-readable message */
+  message: string
+}
+
+/**
  * Information about a Context Provider
  */
 export interface ContextProviderInfo {
@@ -30,6 +41,8 @@ export interface ContextProviderInfo {
     lineNumber: number
     columnNumber: number
   }
+  /** Warnings about the context value (e.g., filtered properties) */
+  warnings?: ContextWarning[]
 }
 
 /**
@@ -51,9 +64,33 @@ export interface ContextTree {
 }
 
 /**
- * Serialize a value into a displayable PropValue
+ * Properties that can cause prototype pollution and should be filtered out
+ * SuperJSON will throw an error if these properties are present in the object
  */
-function serializeValue(value: any, depth = 0, maxDepth = 6): PropValue {
+const DANGEROUS_PROPERTIES = new Set(['constructor', '__proto__', 'prototype'])
+
+/**
+ * Check if a property key is safe to serialize (not a prototype pollution risk)
+ */
+function isSafePropertyKey(key: string): boolean {
+  return !DANGEROUS_PROPERTIES.has(key)
+}
+
+/**
+ * Collector for filtered property warnings during serialization
+ */
+interface SerializeContext {
+  filteredProperties: Set<string>
+}
+
+/**
+ * Serialize a value into a displayable PropValue
+ * @param value - The value to serialize
+ * @param depth - Current recursion depth
+ * @param maxDepth - Maximum recursion depth
+ * @param context - Optional context to collect warnings about filtered properties
+ */
+function serializeValue(value: any, depth = 0, maxDepth = 6, context?: SerializeContext): PropValue {
   if (value === null) {
     return { type: 'null', value: 'null' }
   }
@@ -96,7 +133,7 @@ function serializeValue(value: any, depth = 0, maxDepth = 6): PropValue {
   if (Array.isArray(value)) {
     const children: Record<string, PropValue> = {}
     value.forEach((item, index) => {
-      children[String(index)] = serializeValue(item, depth + 1, maxDepth)
+      children[String(index)] = serializeValue(item, depth + 1, maxDepth, context)
     })
 
     return {
@@ -113,12 +150,22 @@ function serializeValue(value: any, depth = 0, maxDepth = 6): PropValue {
       return { type: 'element', value: `<${elementName} />` }
     }
 
-    const keys = Object.keys(value)
+    const allKeys = Object.keys(value)
+    // Filter out dangerous properties that could cause prototype pollution errors
+    // SuperJSON throws: "Detected property constructor. This is a property pollution risk"
+    const safeKeys = allKeys.filter(isSafePropertyKey)
+    const filteredKeys = allKeys.filter(key => !isSafePropertyKey(key))
+
+    // Collect filtered properties for warning
+    if (context && filteredKeys.length > 0) {
+      filteredKeys.forEach(key => context.filteredProperties.add(key))
+    }
+
     const children: Record<string, PropValue> = {}
 
-    for (const key of keys) {
+    for (const key of safeKeys) {
       try {
-        children[key] = serializeValue(value[key], depth + 1, maxDepth)
+        children[key] = serializeValue(value[key], depth + 1, maxDepth, context)
       }
       catch {
         children[key] = { type: 'unknown', value: '[Error]' }
@@ -128,12 +175,31 @@ function serializeValue(value: any, depth = 0, maxDepth = 6): PropValue {
     return {
       type: 'object',
       value: `Object`,
-      preview: keys.length > 0 ? `{${keys.slice(0, 3).join(', ')}${keys.length > 3 ? ', ...' : ''}}` : '{}',
+      preview: safeKeys.length > 0 ? `{${safeKeys.slice(0, 3).join(', ')}${safeKeys.length > 3 ? ', ...' : ''}}` : '{}',
       children: Object.keys(children).length > 0 ? children : undefined,
     }
   }
 
   return { type: 'unknown', value: String(value) }
+}
+
+/**
+ * Serialize a context value and collect any warnings
+ */
+function serializeContextValue(value: any): { propValue: PropValue, warnings: ContextWarning[] } {
+  const context: SerializeContext = { filteredProperties: new Set() }
+  const propValue = serializeValue(value, 0, 6, context)
+
+  const warnings: ContextWarning[] = []
+  for (const property of context.filteredProperties) {
+    warnings.push({
+      type: 'filtered_property',
+      property,
+      message: `Property "${property}" was hidden to prevent prototype pollution errors. This does not affect your application.`,
+    })
+  }
+
+  return { propValue, warnings }
 }
 
 /**
@@ -278,10 +344,13 @@ function buildProviderInfo(fiber: FiberNode, visited: WeakSet<FiberNode>): Conte
     (consumer, index, self) => index === self.findIndex(c => c.id === consumer.id),
   )
 
+  // Serialize context value and collect any warnings about filtered properties
+  const { propValue, warnings } = serializeContextValue(getContextValue(fiber))
+
   const info: ContextProviderInfo = {
     id: getFiberId(fiber),
     name: getContextDisplayName(fiber),
-    value: serializeValue(getContextValue(fiber)),
+    value: propValue,
     fiberId: getFiberId(fiber),
     consumerCount: uniqueConsumers.length,
     consumers: uniqueConsumers,
@@ -293,6 +362,7 @@ function buildProviderInfo(fiber: FiberNode, visited: WeakSet<FiberNode>): Conte
           columnNumber: fiber._debugSource.columnNumber,
         }
       : undefined,
+    warnings: warnings.length > 0 ? warnings : undefined,
   }
 
   // Find nested providers of the same context type

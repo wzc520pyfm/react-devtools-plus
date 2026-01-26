@@ -7,6 +7,19 @@ import { REACT_TAGS } from '../../types'
 import { getDisplayName, getFiberId } from './utils'
 
 /**
+ * Properties that can cause prototype pollution and should be filtered out
+ * SuperJSON throws: "Detected property constructor. This is a property pollution risk"
+ */
+const DANGEROUS_PROPERTIES = new Set(['constructor', '__proto__', 'prototype'])
+
+/**
+ * Check if a property key is safe to serialize (not a prototype pollution risk)
+ */
+function isSafePropertyKey(key: string): boolean {
+  return !DANGEROUS_PROPERTIES.has(key)
+}
+
+/**
  * Serialize a value into a displayable PropValue
  */
 function serializeValue(value: any, depth = 0, maxDepth = 8): PropValue {
@@ -74,8 +87,9 @@ function serializeValue(value: any, depth = 0, maxDepth = 8): PropValue {
       return { type: 'element', value: `<${elementName} />` }
     }
 
-    // Regular object - serialize all properties as children
-    const keys = Object.keys(value)
+    // Filter out dangerous properties that could cause prototype pollution errors
+    // SuperJSON throws: "Detected property constructor. This is a property pollution risk"
+    const keys = Object.keys(value).filter(isSafePropertyKey)
     const children: Record<string, PropValue> = {}
 
     for (const key of keys) {
