@@ -245,6 +245,161 @@ function getV5ComponentName(props: any): string | undefined {
 }
 
 /**
+ * Check if a component is likely a React Router v5 Route by its props
+ */
+function isLikelyV5Route(props: any): boolean {
+  if (!props)
+    return false
+  // v5 Route typically has path and one of: component, render, children
+  const hasPath = typeof props.path === 'string' || props.path === undefined // path can be undefined for catch-all routes
+  const hasRouteProps = props.component || props.render || props.children !== undefined
+  const hasExactOrStrict = props.exact !== undefined || props.strict !== undefined
+  const hasLocation = props.location !== undefined
+  const hasComputedMatch = props.computedMatch !== undefined
+
+  return (hasPath && hasRouteProps) || hasExactOrStrict || hasComputedMatch || hasLocation
+}
+
+/**
+ * Check if a component is likely a React Router v5 Switch by its props/children
+ */
+function isLikelyV5Switch(props: any): boolean {
+  if (!props || !props.children)
+    return false
+
+  const children = Array.isArray(props.children) ? props.children : [props.children]
+
+  // Check if children look like Route elements
+  for (const child of children) {
+    if (child && child.props) {
+      if (isLikelyV5Route(child.props)) {
+        return true
+      }
+    }
+  }
+  return false
+}
+
+/**
+ * Check if a component is likely a React Router v5 Redirect by its props
+ */
+function isLikelyV5Redirect(props: any): boolean {
+  if (!props)
+    return false
+  // Redirect has 'to' prop and optionally 'from', 'push', 'exact'
+  return typeof props.to === 'string' || (typeof props.to === 'object' && props.to !== null)
+}
+
+/**
+ * Check if a fiber node is a React Router v5 context provider
+ * React Router v5 uses __RouterContext with value containing { history, location, match, staticContext }
+ */
+function isRouterContextProvider(fiber: FiberNode): boolean {
+  const props = fiber.memoizedProps || fiber.pendingProps
+  if (!props?.value)
+    return false
+
+  const value = props.value
+  // React Router context has these properties
+  return !!(value.history && value.location && typeof value.match === 'object')
+}
+
+/**
+ * Check if a fiber node is a React Router v5 Route context provider
+ * Route wraps children in a context provider with match info
+ */
+function isRouteContextProvider(fiber: FiberNode): boolean {
+  const props = fiber.memoizedProps || fiber.pendingProps
+  if (!props?.value)
+    return false
+
+  const value = props.value
+  // Route context has match with path, url, params
+  return !!(value.match && typeof value.match.path === 'string')
+}
+
+/**
+ * Extract routes from React Router v5 by traversing fiber tree and finding Route context providers
+ * This works even when component names are minified
+ */
+function extractRoutesFromFiberV5(fiber: FiberNode): RouteInfo[] {
+  const routes: RouteInfo[] = []
+  const visited = new WeakSet<FiberNode>()
+  const seenPaths = new Set<string>()
+
+  function traverse(node: FiberNode | null): void {
+    if (!node || visited.has(node))
+      return
+
+    visited.add(node)
+
+    const props = node.memoizedProps || node.pendingProps
+
+    // Method 1: Check for Route context provider (works with minified code)
+    if (isRouteContextProvider(node)) {
+      const value = props.value
+      const match = value.match
+      const path = match.path || match.url || '/'
+
+      // Avoid duplicates
+      if (!seenPaths.has(path)) {
+        seenPaths.add(path)
+
+        const routeInfo: RouteInfo = {
+          path,
+          params: match.params ? Object.keys(match.params) : undefined,
+          exact: match.isExact,
+        }
+
+        // Try to find the rendered element name
+        if (node.child) {
+          const childName = getDisplayName(node.child)
+          if (childName && childName !== 'Anonymous' && childName.length > 1) {
+            routeInfo.element = childName
+          }
+        }
+
+        routes.push(routeInfo)
+      }
+    }
+
+    // Method 2: Check props for Switch-like structure
+    if (props?.children) {
+      const children = Array.isArray(props.children) ? props.children : [props.children]
+
+      // Check if this looks like a Switch (has Route-like children)
+      let hasRouteChildren = false
+      for (const child of children) {
+        if (child && child.props && isLikelyV5Route(child.props)) {
+          hasRouteChildren = true
+          const route = extractRouteFromElementV5(child)
+          if (route && !seenPaths.has(route.path)) {
+            seenPaths.add(route.path)
+            routes.push(route)
+          }
+        }
+      }
+
+      // If we found route children, don't traverse into them again
+      if (hasRouteChildren) {
+        return
+      }
+    }
+
+    // Continue traversing
+    if (node.child) {
+      traverse(node.child)
+    }
+    if (node.sibling) {
+      traverse(node.sibling)
+    }
+  }
+
+  traverse(fiber)
+  return routes
+}
+
+/**
  * Extract route info from a React Router v5 Route element (JSX props)
  */
 function extractRouteFromElementV5(element: any, parentPath: string = ''): RouteInfo | null {
@@ -271,16 +426,25 @@ function extractRouteFromElementV5(element: any, parentPath: string = ''): Route
     const children = Array.isArray(props.children) ? props.children : [props.children]
 
     for (const child of children) {
-      if (child && child.type && (child.type.name === 'Route' || child.type?.displayName === 'Route')) {
-        const childRoute = extractRouteFromElementV5(child, fullPath)
-        if (childRoute) {
-          childRoutes.push(childRoute)
+      if (child && child.type) {
+        const typeName = child.type.name || child.type?.displayName
+
+        // Check for Route by name or props
+        const isRoute = typeName === 'Route' || isLikelyV5Route(child.props)
+        const isSwitch = typeName === 'Switch' || isLikelyV5Switch(child.props)
+        const isRedirect = typeName === 'Redirect' || isLikelyV5Redirect(child.props)
+
+        if (isRoute && !isRedirect) {
+          const childRoute = extractRouteFromElementV5(child, fullPath)
+          if (childRoute) {
+            childRoutes.push(childRoute)
+          }
         }
-      }
-      // Also check for nested Switch
-      if (child && child.type && (child.type.name === 'Switch' || child.type?.displayName === 'Switch')) {
-        const switchChildren = extractRoutesFromSwitchProps(child.props, fullPath)
-        childRoutes.push(...switchChildren)
+        // Also check for nested Switch
+        else if (isSwitch) {
+          const switchChildren = extractRoutesFromSwitchProps(child.props, fullPath)
+          childRoutes.push(...switchChildren)
+        }
       }
     }
   }
@@ -318,17 +482,24 @@ function extractRoutesFromSwitchProps(props: any, parentPath: string = ''): Rout
   for (const child of children) {
     if (child && child.type) {
       const typeName = child.type.name || child.type.displayName
-      if (typeName === 'Route') {
+
+      // Check by name first, then by props characteristics (for minified code)
+      const isRoute = typeName === 'Route' || isLikelyV5Route(child.props)
+      const isRedirect = typeName === 'Redirect' || isLikelyV5Redirect(child.props)
+
+      if (isRoute && !isRedirect) {
         const route = extractRouteFromElementV5(child, parentPath)
         if (route) {
           routes.push(route)
         }
       }
       // Handle Redirect (v5)
-      if (typeName === 'Redirect') {
+      else if (isRedirect) {
+        const to = child.props?.to
+        const toPath = typeof to === 'string' ? to : (to?.pathname || 'unknown')
         const redirectInfo: RouteInfo = {
           path: child.props?.from || '*',
-          element: `Redirect → ${child.props?.to || 'unknown'}`,
+          element: `Redirect → ${toPath}`,
           exact: child.props?.exact === true,
         }
         routes.push(redirectInfo)
@@ -424,8 +595,9 @@ function findAndExtractRoutes(fiber: FiberNode | null): RouteInfo[] {
       }
     }
 
-    // Look for Switch component (React Router v5)
-    if (name === 'Switch') {
+    // Look for Switch component (React Router v5) - by name or by props characteristics
+    const isSwitch = name === 'Switch' || isLikelyV5Switch(props)
+    if (isSwitch) {
       const switchRoutes = extractRoutesFromSwitchProps(props)
       if (switchRoutes.length > 0) {
         routes = switchRoutes
@@ -451,6 +623,13 @@ function findAndExtractRoutes(fiber: FiberNode | null): RouteInfo[] {
   }
 
   traverse(fiber)
+
+  // Fallback: If no routes found via component names/props, try context-based detection
+  // This works even when component names are minified
+  if (routes.length === 0) {
+    routes = extractRoutesFromFiberV5(fiber)
+  }
+
   return routes
 }
 
@@ -599,8 +778,9 @@ function detectRouterType(fiber: FiberNode | null): 'react-router' | 'unknown' |
     visited.add(node)
 
     const name = getDisplayName(node)
+    const props = node.memoizedProps || node.pendingProps
 
-    // Check for React Router components
+    // Check for React Router components by name
     if (
       name === 'Router'
       || name === 'BrowserRouter'
@@ -610,6 +790,17 @@ function detectRouterType(fiber: FiberNode | null): 'react-router' | 'unknown' |
       || name === 'Switch' // React Router v5
       || name === 'Route'
     ) {
+      return 'react-router'
+    }
+
+    // Also check by props characteristics (for minified code)
+    if (isLikelyV5Switch(props) || isLikelyV5Route(props)) {
+      return 'react-router'
+    }
+
+    // Check for Router context provider (works with minified code)
+    // React Router v5 provides context with { history, location, match }
+    if (isRouterContextProvider(node) || isRouteContextProvider(node)) {
       return 'react-router'
     }
 
