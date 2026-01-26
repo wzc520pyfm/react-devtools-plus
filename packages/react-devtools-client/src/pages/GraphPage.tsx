@@ -65,7 +65,10 @@ export function GraphPage() {
   const fetchGraph = useCallback(async () => {
     try {
       setError(null)
-      const origin = window.parent?.location?.origin || window.location.origin
+      // Use window.location.origin directly to avoid cross-origin errors
+      // when DevTools iframe and parent page are on different domains
+      // (e.g., parent on example.com, DevTools on localhost:8080)
+      const origin = window.location.origin
       const pathname = window.location.pathname.replace(/#.*$/, '').replace(/\/$/, '')
 
       // Check if running in Next.js environment (custom path like /devtools)
