@@ -35,16 +35,22 @@ function init() {
   if (!container)
     return
 
-  let config = (window as any).__REACT_DEVTOOLS_CONFIG__
+  let config: any = null
 
-  // If not found in current window (e.g. iframe), try parent window
-  if (!config && window.parent && window.parent !== window) {
+  // For iframe case (DevTools panel), always try parent window first
+  // because config is injected into the main page, not the iframe
+  if (window.parent && window.parent !== window) {
     try {
       config = (window.parent as any).__REACT_DEVTOOLS_CONFIG__
     }
     catch (e) {
       // Ignore cross-origin errors
     }
+  }
+
+  // Fallback to current window (for standalone/non-iframe case)
+  if (!config) {
+    config = (window as any).__REACT_DEVTOOLS_CONFIG__
   }
 
   const themeConfig = {

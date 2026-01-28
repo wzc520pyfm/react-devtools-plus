@@ -13,22 +13,24 @@
       // Pre-apply theme to prevent flash of unstyled content (FOUC)
       try {
         // Check parent config first (since we are inside iframe)
-        let config = null
+        let parentConfig = null
         if (window.parent && window.parent !== window) {
           try {
-            config = window.parent.__REACT_DEVTOOLS_CONFIG__
+            parentConfig = window.parent.__REACT_DEVTOOLS_CONFIG__
           } catch (e) {}
         }
 
-        // Also check local storage as fallback
-        if (!config) {
+        // Get theme from parent config
+        let theme = parentConfig?.theme
+
+        // Fallback to localStorage (stored format is { mode, primaryColor }, not { theme: {...} })
+        if (!theme) {
           try {
             const stored = localStorage.getItem('react-devtools-panel-theme')
-            if (stored) config = JSON.parse(stored)
+            if (stored) theme = JSON.parse(stored)
           } catch (e) {}
         }
 
-        const theme = config?.theme
         const mode = theme?.mode || 'auto'
         const isDark = mode === 'dark' || (mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)
 
