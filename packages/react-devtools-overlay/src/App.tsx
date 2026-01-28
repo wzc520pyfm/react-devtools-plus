@@ -39,19 +39,38 @@ function useInitialTheme() {
     // Apply theme immediately on mount to avoid flicker
     const applyTheme = () => {
       try {
+        // Get config theme (from vite.config.ts)
         const config = (window as any).__REACT_DEVTOOLS_CONFIG__
-        const theme = config?.theme
+        const configTheme = config?.theme
 
-        if (!theme)
+        // Get user preference from localStorage (stored by panel's ThemeProvider)
+        let userTheme: { mode?: string, primaryColor?: string } | null = null
+        try {
+          const stored = localStorage.getItem('react-devtools-panel-theme')
+          if (stored) {
+            userTheme = JSON.parse(stored)
+          }
+        }
+        catch {
+          // Ignore localStorage errors
+        }
+
+        // Merge themes: user preference takes priority over config
+        const theme = {
+          mode: userTheme?.mode || configTheme?.mode,
+          primaryColor: userTheme?.primaryColor || configTheme?.primaryColor,
+        }
+
+        if (!theme.mode && !theme.primaryColor)
           return
 
-        const shouldBeDark = theme?.mode === 'dark'
-          || (theme?.mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        const shouldBeDark = theme.mode === 'dark'
+          || (theme.mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)
 
         setIsDark(!!shouldBeDark)
 
         // Always set the variable, using default if not provided
-        const rawPrimaryColor = theme?.primaryColor
+        const rawPrimaryColor = theme.primaryColor
         const primaryColor = rawPrimaryColor || '#00D8FF'
 
         // Resolve preset colors (case-insensitive)
