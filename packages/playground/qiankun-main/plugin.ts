@@ -18,8 +18,8 @@ export default createUmiPlugin({
   },
 
   theme: {
-    mode: 'auto',
-    primaryColor: 'blue',
+    mode: 'dark',
+    primaryColor: 'orange',
   },
 
   launchEditor: 'cursor',

@@ -8,6 +8,7 @@
 import type { ReactDevToolsPluginOptions } from '../config/types'
 import fs from 'node:fs'
 import path from 'node:path'
+import { generateConfigInjectionCode } from '../codegen'
 import { resolvePluginConfig } from '../config/normalize'
 import { DIR_OVERLAY } from '../dir'
 import {
@@ -205,7 +206,22 @@ if (typeof window !== 'undefined') {
     api.addHTMLHeadScripts(() => {
       const scripts: any[] = []
 
-      // DevTools hook (must be first, before React loads)
+      // Config injection (must be first, before everything else)
+      const configCode = generateConfigInjectionCode({
+        clientUrl: pluginConfig.clientUrl,
+        rootSelector: pluginConfig.rootSelector,
+        microFrontend: pluginConfig.microFrontend,
+        theme: pluginConfig.theme,
+        assets: pluginConfig.assets,
+        launchEditor: pluginConfig.launchEditor,
+      })
+      if (configCode) {
+        scripts.push({
+          content: configCode,
+        })
+      }
+
+      // DevTools hook (must be before React loads)
       scripts.push({
         content: `
 (function() {
