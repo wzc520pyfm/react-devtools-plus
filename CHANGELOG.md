@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.9.7...main
+
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.9.7...main)
+
+### 🐛 Bug Fixes
+
+- Fix theme conf ([#26](https://github.com/wzc520pyfm/react-devtools-plus/pull/26))
+
+### ❤️ Contributors
+
+- Wzc520pyfm ([@wzc520pyfm](https://github.com/wzc520pyfm))
+
 ## v0.9.6...main
 
 [compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.9.6...main)
