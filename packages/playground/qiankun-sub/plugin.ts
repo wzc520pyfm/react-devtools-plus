@@ -25,7 +25,7 @@ export default createUmiPlugin({
   },
 
   theme: {
-    mode: 'auto',
+    mode: 'dark',
     primaryColor: 'green', // 子应用使用绿色主题，便于区分
   },
 

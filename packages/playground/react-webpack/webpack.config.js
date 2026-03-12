@@ -54,6 +54,10 @@ module.exports = {
     }),
     reactDevToolsPlus({
       launchEditor: 'cursor',
+      theme: {
+        mode: 'dark',
+        primaryColor: 'orange',
+      },
       // enabledEnvironments: ['development', 'test'],
       plugins: [
         // ✨ 新 API：可调用格式（推荐）
