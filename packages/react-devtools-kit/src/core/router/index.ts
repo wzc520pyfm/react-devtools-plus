@@ -170,10 +170,26 @@ function extractRouteFromElement(element: any, parentPath: string = ''): RouteIn
     const children = Array.isArray(props.children) ? props.children : [props.children]
 
     for (const child of children) {
-      if (child && child.type && (child.type.name === 'Route' || child.type?.displayName === 'Route')) {
-        const childRoute = extractRouteFromElement(child, fullPath)
-        if (childRoute) {
-          childRoutes.push(childRoute)
+      // Skip null/undefined children
+      if (!child)
+        continue
+
+      // Check if child has props (it's a React element)
+      if (child.props) {
+        // Check by name first
+        const isRouteByName = child.type?.name === 'Route' || child.type?.displayName === 'Route'
+        // Then by props characteristics (for minified code or wrapped components)
+        const isRouteByProps = isLikelyV6Route(child.props)
+        // Also check if it has typical Route props (path, element, index)
+        const hasTypicalRouteProps = child.props.path !== undefined
+          || child.props.element !== undefined
+          || child.props.index !== undefined
+
+        if (isRouteByName || isRouteByProps || hasTypicalRouteProps) {
+          const childRoute = extractRouteFromElement(child, fullPath)
+          if (childRoute) {
+            childRoutes.push(childRoute)
+          }
         }
       }
     }
@@ -205,6 +221,134 @@ function extractRouteFromElement(element: any, parentPath: string = ''): RouteIn
 }
 
 /**
+ * Check if a component is likely a React Router v6 Route by its props
+ */
+function isLikelyV6Route(props: any): boolean {
+  if (!props)
+    return false
+  // v6 Route has 'element' prop (instead of v5's 'component' or 'render')
+  // or 'index' prop (index routes)
+  // and may have 'path' prop
+  const hasElement = props.element !== undefined
+  const hasIndex = props.index !== undefined
+  const hasV6Props = props.loader !== undefined || props.action !== undefined || props.errorElement !== undefined
+
+  // Must not have v5-specific props
+  const hasV5Props = props.component !== undefined || props.render !== undefined
+
+  return (hasElement || hasIndex || hasV6Props) && !hasV5Props
+}
+
+/**
+ * Check if a component is likely a React Router v6 Routes component by its props/children
+ */
+function isLikelyV6RoutesComponent(props: any): boolean {
+  if (!props || !props.children)
+    return false
+
+  const children = Array.isArray(props.children) ? props.children : [props.children]
+
+  // Check if children look like v6 Route elements
+  for (const child of children) {
+    if (child && child.props && isLikelyV6Route(child.props)) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * Extract routes by traversing fiber children of a Routes component
+ * This is a fallback when props.children doesn't contain the expected structure
+ */
+function extractRoutesFromFiberChildren(routesFiber: FiberNode): RouteInfo[] {
+  const routes: RouteInfo[] = []
+  const visited = new WeakSet<FiberNode>()
+
+  function extractFromFiber(fiber: FiberNode | null, parentPath: string = ''): RouteInfo | null {
+    if (!fiber)
+      return null
+
+    const props = fiber.memoizedProps || fiber.pendingProps
+    if (!props)
+      return null
+
+    const name = getDisplayName(fiber)
+
+    // Check if this fiber looks like a Route
+    const isRouteByName = name === 'Route' || name === 'RenderedRoute'
+    const isRouteByProps = props.path !== undefined || props.element !== undefined || props.index !== undefined
+
+    if (!isRouteByName && !isRouteByProps)
+      return null
+
+    const isIndex = props.index === true
+    let path = ''
+    let fullPath = ''
+
+    if (isIndex) {
+      path = 'index'
+      fullPath = parentPath || '/'
+    }
+    else if (props.path) {
+      path = props.path
+      fullPath = props.path.startsWith('/')
+        ? props.path
+        : `${parentPath}/${props.path}`.replace(/\/+/g, '/')
+    }
+    else {
+      path = parentPath || '/'
+      fullPath = parentPath || '/'
+    }
+
+    // Extract children routes
+    const childRoutes: RouteInfo[] = []
+    let childFiber = fiber.child
+    while (childFiber) {
+      if (!visited.has(childFiber)) {
+        visited.add(childFiber)
+        const childRoute = extractFromFiber(childFiber, fullPath)
+        if (childRoute) {
+          childRoutes.push(childRoute)
+        }
+      }
+      childFiber = childFiber.sibling
+    }
+
+    const routeInfo: RouteInfo = {
+      path: fullPath || '/',
+      element: props.element?.type?.name || props.element?.type?.displayName || getElementName(props.element),
+      isIndex,
+      isLayout: childRoutes.length > 0,
+      hasLoader: !!props.loader,
+      hasAction: !!props.action,
+      hasErrorBoundary: !!props.errorElement,
+    }
+
+    if (childRoutes.length > 0) {
+      routeInfo.children = childRoutes
+    }
+
+    return routeInfo
+  }
+
+  // Start from the Routes component's first child
+  let childFiber = routesFiber.child
+  while (childFiber) {
+    if (!visited.has(childFiber)) {
+      visited.add(childFiber)
+      const route = extractFromFiber(childFiber, '')
+      if (route) {
+        routes.push(route)
+      }
+    }
+    childFiber = childFiber.sibling
+  }
+
+  return routes
+}
+
+/**
  * Extract routes from Routes component's children prop (React Router v6)
  */
 function extractRoutesFromProps(props: any): RouteInfo[] {
@@ -216,10 +360,26 @@ function extractRoutesFromProps(props: any): RouteInfo[] {
   const children = Array.isArray(props.children) ? props.children : [props.children]
 
   for (const child of children) {
-    if (child && child.type && (child.type.name === 'Route' || child.type?.displayName === 'Route')) {
-      const route = extractRouteFromElement(child)
-      if (route) {
-        routes.push(route)
+    // Skip null/undefined children
+    if (!child)
+      continue
+
+    // Check if child has props (it's a React element)
+    if (child.props) {
+      // Check by name first
+      const isRouteByName = child.type?.name === 'Route' || child.type?.displayName === 'Route'
+      // Then by props characteristics (for minified code or wrapped components)
+      const isRouteByProps = isLikelyV6Route(child.props)
+      // Also check if it has typical Route props (path, element, index)
+      const hasTypicalRouteProps = child.props.path !== undefined
+        || child.props.element !== undefined
+        || child.props.index !== undefined
+
+      if (isRouteByName || isRouteByProps || hasTypicalRouteProps) {
+        const route = extractRouteFromElement(child)
+        if (route) {
+          routes.push(route)
+        }
       }
     }
   }
@@ -339,16 +499,42 @@ function extractRoutesFromFiberV5(fiber: FiberNode): RouteInfo[] {
     if (isRouteContextProvider(node)) {
       const value = props.value
       const match = value.match
-      const path = match.path || match.url || '/'
+      const location = value.location
 
-      // Avoid duplicates
-      if (!seenPaths.has(path)) {
-        seenPaths.add(path)
+      // Determine the best path to use:
+      // - If match.path is '*' or contains '*' (catch-all), prefer match.url
+      // - Otherwise use match.path as it shows the route pattern
+      let path = match.path || '/'
+      const isCatchAll = path === '*' || path.endsWith('/*') || path.endsWith('*')
+      let isIndex = false
+
+      if (isCatchAll) {
+        // For catch-all routes, use the actual URL instead
+        path = match.url || location?.pathname || '/'
+      }
+
+      // Check if this is an index route (v6 style) - path matches parent exactly
+      // In v6, index routes have isExact=true and path equals the parent path
+      if (match.isExact && match.url === match.path) {
+        // This might be an index route, check if there's a parent with same path
+        isIndex = true
+      }
+
+      // Avoid duplicates - but for index routes, use a special key
+      const pathKey = isIndex ? `${path}__index` : path
+      if (!seenPaths.has(pathKey)) {
+        seenPaths.add(pathKey)
+
+        // Filter out '*' from params as it's a splat param, not a real route param
+        const realParams = match.params
+          ? Object.keys(match.params).filter(k => k !== '*' && k !== '0')
+          : undefined
 
         const routeInfo: RouteInfo = {
           path,
-          params: match.params ? Object.keys(match.params) : undefined,
+          params: realParams && realParams.length > 0 ? realParams : undefined,
           exact: match.isExact,
+          isIndex,
         }
 
         // Try to find the rendered element name
@@ -363,25 +549,29 @@ function extractRoutesFromFiberV5(fiber: FiberNode): RouteInfo[] {
       }
     }
 
-    // Method 2: Check props for Switch-like structure
+    // Method 2: Check props for Switch-like structure (only if props have valid paths)
     if (props?.children) {
       const children = Array.isArray(props.children) ? props.children : [props.children]
 
-      // Check if this looks like a Switch (has Route-like children)
-      let hasRouteChildren = false
+      // Check if this looks like a Switch (has Route-like children with valid paths)
+      let hasRouteChildrenWithValidPaths = false
       for (const child of children) {
         if (child && child.props && isLikelyV5Route(child.props)) {
-          hasRouteChildren = true
-          const route = extractRouteFromElementV5(child)
-          if (route && !seenPaths.has(route.path)) {
-            seenPaths.add(route.path)
-            routes.push(route)
+          // Only use this method if the child has a valid path (not undefined or '*')
+          const childPath = child.props.path
+          if (childPath && childPath !== '*' && !childPath.endsWith('*')) {
+            const route = extractRouteFromElementV5(child)
+            if (route && !seenPaths.has(route.path)) {
+              seenPaths.add(route.path)
+              routes.push(route)
+              hasRouteChildrenWithValidPaths = true
+            }
           }
         }
       }
 
-      // If we found route children, don't traverse into them again
-      if (hasRouteChildren) {
+      // If we found route children with valid paths, don't traverse into them again
+      if (hasRouteChildrenWithValidPaths) {
         return
       }
     }
@@ -585,13 +775,22 @@ function findAndExtractRoutes(fiber: FiberNode | null): RouteInfo[] {
     const name = getDisplayName(node)
     const props = node.memoizedProps || node.pendingProps
 
-    // Look for Routes component (React Router v6)
-    if (name === 'Routes') {
+    // Look for Routes component (React Router v6) - by name or by props characteristics
+    const isV6Routes = name === 'Routes' || isLikelyV6RoutesComponent(props)
+    if (isV6Routes) {
       // First try to extract from props.children (JSX children)
       const propsRoutes = extractRoutesFromProps(props)
       if (propsRoutes.length > 0) {
         routes = propsRoutes
         return // Found routes, no need to continue
+      }
+
+      // If props.children didn't work, try extracting from fiber children
+      // This handles cases where the Routes component renders differently
+      const fiberChildRoutes = extractRoutesFromFiberChildren(node)
+      if (fiberChildRoutes.length > 0) {
+        routes = fiberChildRoutes
+        return
       }
     }
 
@@ -624,10 +823,24 @@ function findAndExtractRoutes(fiber: FiberNode | null): RouteInfo[] {
 
   traverse(fiber)
 
-  // Fallback: If no routes found via component names/props, try context-based detection
-  // This works even when component names are minified
-  if (routes.length === 0) {
-    routes = extractRoutesFromFiberV5(fiber)
+  // Check if all routes are catch-all '*' routes
+  const allRoutesAreCatchAll = routes.length > 0 && routes.every(r =>
+    r.path === '*' || r.path.endsWith('/*') || r.path.endsWith('*'),
+  )
+
+  // Fallback: If no routes found via component names/props, or all routes are '*',
+  // try context-based detection. This works even when component names are minified.
+  if (routes.length === 0 || allRoutesAreCatchAll) {
+    const contextRoutes = extractRoutesFromFiberV5(fiber)
+    if (contextRoutes.length > 0) {
+      // If context routes have better paths (not all '*'), use them
+      const contextHasBetterPaths = contextRoutes.some(r =>
+        r.path !== '*' && !r.path.endsWith('/*') && !r.path.endsWith('*'),
+      )
+      if (contextHasBetterPaths || routes.length === 0) {
+        routes = contextRoutes
+      }
+    }
   }
 
   return routes
@@ -883,10 +1096,48 @@ export function getRouterInfo(): RouterState | null {
   const routes = findAndExtractRoutes(fiber.child)
 
   // Find matched routes for current path
-  const matchedRoutes = findMatchedRoutes(routes, urlInfo.path)
+  let matchedRoutes = findMatchedRoutes(routes, urlInfo.path)
 
-  // Extract all params from matched routes
-  const params = extractAllParams(matchedRoutes)
+  // Check if matched routes are all '*' (catch-all) - if so, replace with actual URLs
+  const allMatchedAreCatchAll = matchedRoutes.length > 0 && matchedRoutes.every(r =>
+    r.path === '*' || r.path.endsWith('/*') || r.path.endsWith('*'),
+  )
+
+  if (allMatchedAreCatchAll) {
+    // Replace '*' paths with actual current path segments
+    matchedRoutes = matchedRoutes.map((route, index) => {
+      if (route.path === '*' || route.path.endsWith('/*') || route.path.endsWith('*')) {
+        // Use current path for the matched route
+        const pathSegments = urlInfo.path.split('/').filter(Boolean)
+        // For nested routes, use appropriate segments
+        const segmentPath = index === 0 ? '/' : `/${pathSegments.slice(0, index + 1).join('/')}`
+
+        // Filter out '*' and '0' from params
+        const filteredParams: Record<string, string> = {}
+        for (const [key, value] of Object.entries(route.params)) {
+          if (key !== '*' && key !== '0') {
+            filteredParams[key] = value
+          }
+        }
+
+        return {
+          ...route,
+          path: segmentPath === '/' && index > 0 ? urlInfo.path : segmentPath,
+          params: filteredParams,
+        }
+      }
+      return route
+    })
+  }
+
+  // Extract all params from matched routes (filter out '*' params)
+  const allParams = extractAllParams(matchedRoutes)
+  const params: Record<string, string> = {}
+  for (const [key, value] of Object.entries(allParams)) {
+    if (key !== '*' && key !== '0') {
+      params[key] = value
+    }
+  }
 
   return {
     currentPath: urlInfo.path,

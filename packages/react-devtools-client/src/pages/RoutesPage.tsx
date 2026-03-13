@@ -198,6 +198,7 @@ function RouteTreeItem({
   currentPath,
   searchQuery,
   level = 0,
+  parentPath = '/',
   onNavigate,
   onCopy,
 }: {
@@ -205,6 +206,7 @@ function RouteTreeItem({
   currentPath: string
   searchQuery: string
   level?: number
+  parentPath?: string
   onNavigate: (path: string) => void
   onCopy: (path: string) => void
 }) {
@@ -230,7 +232,14 @@ function RouteTreeItem({
   const showActiveBadge = isExactMatch && !hasChildren
   const isHighlighted = isExactMatch || (isLayoutActive && !hasChildren)
 
-  const displayPath = route.isIndex ? 'index' : (level > 0 ? route.path.split('/').pop() || route.path : route.path)
+  // Determine display path: show 'index' for index routes or routes with path matching parent
+  const isIndexRoute = route.isIndex
+    || (level > 0 && route.path === '/')
+    || (level > 0 && route.path === '*' && !route.isLayout)
+  const displayPath = isIndexRoute ? 'index' : (level > 0 ? route.path.split('/').pop() || route.path : route.path)
+
+  // Calculate navigation path: for index routes, navigate to parent path instead of '*' or '/'
+  const navigationPath = isIndexRoute ? parentPath : route.path
   const smallTagStyle = { height: '20px', paddingInline: '6px', fontSize: '11px', lineHeight: 1, borderRadius: '6px' }
 
   return (
@@ -242,7 +251,7 @@ function RouteTreeItem({
             : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800/30'
         }`}
         style={{ paddingLeft: `${12 + level * 20}px` }}
-        onClick={() => onNavigate(route.path)}
+        onClick={() => onNavigate(navigationPath)}
       >
         {/* Expand/Collapse button */}
         {hasChildren
@@ -268,7 +277,7 @@ function RouteTreeItem({
           ? (
               <FolderIcon className="h-4 w-4 shrink-0 text-amber-500" />
             )
-          : route.isIndex
+          : isIndexRoute
             ? (
                 <HomeIcon className="h-4 w-4 shrink-0 text-blue-500" />
               )
@@ -288,7 +297,7 @@ function RouteTreeItem({
               active
             </Tag>
           )}
-          {route.isIndex && (
+          {isIndexRoute && (
             <Tag size="sm" color="info" variant="outline" className="shrink-0" style={smallTagStyle}>
               index
             </Tag>
@@ -319,12 +328,12 @@ function RouteTreeItem({
             </Tag>
           )}
           {route.exact && (
-            <Tag size="sm" color="secondary" variant="outline" className="shrink-0" style={smallTagStyle}>
+            <Tag size="sm" color="neutral" variant="outline" className="shrink-0" style={smallTagStyle}>
               exact
             </Tag>
           )}
           {route.strict && (
-            <Tag size="sm" color="secondary" variant="outline" className="shrink-0" style={smallTagStyle}>
+            <Tag size="sm" color="neutral" variant="outline" className="shrink-0" style={smallTagStyle}>
               strict
             </Tag>
           )}
@@ -340,7 +349,7 @@ function RouteTreeItem({
           className="shrink-0 rounded p-1 opacity-0 transition-opacity hover:bg-gray-200 group-hover:opacity-100 dark:hover:bg-gray-700"
           onClick={(e) => {
             e.stopPropagation()
-            onCopy(route.path)
+            onCopy(navigationPath)
           }}
           title="Copy path"
         >
@@ -362,6 +371,7 @@ function RouteTreeItem({
               currentPath={currentPath}
               searchQuery={searchQuery}
               level={level + 1}
+              parentPath={route.path}
               onNavigate={onNavigate}
               onCopy={onCopy}
             />
