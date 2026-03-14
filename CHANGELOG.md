@@ -1,6 +1,24 @@
 # Changelog
 
 
+## v0.9.8...main
+
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.9.8...main)
+
+### 🐛 Bug Fixes
+
+- Fix theme settings for multiple plugins ([#27](https://github.com/wzc520pyfm/react-devtools-plus/pull/27))
+- Update route handling and improve React Router v6 compatibility ([d268cb5](https://github.com/wzc520pyfm/react-devtools-plus/commit/d268cb5))
+- Improve React version fetching with retry logic and cancellation handling in OverviewPage ([4b744b1](https://github.com/wzc520pyfm/react-devtools-plus/commit/4b744b1))
+
+### 💅 Refactors
+
+- Improve global React and ReactDOM setup in DevToolsProvider and DevToolsScript for better CDN compatibility ([67af929](https://github.com/wzc520pyfm/react-devtools-plus/commit/67af929))
+
+### ❤️ Contributors
+
+- Wzc520pyfm ([@wzc520pyfm](https://github.com/wzc520pyfm))
+
 ## v0.9.7...main
 
 [compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.9.7...main)
