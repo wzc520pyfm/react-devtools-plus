@@ -68,9 +68,19 @@ export function detectWebpackVersion(compiler: Compiler): WebpackVersionInfo {
 }
 
 /**
+ * Check if the compiler is from Rspack (not Webpack).
+ * Rspack exposes `compiler.rspack` which Webpack does not have.
+ * Rspack is always Webpack 5-compatible.
+ */
+export function isRspack(compiler: Compiler): boolean {
+  return !!compiler.rspack
+}
+
+/**
  * Check if webpack version is 4.x
  */
 export function isWebpack4(compiler: Compiler): boolean {
+  if (isRspack(compiler)) return false
   return detectWebpackVersion(compiler).isWebpack4
 }
 
@@ -78,6 +88,7 @@ export function isWebpack4(compiler: Compiler): boolean {
  * Check if webpack version is 5.x or newer
  */
 export function isWebpack5(compiler: Compiler): boolean {
+  if (isRspack(compiler)) return true
   return detectWebpackVersion(compiler).isWebpack5
 }
 
