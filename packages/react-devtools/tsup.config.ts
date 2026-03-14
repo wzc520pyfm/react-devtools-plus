@@ -34,6 +34,7 @@ const commonConfig = {
   external: [
     'vite',
     'webpack',
+    '@rspack/core',
     'react',
     'react-dom',
   ],
@@ -57,6 +58,13 @@ const viteEntryCommon = {
 // Common config for webpack entry
 const webpackEntryCommon = {
   entry: { webpack: 'src/webpack.ts' },
+  dts: true,
+  ...commonConfig,
+}
+
+// Common config for rspack entry
+const rspackEntryCommon = {
+  entry: { rspack: 'src/rspack.ts' },
   dts: true,
   ...commonConfig,
 }
@@ -215,6 +223,24 @@ export default defineConfig([
   // Webpack entry - CJS (native __dirname)
   {
     ...webpackEntryCommon,
+    format: ['cjs'],
+    shims: false,
+    clean: false,
+    dts: false,
+  },
+  // Rspack entry - ESM with __dirname polyfill
+  {
+    ...rspackEntryCommon,
+    format: ['esm'],
+    shims: false,
+    clean: false,
+    banner: {
+      js: esmDirnameBanner,
+    },
+  },
+  // Rspack entry - CJS (native __dirname)
+  {
+    ...rspackEntryCommon,
     format: ['cjs'],
     shims: false,
     clean: false,

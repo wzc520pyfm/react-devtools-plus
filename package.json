@@ -66,6 +66,7 @@
     "play:react19": "turbo dev --filter=./packages/playground/react19",
     "play:react17": "turbo dev --filter=./packages/playground/react17-webpack4",
     "play:webpack": "turbo dev --filter=./packages/playground/react-webpack",
+    "play:rspack": "turbo dev --filter=./packages/playground/react-rspack",
     "play:my-devtools": "turbo dev --filter=./packages/playground/my-devtools-play",
     "play:next": "turbo dev --filter=./packages/playground/next",
     "play:next:turbo": "pnpm --filter @react-devtools-plus/playground-next dev:turbo",

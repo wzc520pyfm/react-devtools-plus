@@ -1,8 +1,9 @@
 /**
  * React DevTools Unplugin
  *
- * A modular implementation supporting both Vite and Webpack with:
+ * A modular implementation supporting Vite, Webpack, and Rspack with:
  * - Webpack 4/5 compatibility
+ * - Rspack compatibility (Webpack 5 API)
  * - webpack-dev-server 3/4+ compatibility
  * - React 17/18+ compatibility
  */
@@ -155,6 +156,23 @@ function excludeHtmlFromUnplugin(compiler: Compiler) {
 }
 
 /**
+ * Get Rspack mode and command.
+ * Similar to getWebpackModeAndCommand but checks RSPACK_SERVE env var.
+ */
+function getRspackModeAndCommand(compiler: Compiler): {
+  mode: string
+  command: 'build' | 'serve'
+} {
+  const mode = compiler.options.mode || process.env.NODE_ENV || 'development'
+
+  const isServeMode = process.env.RSPACK_SERVE === 'true'
+    || process.env.WEBPACK_SERVE === 'true'
+    || (compiler.options.devServer && mode === 'development')
+
+  return { mode, command: isServeMode ? 'serve' : 'build' }
+}
+
+/**
  * Unplugin factory
  * Unplugin 工厂函数
  */
@@ -167,6 +185,7 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
   let viteConfig: ResolvedConfig | undefined
   let pluginConfig: ResolvedPluginConfig | undefined
   let isWebpackContext = false
+  let isRspackContext = false
 
   return {
     name: 'unplugin-react-devtools',
@@ -182,7 +201,7 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
     },
 
     loadInclude(id) {
-      if (isWebpackContext)
+      if (isWebpackContext || isRspackContext)
         return false
       return true
     },
@@ -432,7 +451,7 @@ export const hydrateRoot = undefined;
         if (transformOptions?.ssr)
           return null
 
-        if (!isWebpackContext && !viteConfig)
+        if (!isWebpackContext && !isRspackContext && !viteConfig)
           return null
 
         if (!pluginConfig)
@@ -628,6 +647,58 @@ export const hydrateRoot = undefined;
         }
       }
     },
+
+    // ============================================================
+    // Rspack Hooks
+    // ============================================================
+    rspack(compiler: Compiler) {
+      isRspackContext = true
+      excludeHtmlFromUnplugin(compiler)
+
+      const { mode, command } = getRspackModeAndCommand(compiler)
+      const projectRoot = getWebpackContext(compiler)
+
+      pluginConfig = resolvePluginConfig(options, projectRoot, mode, command)
+
+      printEnvironmentInfo(
+        pluginConfig.detectedEnvironment,
+        pluginConfig.isEnabled,
+        pluginConfig.enabledEnvironments,
+      )
+
+      if (!pluginConfig?.isEnabled) {
+        return
+      }
+
+      if (command === 'serve' && pluginConfig) {
+        const servePath = getClientPath(reactDevtoolsPath)
+        setupWebpackDevServerMiddlewares(compiler, pluginConfig, servePath)
+
+        let scanInitCode: string | undefined
+        if (pluginConfig.scan) {
+          scanInitCode = generateScanInitCJSCode(pluginConfig.scan)
+        }
+
+        const overlayPath = path.join(DIR_OVERLAY, 'react-devtools-overlay.mjs')
+        injectDevToolsEntries(
+          compiler,
+          overlayPath,
+          projectRoot,
+          DIR_OVERLAY,
+          scanInitCode,
+          pluginConfig.clientUrl,
+          pluginConfig.rootSelector,
+          pluginConfig.microFrontend,
+          pluginConfig.theme,
+          pluginConfig.assets,
+          pluginConfig.launchEditor,
+          pluginConfig.hostPlugins,
+        )
+
+        // Source path injection is handled by unplugin's transform hook for rspack,
+        // so we skip injectBabelPlugin (rspack uses builtin:swc-loader, not babel-loader).
+      }
+    },
   }
 }
 
@@ -641,6 +712,7 @@ type MakeFunctionParamsOptional<T extends (...args: any) => any>
 // Export for named imports
 export const vite = unplugin.vite as MakeFunctionParamsOptional<typeof unplugin.vite>
 export const webpack = unplugin.webpack as MakeFunctionParamsOptional<typeof unplugin.webpack>
+export const rspack = unplugin.rspack as MakeFunctionParamsOptional<typeof unplugin.rspack>
 
 // Export types
 export type { ReactDevToolsPluginOptions }

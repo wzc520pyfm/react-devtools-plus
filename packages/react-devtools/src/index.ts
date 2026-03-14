@@ -1,7 +1,7 @@
 /**
  * React DevTools Plugin
  *
- * A universal plugin for Vite and Webpack that provides:
+ * A universal plugin for Vite, Webpack, and Rspack that provides:
  * - Component tree inspection
  * - React Scan performance monitoring
  * - Source code location tracking
@@ -9,6 +9,7 @@
  *
  * Supports:
  * - Webpack 4/5
+ * - Rspack
  * - webpack-dev-server 3/4+
  * - React 17/18+
  * - Vite 4+
@@ -24,7 +25,15 @@
  * })
  *
  * // Webpack
- * import { webpack as ReactDevTools } from 'react-devtools
+ * import { webpack as ReactDevTools } from 'react-devtools-plus'
+ * module.exports = {
+ *   plugins: [
+ *     ReactDevTools(),
+ *   ],
+ * }
+ *
+ * // Rspack
+ * import { rspack as ReactDevTools } from 'react-devtools-plus'
  * module.exports = {
  *   plugins: [
  *     ReactDevTools(),
@@ -54,5 +63,5 @@ export type {
 // Plugin definition helper for plugin authors
 export { defineDevToolsPlugin } from './define.js'
 
-export { default, vite, webpack } from './unplugin.js'
+export { default, rspack, vite, webpack } from './unplugin.js'
 export type { ReactDevToolsPluginOptions } from './unplugin.js'
