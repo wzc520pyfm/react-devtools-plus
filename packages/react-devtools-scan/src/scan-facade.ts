@@ -94,16 +94,6 @@ function persistEnabledState(enabled: boolean): void {
   catch {}
 }
 
-export function readPersistedEnabled(): boolean | null {
-  try {
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
-    return typeof stored.enabled === 'boolean' ? stored.enabled : null
-  }
-  catch {
-    return null
-  }
-}
-
 // ─── Serialisation ──────────────────────────────────────────────────────────
 
 function serializeValue(value: unknown): unknown {

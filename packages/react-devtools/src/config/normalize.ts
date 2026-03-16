@@ -319,14 +319,16 @@ export function normalizeScanConfig(
   // If scan is true, use default configuration
   if (scan === true) {
     return {
-      enabled: command === 'serve', // Only enable in dev mode by default
+      ...(command === 'build' ? { enabled: false } : {}),
       showToolbar: true,
     }
   }
 
-  // If scan is an object, merge with defaults
+  // If scan is an object, merge with defaults.
+  // For serve mode, omit `enabled` so core restores it from localStorage.
+  const hasExplicitEnabled = typeof scan.enabled === 'boolean'
   return {
-    enabled: scan.enabled ?? (command === 'serve'),
+    ...(command === 'build' && !hasExplicitEnabled ? { enabled: false } : {}),
     showToolbar: scan.showToolbar ?? true,
     ...scan,
   }

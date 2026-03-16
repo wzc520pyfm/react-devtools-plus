@@ -7,7 +7,7 @@
 
 import type { ReactDevtoolsScanOptions, ScanInstance } from './types'
 import { getDisplayName, getFiberId } from 'bippy'
-import { getScanInstance, readPersistedEnabled, resetScanInstance } from './scan-facade'
+import { getScanInstance, resetScanInstance } from './scan-facade'
 
 /**
  * React Scan plugin configuration
@@ -95,17 +95,9 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
     async setup(ctx: any) {
       context = ctx
 
-      const persistedEnabled = readPersistedEnabled()
-      const shouldStart = persistedEnabled ?? (autoStart !== false)
+      scanInstance = getScanInstance({ ...scanOptions })
 
-      const initOptions = {
-        enabled: shouldStart,
-        ...scanOptions,
-      }
-
-      scanInstance = getScanInstance(initOptions)
-
-      if (shouldStart) {
+      if (scanInstance.isActive()) {
         scanInstance.start()
       }
 
