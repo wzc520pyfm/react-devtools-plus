@@ -8,7 +8,7 @@ import './polyfills'
 import 'bippy'
 
 import type { IntegrationMode, ReactDevtoolsScanOptions, ScanInstance } from './types'
-import { ReactScanInternals, scan } from './core/index'
+import { ReactScanInternals, scan, setOptions as coreSetOptions } from './core/index'
 import { getScanInstance, resetScanInstance } from './scan-facade'
 
 /**
@@ -35,6 +35,19 @@ import { getScanInstance, resetScanInstance } from './scan-facade'
  * ```
  */
 export function initScan(options: ReactDevtoolsScanOptions = {}): ScanInstance {
+  // Read persisted enabled state BEFORE scan() overwrites localStorage.
+  // This allows user's toggle preference to survive page refreshes.
+  let persistedEnabled: boolean | undefined
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = JSON.parse(localStorage.getItem('react-scan-options') || '{}')
+      if (typeof stored.enabled === 'boolean') {
+        persistedEnabled = stored.enabled
+      }
+    }
+    catch {}
+  }
+
   // Set default options
   const defaultOptions: ReactDevtoolsScanOptions = {
     enabled: process.env.NODE_ENV === 'development',
@@ -63,11 +76,20 @@ export function initScan(options: ReactDevtoolsScanOptions = {}): ScanInstance {
     ;(window as any).__REACT_SCAN_INTERNALS__ = ReactScanInternals
   }
 
-  // Initialize scan with the options
+  // Always call scan() with enabled:true to ensure instrumentation is initialised.
   scan(defaultOptions)
 
-  // Return the scan instance for further control
-  return getScanInstance(defaultOptions)
+  // If user previously disabled scanning, apply that state via core's setOptions
+  // which properly updates internals, isPaused, and localStorage in one shot.
+  if (persistedEnabled === false) {
+    coreSetOptions({ enabled: false })
+  }
+
+  const facadeOptions = persistedEnabled === false
+    ? { ...defaultOptions, enabled: false }
+    : defaultOptions
+
+  return getScanInstance(facadeOptions)
 }
 
 /**
