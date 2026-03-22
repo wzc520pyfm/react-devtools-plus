@@ -10,7 +10,7 @@ export function GraphFileType() {
 
   return (
     <div
-      className={` absolute bottom-0 left-0 z-10 grid grid-cols-3 w-[260px] gap-2 border border-l-0 border-base rounded-tr-lg bg-white/80 px-4 py-2 text-sm backdrop-blur transition-transform duration-300 dark:bg-neutral-900/80 ${!fileTypeShow ? 'translate-x-[calc(-100%+30px)] translate-y-[calc(100%-30px)]' : ''} group `}
+      className={` absolute bottom-0 left-0 z-10 grid grid-cols-3 w-[260px] gap-2 border border-l-0 border-base rounded-tr-lg bg-white/80 px-4 py-2 text-sm backdrop-blur dark:bg-neutral-900/80 ${!fileTypeShow ? 'translate-x-[calc(-100%+30px)] translate-y-[calc(100%-30px)]' : ''} group `}
     >
       {/* Toggle button */}
       <div

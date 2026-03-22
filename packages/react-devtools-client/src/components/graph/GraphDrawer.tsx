@@ -47,7 +47,7 @@ export function GraphDrawer({
 
   return (
     <div
-      className={` absolute right-0 top-0 z-20 h-full w-[300px] border-l border-base bg-white/95 shadow-lg backdrop-blur transition-transform duration-300 dark:bg-neutral-900/95 ${show ? 'translate-x-0' : 'translate-x-full'}  `}
+      className={` absolute right-0 top-0 z-20 h-full w-[300px] border-l border-base bg-white/95 shadow-lg backdrop-blur dark:bg-neutral-900/95 ${show ? 'translate-x-0' : 'translate-x-full'}  `}
     >
       {/* Close button */}
       <button
