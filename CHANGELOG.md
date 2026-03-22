@@ -1,6 +1,35 @@
 # Changelog
 
 
+## v0.10.0...main
+
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.10.0...main)
+
+### 🚀 Features
+
+- Support rspack ([#28](https://github.com/wzc520pyfm/react-devtools-plus/pull/28))
+- Integrate new scan engine and update dependencies for improved performance ([34efa95](https://github.com/wzc520pyfm/react-devtools-plus/commit/34efa95))
+- Integrate new scan engine and update dependencies for improved performance ([7affa20](https://github.com/wzc520pyfm/react-devtools-plus/commit/7affa20))
+- Enhance fiber root detection and render listener registration in scan facade ([a7183b9](https://github.com/wzc520pyfm/react-devtools-plus/commit/a7183b9))
+- Implement persistent state for scan options and remove showToolbar configuration from ScanPage ([4c3a081](https://github.com/wzc520pyfm/react-devtools-plus/commit/4c3a081))
+- Add support for persisted scan options to maintain user preferences across page refreshes ([68018c0](https://github.com/wzc520pyfm/react-devtools-plus/commit/68018c0))
+
+### 🐛 Bug Fixes
+
+- Update scan configuration to handle enabled state more flexibly and improve localStorage integration ([25caefc](https://github.com/wzc520pyfm/react-devtools-plus/commit/25caefc))
+
+### 💅 Refactors
+
+- Remove default enabled state from scan options and streamline configuration handling ([db34f54](https://github.com/wzc520pyfm/react-devtools-plus/commit/db34f54))
+
+### 🏡 Chore
+
+- Update asset references and clean up CSS transitions in React DevTools ([2edc74a](https://github.com/wzc520pyfm/react-devtools-plus/commit/2edc74a))
+
+### ❤️ Contributors
+
+- Wzc520pyfm <1528857653@qq.com>
+
 ## v0.9.8...main
 
 [compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.9.8...main)
