@@ -5,6 +5,22 @@
 
 [compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.10.1...main)
 
+### 🚀 Features
+
+- Extract react-tracer sub-package from react-devtools-plus ([93c60de](https://github.com/wzc520pyfm/react-devtools-plus/commit/93c60de))
+
+### 🐛 Bug Fixes
+
+- **vite:** Emit DevTools globals/scan chunks for production and inline overlay CSS ([b9acd74](https://github.com/wzc520pyfm/react-devtools-plus/commit/b9acd74))
+
+### ❤️ Contributors
+
+- Wzc520pyfm ([@wzc520pyfm](https://github.com/wzc520pyfm))
+
+## v0.10.1...main
+
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.10.1...main)
+
 ### 🏡 Chore
 
 - Update asset references and enhance CSS transitions in React DevTools overlay ([14b30eb](https://github.com/wzc520pyfm/react-devtools-plus/commit/14b30eb))

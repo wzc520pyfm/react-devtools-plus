@@ -1,7 +1,7 @@
 {
   "name": "react-tracer",
   "type": "module",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "description": "Tracer for the source code of React components. Click elements to find their source. Use as a standalone inspector or headless APIs.",
   "author": "wzc520pyfm",
   "license": "MIT",
