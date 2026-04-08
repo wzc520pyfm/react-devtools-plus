@@ -1,4 +1,5 @@
 
+<img src="docs/public/screenshots/overview.png" alt="React DevTools Plus" width="800" />
 
 # React DevTools Plus
 
